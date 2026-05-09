@@ -77,7 +77,7 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 .msummary-tag { font-size: 11px; padding: 2px 8px; border-radius: 3px; font-weight: 500; }
 .month-toggle { font-size: 18px; color: var(--text2); margin-left: 8px; transition: transform 0.2s; }
 .month-toggle.open { transform: rotate(180deg); }
-.month-body { padding: 16px 24px 20px; display: none; }
+.month-body { padding: 16px 24px 20px;  }
 .month-body.open { display: block; }
 .items-list { display: flex; flex-direction: column; gap: 8px; }
 .item-row { display: flex; align-items: flex-start; gap: 14px; padding: 12px 16px; border-radius: var(--radius); border: 1px solid transparent; transition: background 0.15s; }
@@ -107,7 +107,7 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
 @media (max-width: 640px) {
   .qs-grid { grid-template-columns: 1fr 1fr; }
-  .month-summary { display: none; }
+  .month-summary {  }
   .item-row { flex-wrap: wrap; gap: 8px; }
 }
 </style>
@@ -176,7 +176,7 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 1월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">01</div>
         <div class="month-name">1월</div>
         <div class="month-summary">
@@ -184,9 +184,9 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
           <span class="msummary-tag" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">1/12</div>
@@ -229,7 +229,7 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 2월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">02</div>
         <div class="month-name">2월</div>
         <div class="month-summary">
@@ -237,9 +237,9 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
           <span class="msummary-tag" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">2/10</div>
@@ -272,7 +272,7 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 3월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">03</div>
         <div class="month-name">3월</div>
         <div class="month-summary">
@@ -280,9 +280,9 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
           <span class="msummary-tag" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">3/10</div>
@@ -315,16 +315,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 4월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">04</div>
         <div class="month-name">4월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세 예정</span>
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">4/10</div>
@@ -348,16 +348,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 5월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">05</div>
         <div class="month-name">5월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">종합소득세</span>
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">5/11</div>
@@ -390,16 +390,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 6월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">06</div>
         <div class="month-name">6월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">성실신고</span>
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">6/10</div>
@@ -423,16 +423,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 7월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">07</div>
         <div class="month-name">7월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세 확정</span>
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">7/10</div>
@@ -456,16 +456,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 8월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">08</div>
         <div class="month-name">8월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-corp-bg);color:var(--c-corp);">법인세 중간예납</span>
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">8/10</div>
@@ -489,16 +489,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 9월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">09</div>
         <div class="month-name">9월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
           <span class="msummary-tag" style="background:var(--c-etc-bg);color:var(--c-etc);">재산세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">9/10</div>
@@ -522,16 +522,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 10월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">10</div>
         <div class="month-name">10월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세 예정</span>
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">10/12</div>
@@ -555,16 +555,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 11월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">11</div>
         <div class="month-name">11월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">소득세 중간예납</span>
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">11/10</div>
@@ -588,16 +588,16 @@ nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); 
 
     <!-- 12월 -->
     <div class="month-block">
-      <div class="month-header" onclick="toggle(this)">
+      <div class="month-header" >
         <div class="month-num">12</div>
         <div class="month-name">12월</div>
         <div class="month-summary">
           <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">연말정산 준비</span>
           <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
         </div>
-        <div class="month-toggle">▾</div>
+        <div 
       </div>
-      <div class="month-body open">
+      <div class="month-body" style="display:block">
         <div class="items-list">
           <div class="item-row">
             <div class="item-date deadline">12/10</div>
