@@ -13,20 +13,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --navy: #0a1628;
-  --navy2: #112240;
-  --navy3: #1d3461;
-  --gold: #c9a84c;
-  --gold-light: #e8c96a;
-  --gold-dim: rgba(201,168,76,0.15);
+  --navy: #1a4a2a;
+  --navy2: #235c35;
+  --navy3: #2d7045;
+  --gold: #d4f06a;
+  --gold-light: #e2f888;
+  --gold-dim: rgba(212,240,106,0.18);
   --white: #ffffff;
-  --white60: rgba(255,255,255,0.6);
-  --white40: rgba(255,255,255,0.4);
-  --white20: rgba(255,255,255,0.2);
-  --white10: rgba(255,255,255,0.08);
-  --text: #1a1a2e;
-  --text2: #4a4a6a;
-  --bg: #f8f7f4;
+  --white60: rgba(255,255,255,0.80);
+  --white40: rgba(255,255,255,0.60);
+  --white20: rgba(255,255,255,0.28);
+  --white10: rgba(255,255,255,0.12);
+  --text: #122a18;
+  --text2: #305a38;
+  --bg: #eef5e8;
   --bg2: #ffffff;
   --border: rgba(0,0,0,0.08);
   --radius: 8px;
@@ -46,7 +46,7 @@ body {
 nav {
   position: sticky; top: 0; z-index: 100;
   background: var(--navy);
-  border-bottom: 1px solid rgba(201,168,76,0.15);
+  border-bottom: 1px solid rgba(212,240,106,0.15);
 }
 .nav-inner {
   max-width: 1100px; margin: 0 auto;
@@ -102,14 +102,14 @@ nav {
 .hero-grid {
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(201,168,76,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(201,168,76,0.05) 1px, transparent 1px);
+    linear-gradient(rgba(212,240,106,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212,240,106,0.05) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 .hero-glow {
   position: absolute; top: -100px; right: -100px;
   width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(212,240,106,0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 .hero-inner {
@@ -120,7 +120,7 @@ nav {
   display: inline-flex; align-items: center; gap: 8px;
   font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--gold);
-  border: 1px solid rgba(201,168,76,0.3);
+  border: 1px solid rgba(212,240,106,0.3);
   padding: 5px 12px; border-radius: 2px;
   margin-bottom: 28px;
 }
@@ -241,7 +241,7 @@ section { padding: 64px 24px; }
 .column-section { background: var(--navy); }
 .column-featured {
   background: var(--navy2);
-  border: 1px solid rgba(201,168,76,0.2);
+  border: 1px solid rgba(212,240,106,0.2);
   border-radius: var(--radius-lg);
   padding: 28px 32px;
   margin-bottom: 1px;
@@ -249,7 +249,7 @@ section { padding: 64px 24px; }
   text-decoration: none;
   transition: border-color 0.2s;
 }
-.column-featured:hover { border-color: rgba(201,168,76,0.5); }
+.column-featured:hover { border-color: rgba(212,240,106,0.5); }
 .col-badge {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
@@ -363,7 +363,7 @@ section { padding: 64px 24px; }
 .ebook-section { background: var(--navy); padding: 64px 24px; }
 .ebook-hero {
   background: var(--navy2);
-  border: 1px solid rgba(201,168,76,0.2);
+  border: 1px solid rgba(212,240,106,0.2);
   border-radius: var(--radius-lg);
   padding: 36px 40px;
   display: flex; gap: 40px; align-items: center;
@@ -377,12 +377,12 @@ section { padding: 64px 24px; }
   display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
   position: relative;
 }
-.book-spine.b1 { background: #1a3660; margin-right: -6px; transform: rotate(-4deg) translateY(4px); z-index: 1; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
-.book-spine.b2 { background: #234a80; margin-right: -6px; z-index: 2; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
-.book-spine.b3 { background: #1a2e58; margin-right: -6px; transform: rotate(2deg) translateY(2px); z-index: 3; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
-.book-spine.b4 { background: #203a6e; margin-right: -6px; transform: rotate(-1deg); z-index: 4; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
-.book-spine.b5 { background: #2a1e08; z-index: 5; border: 1px solid rgba(201,168,76,0.25); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
-.book-line { width: 1px; height: 32px; background: rgba(201,168,76,0.3); margin-bottom: 8px; }
+.book-spine.b1 { background: #1a4d2a; margin-right: -6px; transform: rotate(-4deg) translateY(4px); z-index: 1; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-spine.b2 { background: #216038; margin-right: -6px; z-index: 2; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-spine.b3 { background: #184028; margin-right: -6px; transform: rotate(2deg) translateY(2px); z-index: 3; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-spine.b4 { background: #1c5830; margin-right: -6px; transform: rotate(-1deg); z-index: 4; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-spine.b5 { background: #224a1a; z-index: 5; border: 1px solid rgba(212,240,106,0.3); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-line { width: 1px; height: 32px; background: rgba(212,240,106,0.3); margin-bottom: 8px; }
 .book-text { font-size: 10px; color: var(--gold); writing-mode: vertical-rl; letter-spacing: 0.05em; font-weight: 500; opacity: 0.8; }
 .ebook-info { flex: 1; }
 .ebook-vol-count { font-size: 11px; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
@@ -422,7 +422,7 @@ section { padding: 64px 24px; }
   border-radius: var(--radius);
   overflow: hidden;
 }
-.book-card.special { border-color: rgba(201,168,76,0.25); }
+.book-card.special { border-color: rgba(212,240,106,0.25); }
 .book-cover {
   padding: 20px 16px;
   display: flex; flex-direction: column;
@@ -430,15 +430,15 @@ section { padding: 64px 24px; }
   min-height: 110px;
   text-align: center;
 }
-.bc1 { background: #192e54; }
-.bc2 { background: #1e3860; }
-.bc3 { background: #162840; }
-.bc4 { background: #1c3258; }
-.bc5 { background: #1e1408; }
-.book-vol { font-size: 9px; color: rgba(201,168,76,0.5); margin-bottom: 6px; letter-spacing: 0.08em; }
+.bc1 { background: #184820; }
+.bc2 { background: #1c5c2e; }
+.bc3 { background: #163a1c; }
+.bc4 { background: #1a4e24; }
+.bc5 { background: #1e4014; }
+.book-vol { font-size: 9px; color: rgba(212,240,106,0.5); margin-bottom: 6px; letter-spacing: 0.08em; }
 .book-title { font-size: 12px; font-weight: 500; color: var(--white); line-height: 1.5; }
 .book-title.gold { color: var(--gold); }
-.book-divider { width: 20px; height: 1px; background: rgba(201,168,76,0.3); margin: 8px auto 0; }
+.book-divider { width: 20px; height: 1px; background: rgba(212,240,106,0.3); margin: 8px auto 0; }
 .book-body { padding: 12px 14px; }
 .book-tag { font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 6px; }
 .book-items { display: flex; flex-direction: column; gap: 4px; }
@@ -447,15 +447,15 @@ section { padding: 64px 24px; }
   display: flex; align-items: flex-start; gap: 5px;
   line-height: 1.4;
 }
-.bi::before { content: ''; width: 3px; height: 3px; border-radius: 50%; background: rgba(201,168,76,0.4); flex-shrink: 0; margin-top: 5px; }
+.bi::before { content: ''; width: 3px; height: 3px; border-radius: 50%; background: rgba(212,240,106,0.4); flex-shrink: 0; margin-top: 5px; }
 .book-footer {
   margin-top: 10px; padding-top: 10px;
   border-top: 1px solid rgba(255,255,255,0.06);
   font-size: 10px; color: rgba(255,255,255,0.3);
   display: flex; align-items: center; gap: 4px;
 }
-.book-footer svg { width: 12px; height: 12px; stroke: rgba(201,168,76,0.5); fill: none; stroke-width: 1.5; }
-.book-footer.gold-ft { color: rgba(201,168,76,0.5); }
+.book-footer svg { width: 12px; height: 12px; stroke: rgba(212,240,106,0.5); fill: none; stroke-width: 1.5; }
+.book-footer.gold-ft { color: rgba(212,240,106,0.5); }
 
 /* ── T엣지 ── */
 .tedge-section { background: var(--bg2); }
@@ -559,8 +559,8 @@ section { padding: 64px 24px; }
 
 /* ── FOOTER ── */
 footer {
-  background: #060e1c;
-  border-top: 1px solid rgba(201,168,76,0.1);
+  background: #0e2a14;
+  border-top: 1px solid rgba(212,240,106,0.1);
   padding: 28px 24px;
 }
 .footer-inner {
@@ -962,7 +962,7 @@ footer {
       </div>
       <div class="book-card special">
         <div class="book-cover bc5">
-          <div class="book-vol" style="color:rgba(201,168,76,0.5);">Vol. 05</div>
+          <div class="book-vol" style="color:rgba(212,240,106,0.5);">Vol. 05</div>
           <div class="book-title gold">세무조사<br>대응 가이드</div>
           <div class="book-divider"></div>
         </div>
