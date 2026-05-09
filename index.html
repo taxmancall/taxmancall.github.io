@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>원제우 세무사 사무소 | taxmancall.com</title>
+<meta name="description" content="법인·개인사업자의 세금 문제를 법령에 근거하여 정확하게 해결합니다. 기장부터 세무 컨설팅까지, 500여 고객사의 신뢰와 함께합니다.">
+<meta property="og:title" content="원제우 세무사 사무소">
+<meta property="og:description" content="숫자 너머를 읽는 세무사. 법령에 근거한 정확한 세무 서비스.">
+<meta property="og:url" content="https://taxmancall.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a1628;
+  --navy2: #112240;
+  --navy3: #1d3461;
+  --gold: #c9a84c;
+  --gold-light: #e8c96a;
+  --gold-dim: rgba(201,168,76,0.15);
+  --white: #ffffff;
+  --white60: rgba(255,255,255,0.6);
+  --white40: rgba(255,255,255,0.4);
+  --white20: rgba(255,255,255,0.2);
+  --white10: rgba(255,255,255,0.08);
+  --text: #1a1a2e;
+  --text2: #4a4a6a;
+  --bg: #f8f7f4;
+  --bg2: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--navy);
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+}
+.nav-inner {
+  max-width: 1100px; margin: 0 auto;
+  padding: 0 24px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.nav-logo-mark {
+  width: 28px; height: 28px;
+  border: 1.5px solid var(--gold);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--gold);
+}
+.nav-logo-text {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px; font-weight: 500;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 28px;
+}
+.nav-links a {
+  font-size: 13px; color: var(--white60);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-cta {
+  background: var(--gold);
+  color: var(--navy) !important;
+  font-weight: 500 !important;
+  padding: 7px 16px;
+  border-radius: 4px;
+  font-size: 13px !important;
+}
+.nav-cta:hover { background: var(--gold-light) !important; }
+.nav-toggle { display: none; cursor: pointer; color: var(--white); font-size: 22px; }
+
+/* ── HERO ── */
+.hero {
+  background: var(--navy);
+  padding: 80px 24px 72px;
+  position: relative; overflow: hidden;
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.hero-glow {
+  position: absolute; top: -100px; right: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 1100px; margin: 0 auto;
+  position: relative;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.3);
+  padding: 5px 12px; border-radius: 2px;
+  margin-bottom: 28px;
+}
+.hero-tag-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
+.hero-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 500;
+  color: var(--white);
+  line-height: 1.2;
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
+}
+.hero-title span { color: var(--gold); }
+.hero-sub {
+  font-size: 16px; color: var(--white40);
+  line-height: 1.8; max-width: 500px;
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 56px; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold); color: var(--navy);
+  font-size: 14px; font-weight: 500;
+  padding: 12px 24px; border-radius: 4px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--gold-light); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: var(--white60);
+  font-size: 14px;
+  padding: 12px 24px; border-radius: 4px;
+  border: 1px solid var(--white20);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { color: var(--white); border-color: var(--white40); }
+.hero-stats {
+  display: flex; gap: 40px; flex-wrap: wrap;
+  padding-top: 36px;
+  border-top: 1px solid var(--white10);
+}
+.hero-stat-num {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 28px; font-weight: 500;
+  color: var(--white);
+}
+.hero-stat-num em { color: var(--gold); font-size: 16px; font-style: normal; margin-left: 2px; }
+.hero-stat-label { font-size: 12px; color: var(--white40); margin-top: 2px; }
+
+/* ── SECTION COMMONS ── */
+section { padding: 64px 24px; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-header { margin-bottom: 32px; }
+.section-eyebrow {
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 26px; font-weight: 500;
+  color: var(--text); letter-spacing: -0.02em;
+}
+.section-title-white { color: var(--white); }
+.section-more {
+  font-size: 13px; color: var(--text2);
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.section-more:hover { color: var(--gold); }
+.sh-row { display: flex; align-items: flex-end; justify-content: space-between; }
+
+/* ── SERVICES ── */
+.services { background: var(--bg2); }
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.service-card {
+  background: var(--bg2);
+  padding: 28px 24px;
+  transition: background 0.2s;
+}
+.service-card:hover { background: #fafaf8; }
+.service-icon {
+  width: 44px; height: 44px;
+  background: var(--navy);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.service-icon svg { width: 22px; height: 22px; stroke: var(--gold); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.service-name {
+  font-weight: 500; font-size: 15px;
+  color: var(--text); margin-bottom: 6px;
+}
+.service-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.service-items { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
+.service-item {
+  font-size: 12px; color: var(--text2);
+  display: flex; align-items: center; gap: 6px;
+}
+.service-item::before {
+  content: '';
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--gold); flex-shrink: 0;
+}
+
+/* ── COLUMN ── */
+.column-section { background: var(--navy); }
+.column-featured {
+  background: var(--navy2);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-bottom: 1px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+.column-featured:hover { border-color: rgba(201,168,76,0.5); }
+.col-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em;
+  background: var(--gold-dim);
+  color: var(--gold);
+  padding: 3px 10px; border-radius: 2px;
+  margin-bottom: 12px;
+}
+.col-badge-dot { width: 4px; height: 4px; border-radius: 50%; background: #4ade80; }
+.col-feat-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 20px; font-weight: 500;
+  color: var(--white); line-height: 1.4;
+  margin-bottom: 8px;
+}
+.col-feat-sub { font-size: 13px; color: var(--white40); }
+.col-feat-date { font-size: 12px; color: var(--white40); white-space: nowrap; }
+.col-feat-arrow {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--gold-dim);
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 16px; margin-left: auto;
+}
+.col-feat-arrow svg { width: 18px; height: 18px; stroke: var(--gold); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.column-list {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--white10);
+  border-radius: var(--radius-lg); overflow: hidden;
+  margin-top: 1px;
+}
+.column-item {
+  background: var(--navy2);
+  padding: 20px 24px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.column-item:hover { background: var(--navy3); }
+.col-cat { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 8px; }
+.col-item-title { font-size: 14px; font-weight: 500; color: var(--white); line-height: 1.5; margin-bottom: 6px; }
+.col-item-date { font-size: 12px; color: var(--white40); }
+.col-more-wrap { text-align: center; margin-top: 28px; }
+.col-more {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--white40);
+  border: 1px solid var(--white20);
+  padding: 10px 24px; border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.col-more:hover { color: var(--white); border-color: var(--white40); }
+
+/* ── TOOLS TEASER ── */
+.tools-section { background: var(--bg); }
+.tools-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.tool-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative; overflow: hidden;
+}
+.tool-card-inner { display: flex; align-items: center; gap: 14px; }
+.tool-icon {
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: var(--bg);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+}
+.tool-icon svg { width: 20px; height: 20px; stroke: var(--text2); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.tool-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.tool-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.tool-lock {
+  position: absolute; inset: 0;
+  background: rgba(248,247,244,0.7);
+  backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius);
+}
+.lock-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500; color: var(--text2);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 5px 10px; border-radius: 4px;
+}
+.lock-badge svg { width: 12px; height: 12px; stroke: var(--text2); fill: none; stroke-width: 2; }
+.tools-banner {
+  margin-top: 16px;
+  background: var(--navy);
+  border-radius: var(--radius);
+  padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.tools-banner-text { font-size: 13px; color: var(--white60); }
+.tools-banner-text strong { color: var(--white); }
+.tools-banner-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500;
+  background: var(--gold);
+  color: var(--navy);
+  padding: 8px 16px; border-radius: 4px;
+  white-space: nowrap; text-decoration: none;
+  transition: background 0.2s;
+}
+.tools-banner-cta:hover { background: var(--gold-light); }
+
+/* ── EBOOK ── */
+.ebook-section { background: var(--navy); padding: 64px 24px; }
+.ebook-hero {
+  background: var(--navy2);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  display: flex; gap: 40px; align-items: center;
+  margin-bottom: 16px;
+}
+.books-visual { display: flex; flex-shrink: 0; gap: 0; }
+.book-spine {
+  width: 52px; min-height: 140px;
+  border-radius: 3px;
+  padding: 16px 8px 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  position: relative;
+}
+.book-spine.b1 { background: #1a3660; margin-right: -6px; transform: rotate(-4deg) translateY(4px); z-index: 1; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-spine.b2 { background: #234a80; margin-right: -6px; z-index: 2; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-spine.b3 { background: #1a2e58; margin-right: -6px; transform: rotate(2deg) translateY(2px); z-index: 3; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-spine.b4 { background: #203a6e; margin-right: -6px; transform: rotate(-1deg); z-index: 4; box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-spine.b5 { background: #2a1e08; z-index: 5; border: 1px solid rgba(201,168,76,0.25); box-shadow: 2px 0 8px rgba(0,0,0,0.3); }
+.book-line { width: 1px; height: 32px; background: rgba(201,168,76,0.3); margin-bottom: 8px; }
+.book-text { font-size: 10px; color: var(--gold); writing-mode: vertical-rl; letter-spacing: 0.05em; font-weight: 500; opacity: 0.8; }
+.ebook-info { flex: 1; }
+.ebook-vol-count { font-size: 11px; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+.ebook-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px; font-weight: 500;
+  color: var(--white); line-height: 1.4;
+  margin-bottom: 10px;
+}
+.ebook-desc { font-size: 13px; color: var(--white40); line-height: 1.8; margin-bottom: 20px; }
+.ebook-notice {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--white10);
+  border: 1px solid var(--white10);
+  border-radius: var(--radius);
+  padding: 12px 14px; margin-bottom: 20px;
+}
+.ebook-notice svg { width: 16px; height: 16px; stroke: var(--gold); fill: none; stroke-width: 1.5; flex-shrink: 0; margin-top: 2px; }
+.ebook-notice-text { font-size: 12px; color: var(--white40); line-height: 1.6; }
+.ebook-notice-text strong { color: rgba(255,255,255,0.7); }
+.ebook-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold); color: var(--navy);
+  font-size: 13px; font-weight: 500;
+  padding: 11px 22px; border-radius: 4px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.ebook-cta:hover { background: var(--gold-light); }
+.books-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.book-card {
+  background: var(--navy2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.book-card.special { border-color: rgba(201,168,76,0.25); }
+.book-cover {
+  padding: 20px 16px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 110px;
+  text-align: center;
+}
+.bc1 { background: #192e54; }
+.bc2 { background: #1e3860; }
+.bc3 { background: #162840; }
+.bc4 { background: #1c3258; }
+.bc5 { background: #1e1408; }
+.book-vol { font-size: 9px; color: rgba(201,168,76,0.5); margin-bottom: 6px; letter-spacing: 0.08em; }
+.book-title { font-size: 12px; font-weight: 500; color: var(--white); line-height: 1.5; }
+.book-title.gold { color: var(--gold); }
+.book-divider { width: 20px; height: 1px; background: rgba(201,168,76,0.3); margin: 8px auto 0; }
+.book-body { padding: 12px 14px; }
+.book-tag { font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 6px; }
+.book-items { display: flex; flex-direction: column; gap: 4px; }
+.bi {
+  font-size: 11px; color: rgba(255,255,255,0.45);
+  display: flex; align-items: flex-start; gap: 5px;
+  line-height: 1.4;
+}
+.bi::before { content: ''; width: 3px; height: 3px; border-radius: 50%; background: rgba(201,168,76,0.4); flex-shrink: 0; margin-top: 5px; }
+.book-footer {
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 10px; color: rgba(255,255,255,0.3);
+  display: flex; align-items: center; gap: 4px;
+}
+.book-footer svg { width: 12px; height: 12px; stroke: rgba(201,168,76,0.5); fill: none; stroke-width: 1.5; }
+.book-footer.gold-ft { color: rgba(201,168,76,0.5); }
+
+/* ── T엣지 ── */
+.tedge-section { background: var(--bg2); }
+.tedge-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  display: flex; gap: 36px; align-items: flex-start;
+}
+.tedge-logo-box {
+  width: 56px; height: 56px; flex-shrink: 0;
+  background: var(--navy);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+}
+.tedge-logo-box svg { width: 26px; height: 26px; stroke: var(--gold); fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.tedge-info { flex: 1; }
+.tedge-name { font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.tedge-sub { font-size: 13px; color: var(--text2); margin-bottom: 14px; }
+.tedge-desc { font-size: 14px; color: var(--text2); line-height: 1.8; margin-bottom: 16px; max-width: 540px; }
+.tedge-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.tchip {
+  font-size: 12px; color: var(--text2);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 4px 12px; border-radius: 4px;
+}
+.tedge-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--navy); color: var(--gold);
+  font-size: 13px; font-weight: 500;
+  padding: 10px 20px; border-radius: 4px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.tedge-cta:hover { background: var(--navy2); }
+.tedge-cta svg { width: 14px; height: 14px; stroke: var(--gold); fill: none; stroke-width: 2; }
+
+/* ── ABOUT ── */
+.about-section { background: var(--navy); }
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.about-card {
+  background: var(--navy2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+}
+.about-name {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px; font-weight: 500;
+  color: var(--white); margin-bottom: 4px;
+}
+.about-role { font-size: 13px; color: var(--gold); margin-bottom: 16px; }
+.about-desc { font-size: 13px; color: var(--white40); line-height: 1.8; margin-bottom: 20px; }
+.about-divider { height: 1px; background: var(--white10); margin-bottom: 20px; }
+.about-staff-title { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white40); margin-bottom: 10px; }
+.staff-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.staff-chip {
+  font-size: 12px; color: rgba(255,255,255,0.45);
+  background: var(--white10);
+  padding: 4px 10px; border-radius: 3px;
+}
+.contact-card {
+  background: var(--navy2);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+}
+.contact-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 20px; font-weight: 500;
+  color: var(--white); margin-bottom: 24px;
+}
+.contact-rows { display: flex; flex-direction: column; gap: 0; margin-bottom: 24px; }
+.contact-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--white10);
+}
+.contact-row:last-child { border: none; }
+.contact-icon {
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: var(--white10);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+}
+.contact-icon svg { width: 16px; height: 16px; stroke: var(--gold); fill: none; stroke-width: 1.5; stroke-linecap: round; }
+.contact-label { font-size: 11px; color: var(--white40); margin-bottom: 1px; }
+.contact-value { font-size: 14px; color: var(--white); font-weight: 500; }
+.contact-cta {
+  display: block; text-align: center;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 14px; font-weight: 500;
+  padding: 13px; border-radius: 4px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.contact-cta:hover { background: var(--gold-light); }
+
+/* ── FOOTER ── */
+footer {
+  background: #060e1c;
+  border-top: 1px solid rgba(201,168,76,0.1);
+  padding: 28px 24px;
+}
+.footer-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.footer-left { font-size: 12px; color: rgba(255,255,255,0.25); line-height: 1.7; }
+.footer-right { display: flex; gap: 20px; }
+.footer-link { font-size: 12px; color: rgba(255,255,255,0.25); text-decoration: none; }
+.footer-link:hover { color: rgba(255,255,255,0.5); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .services-grid { grid-template-columns: repeat(2, 1fr); }
+  .column-list { grid-template-columns: 1fr; }
+  .tools-grid { grid-template-columns: repeat(2, 1fr); }
+  .books-grid { grid-template-columns: repeat(2, 1fr); }
+  .book-spine.b1,.book-spine.b3 { display: none; }
+  .ebook-hero { flex-direction: column; }
+  .about-grid { grid-template-columns: 1fr; }
+  .tedge-card { flex-direction: column; }
+}
+@media (max-width: 640px) {
+  .nav-links { display: none; }
+  .nav-toggle { display: block; }
+  .nav-links.open {
+    display: flex; flex-direction: column;
+    position: fixed; top: 60px; left: 0; right: 0;
+    background: var(--navy);
+    padding: 20px 24px; gap: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .hero { padding: 56px 20px 48px; }
+  .hero-title { font-size: 32px; }
+  .services-grid { grid-template-columns: 1fr; }
+  .tools-grid { grid-template-columns: 1fr; }
+  .books-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 24px; }
+  .tools-banner { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-mark">원</div>
+      <span class="nav-logo-text">원제우 세무사 사무소</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#services">서비스</a>
+      <a href="#column">세금 칼럼</a>
+      <a href="#ebook">가이드북</a>
+      <a href="#tedge">T엣지</a>
+      <a href="#about">사무소 소개</a>
+      <a href="#contact" class="nav-cta">상담 문의</a>
+    </div>
+    <div class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-tag">
+      <div class="hero-tag-dot"></div>
+      원제우 세무사 사무소
+    </div>
+    <h1 class="hero-title">숫자 너머를<br>읽는 세무사<span>.</span></h1>
+    <p class="hero-sub">법인·개인사업자의 세금 문제를 법령에 근거하여 정확하게 해결합니다.<br>기장부터 세무 컨설팅까지, 500여 고객사의 신뢰와 함께합니다.</p>
+    <div class="hero-btns">
+      <a href="#contact" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.39 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.5a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16l.42.92z"/></svg>
+        무료 상담 신청
+      </a>
+      <a href="#services" class="btn-secondary">서비스 안내 →</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">500<em>+</em></div>
+        <div class="hero-stat-label">관리 고객사</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">기장<em>·</em>신고</div>
+        <div class="hero-stat-label">전문 서비스</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">세무사<em> 직접</em></div>
+        <div class="hero-stat-label">컨설팅 상담</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-eyebrow">Services</div>
+      <h2 class="section-title">주요 서비스</h2>
+    </div>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <div class="service-name">기장 대리</div>
+        <div class="service-desc">월별 장부 작성부터 신고까지 일괄 처리합니다.</div>
+        <div class="service-items">
+          <div class="service-item">부가가치세 신고</div>
+          <div class="service-item">법인세·소득세 신고</div>
+          <div class="service-item">급여·4대보험 처리</div>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="service-name">세무 신고</div>
+        <div class="service-desc">기장 없이 신고만 필요한 사업자를 위한 서비스입니다.</div>
+        <div class="service-items">
+          <div class="service-item">종합소득세 신고</div>
+          <div class="service-item">양도소득세 신고</div>
+          <div class="service-item">증여·상속세 신고</div>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="service-name">세무 컨설팅</div>
+        <div class="service-desc">세무사가 직접 절세 구조를 설계합니다.</div>
+        <div class="service-items">
+          <div class="service-item">절세 전략 수립</div>
+          <div class="service-item">법인 전환·이익소각</div>
+          <div class="service-item">상속·증여 구조 설계</div>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="service-name">세무조사 대응</div>
+        <div class="service-desc">조사부터 불복까지 전 과정을 지원합니다.</div>
+        <div class="service-items">
+          <div class="service-item">세무조사 대리</div>
+          <div class="service-item">이의신청·심판청구</div>
+          <div class="service-item">과세전적부심사</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COLUMN -->
+<section class="column-section" id="column">
+  <div class="section-inner">
+    <div class="section-header sh-row">
+      <div>
+        <div class="section-eyebrow">Tax Column</div>
+        <h2 class="section-title section-title-white">세금 칼럼</h2>
+      </div>
+      <a href="column.html" class="section-more" style="color:rgba(255,255,255,0.4);">전체 보기 →</a>
+    </div>
+
+    <a href="#" class="column-featured">
+      <div>
+        <div class="col-badge"><div class="col-badge-dot"></div>오늘의 칼럼 · 매일 08:00 자동 게시</div>
+        <div class="col-feat-title">법인 대표가 꼭 알아야 할<br>2026 접대비 한도 계산법</div>
+        <div class="col-feat-sub">법인세법 시행령 §41 기준, 수입금액 구간별 완전 정리</div>
+      </div>
+      <div style="flex-shrink:0; text-align:right;">
+        <div class="col-feat-date">2026.05.09</div>
+        <div class="col-feat-arrow">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <div class="column-list">
+      <a href="#" class="column-item">
+        <div class="col-cat">절세 전략</div>
+        <div class="col-item-title">개인사업자 → 법인 전환, 세금이 얼마나 달라질까?</div>
+        <div class="col-item-date">2026.05.08</div>
+      </a>
+      <a href="#" class="column-item">
+        <div class="col-cat">부가가치세</div>
+        <div class="col-item-title">의제매입세액공제, 음식업 사장님이라면 꼭 챙기세요</div>
+        <div class="col-item-date">2026.05.07</div>
+      </a>
+      <a href="#" class="column-item">
+        <div class="col-cat">세무 일정</div>
+        <div class="col-item-title">5월에 놓치면 안 되는 신고·납부 일정 총정리</div>
+        <div class="col-item-date">2026.05.06</div>
+      </a>
+      <a href="#" class="column-item">
+        <div class="col-cat">증여·상속</div>
+        <div class="col-item-title">자녀에게 사업 물려줄 때 가업상속공제 요건 체크리스트</div>
+        <div class="col-item-date">2026.05.05</div>
+      </a>
+    </div>
+    <div class="col-more-wrap">
+      <a href="column.html" class="col-more">칼럼 전체 보기 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS TEASER -->
+<section class="tools-section" id="tools">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-eyebrow">Tax Tools</div>
+      <h2 class="section-title">세금 계산기 & 가이드</h2>
+    </div>
+    <div class="tools-grid">
+      <div class="tool-card">
+        <div class="tool-card-inner">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="14" y2="14"/></svg>
+          </div>
+          <div><div class="tool-name">급여 & 4대보험 계산기</div><div class="tool-desc">2026 요율 반영</div></div>
+        </div>
+        <div class="tool-lock">
+          <div class="lock-badge">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            이용 고객 전용
+          </div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-inner">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div><div class="tool-name">증여세 가이드</div><div class="tool-desc">공제한도 시뮬레이터</div></div>
+        </div>
+        <div class="tool-lock">
+          <div class="lock-badge">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            이용 고객 전용
+          </div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-inner">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div><div class="tool-name">법인 보험 시뮬레이터</div><div class="tool-desc">절세 효과 분석</div></div>
+        </div>
+        <div class="tool-lock">
+          <div class="lock-badge">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            이용 고객 전용
+          </div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-inner">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <div><div class="tool-name">신용카드 사용 가이드</div><div class="tool-desc">사업비 처리 기준</div></div>
+        </div>
+        <div class="tool-lock">
+          <div class="lock-badge">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            이용 고객 전용
+          </div>
+        </div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-card-inner">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div><div class="tool-name">외화 FIFO 계산기</div><div class="tool-desc">JPY / USD</div></div>
+        </div>
+        <div class="tool-lock">
+          <div class="lock-badge">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            이용 고객 전용
+          </div>
+        </div>
+      </div>
+      <div class="tool-card" style="display:flex; align-items:center; justify-content:center; border-style:dashed; min-height:80px;">
+        <div style="text-align:center; color:var(--text2); font-size:13px;">더 많은 도구 준비 중</div>
+      </div>
+    </div>
+    <div class="tools-banner">
+      <div class="tools-banner-text">계산기 & 가이드는 <strong>원제우 세무사 사무소 이용 고객</strong>에게 무료로 제공됩니다.</div>
+      <a href="#contact" class="tools-banner-cta">상담 신청하기 →</a>
+    </div>
+  </div>
+</section>
+
+<!-- EBOOK -->
+<section class="ebook-section" id="ebook">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-eyebrow">Guide Book</div>
+      <h2 class="section-title section-title-white">업종별 세금 가이드북</h2>
+    </div>
+
+    <div class="ebook-hero">
+      <div class="books-visual">
+        <div class="book-spine b1"><div class="book-line"></div><div class="book-text">법인</div></div>
+        <div class="book-spine b2"><div class="book-line"></div><div class="book-text">개인</div></div>
+        <div class="book-spine b3"><div class="book-line"></div><div class="book-text">병의원</div></div>
+        <div class="book-spine b4"><div class="book-line"></div><div class="book-text">산후</div></div>
+        <div class="book-spine b5"><div class="book-line"></div><div class="book-text">조사</div></div>
+      </div>
+      <div class="ebook-info">
+        <div class="ebook-vol-count">전자책 · 총 5종</div>
+        <h3 class="ebook-title">내 업종에 맞는 세금,<br>세무사가 직접 정리했습니다</h3>
+        <p class="ebook-desc">법인·개인사업자·병의원·산후조리원·산후도우미업 각 업종에서 실제로 자주 나오는 세금 이슈를 현장 실무 중심으로 담았습니다. 세무조사 대응 가이드는 업종 무관 별도 제공합니다.</p>
+        <div class="ebook-notice">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="ebook-notice-text">가이드북은 <strong>원제우 세무사 사무소 상담 신청자</strong>에게 무료로 제공됩니다. 상담 신청 시 해당 업종 가이드북을 발송해드립니다.</div>
+        </div>
+        <a href="#contact" class="ebook-cta">상담 신청하고 가이드북 받기 →</a>
+      </div>
+    </div>
+
+    <div class="books-grid">
+      <div class="book-card">
+        <div class="book-cover bc1">
+          <div class="book-vol">Vol. 01</div>
+          <div class="book-title">법인사업자<br>세금 가이드</div>
+          <div class="book-divider"></div>
+        </div>
+        <div class="book-body">
+          <div class="book-tag">주요 내용</div>
+          <div class="book-items">
+            <div class="bi">법인세 절세 전략</div>
+            <div class="bi">접대비·복리후생비 처리</div>
+            <div class="bi">대표이사 급여 설계</div>
+            <div class="bi">이익소각 구조</div>
+          </div>
+          <div class="book-footer"><svg viewBox="0 0 24 24"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/><path d="M12 12l9-9"/><path d="M15 3h6v6"/></svg> 상담 신청 시 제공</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover bc2">
+          <div class="book-vol">Vol. 02</div>
+          <div class="book-title">개인사업자<br>세금 가이드</div>
+          <div class="book-divider"></div>
+        </div>
+        <div class="book-body">
+          <div class="book-tag">주요 내용</div>
+          <div class="book-items">
+            <div class="bi">종합소득세 신고 구조</div>
+            <div class="bi">부가세 절세 포인트</div>
+            <div class="bi">법인 전환 시점 판단</div>
+            <div class="bi">사업용 카드 관리</div>
+          </div>
+          <div class="book-footer"><svg viewBox="0 0 24 24"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/><path d="M12 12l9-9"/><path d="M15 3h6v6"/></svg> 상담 신청 시 제공</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover bc3">
+          <div class="book-vol">Vol. 03</div>
+          <div class="book-title">병의원<br>세금 가이드</div>
+          <div class="book-divider"></div>
+        </div>
+        <div class="book-body">
+          <div class="book-tag">주요 내용</div>
+          <div class="book-items">
+            <div class="bi">의료업 부가세 면세</div>
+            <div class="bi">봉직의 vs 개원 비교</div>
+            <div class="bi">의료장비 감가상각</div>
+            <div class="bi">4대보험 실무</div>
+          </div>
+          <div class="book-footer"><svg viewBox="0 0 24 24"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/><path d="M12 12l9-9"/><path d="M15 3h6v6"/></svg> 상담 신청 시 제공</div>
+        </div>
+      </div>
+      <div class="book-card">
+        <div class="book-cover bc4">
+          <div class="book-vol">Vol. 04</div>
+          <div class="book-title">산후조리원·<br>산후도우미업<br>세금 가이드</div>
+          <div class="book-divider"></div>
+        </div>
+        <div class="book-body">
+          <div class="book-tag">주요 내용</div>
+          <div class="book-items">
+            <div class="bi">알선업 VAT 면세 구조</div>
+            <div class="bi">관리사 고용 vs 도급</div>
+            <div class="bi">신고 유형별 차이</div>
+            <div class="bi">4대보험 실무</div>
+          </div>
+          <div class="book-footer"><svg viewBox="0 0 24 24"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/><path d="M12 12l9-9"/><path d="M15 3h6v6"/></svg> 상담 신청 시 제공</div>
+        </div>
+      </div>
+      <div class="book-card special">
+        <div class="book-cover bc5">
+          <div class="book-vol" style="color:rgba(201,168,76,0.5);">Vol. 05</div>
+          <div class="book-title gold">세무조사<br>대응 가이드</div>
+          <div class="book-divider"></div>
+        </div>
+        <div class="book-body">
+          <div class="book-tag">주요 내용</div>
+          <div class="book-items">
+            <div class="bi">조사 유형별 대응법</div>
+            <div class="bi">이의신청·심판청구</div>
+            <div class="bi">자료 보전 전략</div>
+            <div class="bi">불복 절차 흐름</div>
+          </div>
+          <div class="book-footer gold-ft"><svg viewBox="0 0 24 24"><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"/><path d="M12 12l9-9"/><path d="M15 3h6v6"/></svg> 상담 신청 시 제공</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- T엣지 -->
+<section class="tedge-section" id="tedge">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-eyebrow">Wihago T-Edge</div>
+      <h2 class="section-title">위하고 T엣지 거래처</h2>
+    </div>
+    <div class="tedge-card">
+      <div class="tedge-logo-box">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </div>
+      <div class="tedge-info">
+        <div class="tedge-name">위하고 T엣지 거래처 공식 채널</div>
+        <div class="tedge-sub">원제우 세무사 사무소 · taxmancall</div>
+        <p class="tedge-desc">위하고 T엣지를 통해 세무 자료, 세금 납부 일정, 안내문 등을 거래처와 실시간으로 공유합니다. 이용 고객이라면 T엣지 앱에서 바로 연결하여 주요 세무 정보를 받아볼 수 있습니다.</p>
+        <div class="tedge-chips">
+          <span class="tchip">세무 자료 공유</span>
+          <span class="tchip">세금 납부 일정 안내</span>
+          <span class="tchip">실시간 소통</span>
+          <span class="tchip">스마트A 연동</span>
+          <span class="tchip">모바일 앱 지원</span>
+        </div>
+        <a href="https://wedge.wehago.com" target="_blank" rel="noopener" class="tedge-cta">
+          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          T엣지 거래처 연결하기
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT + CONTACT -->
+<section class="about-section" id="about">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-eyebrow">About</div>
+      <h2 class="section-title section-title-white">사무소 소개</h2>
+    </div>
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="about-name">원제우 세무사</div>
+        <div class="about-role">원제우 세무사 사무소 대표 세무사</div>
+        <p class="about-desc">법령에 근거한 정확한 세무 서비스를 제공합니다. 500여 개 고객사의 기장 및 신고 대리, 세무 컨설팅을 직접 담당하며, 세무조사·불복 사건도 직접 처리합니다.</p>
+        <div class="about-divider"></div>
+        <div class="about-staff-title">담당 직원</div>
+        <div class="staff-row">
+          <div class="staff-chip">김연주</div>
+          <div class="staff-chip">최민정</div>
+          <div class="staff-chip">임민지</div>
+          <div class="staff-chip">임채연</div>
+          <div class="staff-chip">서다경</div>
+        </div>
+      </div>
+      <div class="contact-card" id="contact">
+        <div class="contact-title">상담 문의</div>
+        <div class="contact-rows">
+          <div class="contact-row">
+            <div class="contact-icon">
+              <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.65 3.39 2 2 0 0 1 3.62 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.5a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16l.42.92z"/></svg>
+            </div>
+            <div>
+              <div class="contact-label">전화</div>
+              <div class="contact-value">032-321-4521</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="contact-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div>
+              <div class="contact-label">카카오톡 채널</div>
+              <div class="contact-value">@taxmancall</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="contact-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <div class="contact-label">주소</div>
+              <div class="contact-value" style="font-size:13px;">경기도 부천시 원미구 소향로135 3층<br><span style="font-size:12px; opacity:0.7;">(중동, 부일빌딩)</span></div>
+            </div>
+          </div>
+        </div>
+        <a href="tel:032-321-4521" class="contact-cta">무료 초기 상담 신청하기</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">
+      © 2026 원제우 세무사 사무소 · taxmancall.com<br>
+      사업자등록번호 164-53-00241 · 경기도 부천시 원미구 소향로135 3층(중동, 부일빌딩)
+    </div>
+    <div class="footer-right">
+      <a href="#" class="footer-link">개인정보처리방침</a>
+      <a href="#" class="footer-link">이용약관</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
