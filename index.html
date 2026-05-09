@@ -618,6 +618,7 @@ footer {
       <a href="#column">세금 칼럼</a>
       <a href="#ebook">가이드북</a>
       <a href="#tedge">T엣지</a>
+      <a href="#report">보고서 발송</a>
       <a href="#about">사무소 소개</a>
       <a href="#contact" class="nav-cta">상담 문의</a>
     </div>
@@ -1091,6 +1092,45 @@ function tedgeGo(idx) {
 let tedgeCur = 0;
 setInterval(() => { tedgeCur = (tedgeCur+1)%3; tedgeGo(tedgeCur); }, 4000);
 </script>
+
+<!-- 보고서 발송 -->
+<section style="background:var(--navy); padding:64px 24px;" id="report">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-eyebrow">Tax Report</div>
+      <h2 class="section-title section-title-white">세무 보고서 발송</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;">
+
+      <div style="background:var(--navy2); border:1px solid rgba(255,255,255,0.06); border-radius:var(--radius-lg); padding:32px;">
+        <div style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold); margin-bottom:12px;">모바일 보고서</div>
+        <div style="font-family:'Noto Serif KR',serif; font-size:20px; font-weight:500; color:var(--white); line-height:1.4; margin-bottom:12px;">신고 후 분석 보고서를<br>바로 모바일로 받아보세요</div>
+        <p style="font-size:13px; color:rgba(255,255,255,0.45); line-height:1.8; margin-bottom:20px;">부가세·법인세·소득세 신고 완료 후 분석 보고서를 고객 모바일로 직접 발송합니다. 매출·매입 추이, 부가율, 세부 항목을 한눈에 확인할 수 있습니다.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
+          <span style="font-size:12px; color:var(--text2); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); padding:4px 12px; border-radius:4px; color:rgba(255,255,255,0.45);">부가세 분석 보고서</span>
+          <span style="font-size:12px; color:var(--text2); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); padding:4px 12px; border-radius:4px; color:rgba(255,255,255,0.45);">법인세 분석 보고서</span>
+          <span style="font-size:12px; color:var(--text2); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); padding:4px 12px; border-radius:4px; color:rgba(255,255,255,0.45);">매출·매입 추이</span>
+          <span style="font-size:12px; color:var(--text2); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); padding:4px 12px; border-radius:4px; color:rgba(255,255,255,0.45);">부가율 분석</span>
+          <span style="font-size:12px; color:var(--text2); background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); padding:4px 12px; border-radius:4px; color:rgba(255,255,255,0.45);">신고 완료 즉시 발송</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(255,255,255,0.3); background:rgba(255,255,255,0.05); border-radius:var(--radius); padding:10px 14px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          원제우 세무사 사무소 기장 고객에게 신고 완료 후 자동 발송됩니다.
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="background:var(--bg2); border-radius:var(--radius-lg); overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+          <img src="vat_report1.png" alt="부가세 분석 보고서 표지" style="width:100%; display:block;">
+        </div>
+        <div style="background:var(--bg2); border-radius:var(--radius-lg); overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+          <img src="vat_report2.png" alt="부가율 추이 차트" style="width:100%; display:block;">
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 <!-- ABOUT + CONTACT -->
 <section class="about-section" id="about">
