@@ -619,6 +619,7 @@ footer {
       <a href="#ebook">가이드북</a>
       <a href="#tedge">T엣지</a>
       <a href="#report">보고서 발송</a>
+      <a href="#links">관련 기관</a>
       <a href="#about">사무소 소개</a>
       <a href="#contact" class="nav-cta">상담 문의</a>
     </div>
@@ -668,7 +669,7 @@ footer {
       <div class="section-eyebrow">Services</div>
       <h2 class="section-title">주요 서비스</h2>
     </div>
-    <div class="services-grid">
+    <div class="services-grid" style="grid-template-columns:repeat(3,1fr);">
       <div class="service-card">
         <div class="service-icon">
           <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -683,14 +684,27 @@ footer {
       </div>
       <div class="service-card">
         <div class="service-icon">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <div class="service-name">세무 신고</div>
-        <div class="service-desc">기장 없이 신고만 필요한 사업자를 위한 서비스입니다.</div>
+        <div class="service-desc">기장 없이 신고만 필요한 경우 신고 대리를 처리합니다.</div>
         <div class="service-items">
           <div class="service-item">종합소득세 신고</div>
+          <div class="service-item">법인세·부가세 신고</div>
+          <div class="service-item">해외주식 양도소득세 신고</div>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="service-name">재산 세무</div>
+        <div class="service-desc">상속·증여·양도 전 과정을 전문적으로 처리합니다.</div>
+        <div class="service-items">
+          <div class="service-item">상속세 신고</div>
+          <div class="service-item">증여세 신고·절세 설계</div>
           <div class="service-item">양도소득세 신고</div>
-          <div class="service-item">증여·상속세 신고</div>
+          <div class="service-item">해외주식 양도소득세</div>
         </div>
       </div>
       <div class="service-card">
@@ -715,6 +729,18 @@ footer {
           <div class="service-item">세무조사 대리</div>
           <div class="service-item">이의신청·심판청구</div>
           <div class="service-item">과세전적부심사</div>
+        </div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="service-name">해외 세무</div>
+        <div class="service-desc">해외 거래·투자 관련 세무를 처리합니다.</div>
+        <div class="service-items">
+          <div class="service-item">해외주식 양도소득세</div>
+          <div class="service-item">해외금융계좌 신고</div>
+          <div class="service-item">외화 거래 손익 처리</div>
         </div>
       </div>
     </div>
@@ -1119,12 +1145,24 @@ setInterval(() => { tedgeCur = (tedgeCur+1)%3; tedgeGo(tedgeCur); }, 4000);
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        <div style="background:var(--bg2); border-radius:var(--radius-lg); overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.3);">
-          <img src="vat_report1.png" alt="부가세 분석 보고서 표지" style="width:100%; display:block;">
+      <div style="display:flex; gap:16px; align-items:flex-start; justify-content:center;">
+        <!-- 모바일 목업 1 -->
+        <div style="flex-shrink:0; width:200px;">
+          <div style="background:#1a1a1a; border-radius:28px; padding:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+            <div style="background:#000; border-radius:20px; overflow:hidden; aspect-ratio:9/19;">
+              <img src="vat_report1.png" alt="부가세 분석 보고서" style="width:100%; height:100%; object-fit:cover; object-position:top;">
+            </div>
+          </div>
+          <div style="text-align:center; font-size:11px; color:rgba(255,255,255,0.35); margin-top:10px;">보고서 표지</div>
         </div>
-        <div style="background:var(--bg2); border-radius:var(--radius-lg); overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.3);">
-          <img src="vat_report2.png" alt="부가율 추이 차트" style="width:100%; display:block;">
+        <!-- 모바일 목업 2 -->
+        <div style="flex-shrink:0; width:200px; margin-top:32px;">
+          <div style="background:#1a1a1a; border-radius:28px; padding:10px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+            <div style="background:#000; border-radius:20px; overflow:hidden; aspect-ratio:9/19;">
+              <img src="vat_report2.png" alt="부가율 추이 차트" style="width:100%; height:100%; object-fit:cover; object-position:top;">
+            </div>
+          </div>
+          <div style="text-align:center; font-size:11px; color:rgba(255,255,255,0.35); margin-top:10px;">부가율 추이</div>
         </div>
       </div>
 
@@ -1183,6 +1221,183 @@ setInterval(() => { tedgeCur = (tedgeCur+1)%3; tedgeGo(tedgeCur); }, 4000);
     </div>
   </div>
 </section>
+
+<!-- 관련 기관 -->
+<section style="background:var(--bg); padding:48px 24px;" id="links">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-eyebrow">Quick Links</div>
+      <h2 class="section-title">관련 기관 바로가기</h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+
+      <a href="calendar.html" style="grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; background:var(--navy); border-radius:var(--radius); padding:16px 20px; text-decoration:none; margin-bottom:4px;">
+        <div>
+          <div style="font-size:11px; color:var(--gold); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:4px;">Tax Calendar</div>
+          <div style="font-size:14px; font-weight:500; color:var(--white);">2026년 세무 신고·납부 일정 달력</div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.45); margin-top:2px;">부가세·법인세·소득세·원천세·4대보험 기한 한눈에 보기</div>
+        </div>
+        <div style="font-size:20px; color:var(--gold); flex-shrink:0;">→</div>
+      </a>
+
+      <div style="grid-column:1/-1; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text2); margin-bottom:4px;">세금</div>
+
+      <a href="https://www.nts.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#c0392b;">국</div>
+        <div>
+          <div class="link-name">국세청</div>
+          <div class="link-url">nts.go.kr</div>
+        </div>
+      </a>
+      <a href="https://www.hometax.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#1a6fb5;">홈</div>
+        <div>
+          <div class="link-name">홈택스</div>
+          <div class="link-url">hometax.go.kr</div>
+        </div>
+      </a>
+      <a href="https://www.wetax.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#2980b9;">위</div>
+        <div>
+          <div class="link-name">위택스</div>
+          <div class="link-url">wetax.go.kr</div>
+        </div>
+      </a>
+      <a href="https://www.customs.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#16a085;">관</div>
+        <div>
+          <div class="link-name">관세청</div>
+          <div class="link-url">customs.go.kr</div>
+        </div>
+      </a>
+
+      <div style="grid-column:1/-1; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text2); margin:12px 0 4px;">4대보험</div>
+
+      <a href="https://www.nhis.or.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#27ae60;">건</div>
+        <div>
+          <div class="link-name">국민건강보험공단</div>
+          <div class="link-url">nhis.or.kr</div>
+        </div>
+      </a>
+      <a href="https://www.nps.or.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#2c3e8c;">연</div>
+        <div>
+          <div class="link-name">국민연금공단</div>
+          <div class="link-url">nps.or.kr</div>
+        </div>
+      </a>
+      <a href="https://www.comwel.or.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#e67e22;">근</div>
+        <div>
+          <div class="link-name">근로복지공단</div>
+          <div class="link-url">comwel.or.kr</div>
+        </div>
+      </a>
+      <a href="https://www.ei.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#8e44ad;">고</div>
+        <div>
+          <div class="link-name">고용보험</div>
+          <div class="link-url">ei.go.kr</div>
+        </div>
+      </a>
+
+      <div style="grid-column:1/-1; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text2); margin:12px 0 4px;">노무·기타</div>
+
+      <a href="https://www.moel.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#d35400;">고</div>
+        <div>
+          <div class="link-name">고용노동부</div>
+          <div class="link-url">moel.go.kr</div>
+        </div>
+      </a>
+      <a href="https://minwon.moel.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#c0392b;">진</div>
+        <div>
+          <div class="link-name">노동청 민원 (진정)</div>
+          <div class="link-url">minwon.moel.go.kr</div>
+        </div>
+      </a>
+      <a href="https://www.4insure.or.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#16a085;">4대</div>
+        <div>
+          <div class="link-name">4대보험 정보연계센터</div>
+          <div class="link-url">4insure.or.kr</div>
+        </div>
+      </a>
+      <a href="https://www.moef.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#2c3e50;">기</div>
+        <div>
+          <div class="link-name">기획재정부</div>
+          <div class="link-url">moef.go.kr</div>
+        </div>
+      </a>
+
+      <div style="grid-column:1/-1; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text2); margin:12px 0 4px;">권익·법률</div>
+
+      <a href="https://www.tt.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#6c3483;">조</div>
+        <div>
+          <div class="link-name">조세심판원</div>
+          <div class="link-url">tt.go.kr</div>
+        </div>
+      </a>
+      <a href="https://www.taxpayer.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#1a6fb5;">납</div>
+        <div>
+          <div class="link-name">납세자권익24</div>
+          <div class="link-url">taxpayer.go.kr</div>
+        </div>
+      </a>
+      <a href="https://www.klac.or.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#1e8449;">법</div>
+        <div>
+          <div class="link-name">대한법률구조공단</div>
+          <div class="link-url">klac.or.kr</div>
+        </div>
+      </a>
+      <a href="https://www.work24.go.kr" target="_blank" rel="noopener" class="link-card">
+        <div class="link-icon" style="background:#2471a3;">고</div>
+        <div>
+          <div class="link-name">고용24</div>
+          <div class="link-url">work24.go.kr</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<style>
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.link-card:hover {
+  border-color: var(--navy3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.link-icon {
+  width: 40px; height: 40px; flex-shrink: 0;
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 500; color: #fff;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.link-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.link-url { font-size: 11px; color: var(--text2); margin-top: 2px; }
+@media (max-width: 640px) {
+  #links .section-inner > div { grid-template-columns: 1fr 1fr !important; }
+}
+</style>
 
 <!-- FOOTER -->
 <footer>
