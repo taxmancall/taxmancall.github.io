@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026년 세무 일정 | 원제우 세무사 사무소</title>
+<meta name="description" content="2026년 연간 세무 신고·납부 일정. 부가세, 법인세, 소득세, 원천세, 4대보험 기한을 한눈에 확인하세요.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1a4a2a;
+  --green2: #235c35;
+  --green3: #2d7045;
+  --lime: #c8e84a;
+  --lime2: #d8f060;
+  --white: #fff;
+  --bg: #eef5e8;
+  --bg2: #fff;
+  --text: #122a18;
+  --text2: #305a38;
+  --border: rgba(0,0,0,0.08);
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  /* 신고 유형 색상 */
+  --c-vat: #1a6fb5;
+  --c-vat-bg: #e8f2fc;
+  --c-corp: #6c3483;
+  --c-corp-bg: #f3eafc;
+  --c-income: #c0392b;
+  --c-income-bg: #fdecea;
+  --c-wht: #d35400;
+  --c-wht-bg: #fef0e6;
+  --c-ins: #1e8449;
+  --c-ins-bg: #e8f8ee;
+  --c-etc: #2c3e50;
+  --c-etc-bg: #eaecf0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.7; }
+
+/* NAV */
+nav { background: var(--green); border-bottom: 1px solid rgba(200,232,74,0.15); position: sticky; top: 0; z-index: 100; }
+.nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.nav-logo-mark { width: 26px; height: 26px; border: 1.5px solid var(--lime); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif KR', serif; font-size: 12px; font-weight: 500; color: var(--lime); }
+.nav-logo-text { font-size: 14px; font-weight: 500; color: var(--white); }
+.nav-back { font-size: 12px; color: rgba(255,255,255,0.6); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+.nav-back:hover { color: var(--white); }
+
+/* HEADER */
+.page-header { background: var(--green); padding: 40px 24px 36px; }
+.page-header-inner { max-width: 1100px; margin: 0 auto; }
+.page-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--lime); margin-bottom: 10px; }
+.page-title { font-family: 'Noto Serif KR', serif; font-size: 28px; font-weight: 500; color: var(--white); margin-bottom: 8px; }
+.page-sub { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 24px; }
+.page-notice { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 8px 14px; font-size: 12px; color: rgba(255,255,255,0.5); }
+
+/* LEGEND */
+.legend-wrap { max-width: 1100px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; gap: 8px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* MAIN */
+.main { max-width: 1100px; margin: 0 auto; padding: 0 24px 64px; }
+
+/* MONTH GRID */
+.months-grid { display: flex; flex-direction: column; gap: 8px; }
+.month-block { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.month-header { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+.month-num { font-family: 'Noto Serif KR', serif; font-size: 22px; font-weight: 500; color: var(--green); min-width: 32px; }
+.month-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.month-summary { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.msummary-tag { font-size: 11px; padding: 2px 8px; border-radius: 3px; font-weight: 500; }
+.month-toggle { font-size: 18px; color: var(--text2); margin-left: 8px; transition: transform 0.2s; }
+.month-toggle.open { transform: rotate(180deg); }
+.month-body { padding: 16px 24px 20px; display: none; }
+.month-body.open { display: block; }
+.items-list { display: flex; flex-direction: column; gap: 8px; }
+.item-row { display: flex; align-items: flex-start; gap: 14px; padding: 12px 16px; border-radius: var(--radius); border: 1px solid transparent; transition: background 0.15s; }
+.item-row:hover { background: var(--bg); }
+.item-date { font-size: 13px; font-weight: 500; color: var(--text); min-width: 52px; white-space: nowrap; }
+.item-date.deadline { color: #c0392b; }
+.item-badge { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 3px; white-space: nowrap; margin-top: 2px; min-width: 60px; text-align: center; }
+.item-content { flex: 1; }
+.item-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.item-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.item-law { font-size: 11px; color: var(--text2); opacity: 0.7; margin-top: 3px; }
+
+/* 빈 달 */
+.month-empty { font-size: 13px; color: var(--text2); opacity: 0.6; padding: 4px 0; }
+
+/* QUARTERLY SUMMARY */
+.qsummary { background: var(--green); border-radius: var(--radius-lg); padding: 24px 28px; margin-bottom: 16px; }
+.qs-title { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--lime); margin-bottom: 12px; }
+.qs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.qs-item { background: rgba(255,255,255,0.07); border-radius: var(--radius); padding: 12px 14px; }
+.qs-q { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+.qs-main { font-size: 13px; font-weight: 500; color: var(--white); line-height: 1.5; }
+.qs-date { font-size: 11px; color: var(--lime); margin-top: 4px; }
+
+/* SOURCE */
+.source-note { font-size: 11px; color: var(--text2); opacity: 0.6; margin-top: 24px; text-align: right; }
+
+@media (max-width: 640px) {
+  .qs-grid { grid-template-columns: 1fr 1fr; }
+  .month-summary { display: none; }
+  .item-row { flex-wrap: wrap; gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-mark">원</div>
+      <span class="nav-logo-text">원제우 세무사 사무소</span>
+    </a>
+    <a href="index.html" class="nav-back">← 홈으로</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="page-eyebrow">Tax Calendar</div>
+    <h1 class="page-title">2026년 세무 신고·납부 일정</h1>
+    <p class="page-sub">부가세·법인세·소득세·원천세·4대보험 기한을 한눈에 확인하세요.</p>
+    <div class="page-notice">⚠ 법정기한이 공휴일·토요일인 경우 다음 영업일로 자동 연장됩니다 (국세기본법 §5)</div>
+  </div>
+</div>
+
+<!-- 범례 -->
+<div class="legend-wrap">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-vat);"></div>부가가치세</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-corp);"></div>법인세</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-income);"></div>소득세</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-wht);"></div>원천세</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-ins);"></div>4대보험</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--c-etc);"></div>기타</div>
+</div>
+
+<div class="main">
+
+  <!-- 분기별 핵심 요약 -->
+  <div class="qsummary">
+    <div class="qs-title">2026년 부가세 신고 일정 요약</div>
+    <div class="qs-grid">
+      <div class="qs-item">
+        <div class="qs-q">1기 예정</div>
+        <div class="qs-main">1월~3월<br>실적 신고</div>
+        <div class="qs-date">4월 25일까지</div>
+      </div>
+      <div class="qs-item">
+        <div class="qs-q">1기 확정</div>
+        <div class="qs-main">1월~6월<br>실적 신고</div>
+        <div class="qs-date">7월 25일까지</div>
+      </div>
+      <div class="qs-item">
+        <div class="qs-q">2기 예정</div>
+        <div class="qs-main">7월~9월<br>실적 신고</div>
+        <div class="qs-date">10월 25일까지</div>
+      </div>
+      <div class="qs-item">
+        <div class="qs-q">2기 확정</div>
+        <div class="qs-main">7월~12월<br>실적 신고</div>
+        <div class="qs-date">내년 1월 25일까지</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="months-grid">
+
+    <!-- 1월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">01</div>
+        <div class="month-name">1월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+          <span class="msummary-tag" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">1/12</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">12월 귀속 원천세 납부</div>
+              <div class="item-desc">근로소득·사업소득·기타소득 원천징수세액 납부</div>
+              <div class="item-law">소득세법 §128</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">1/25</div>
+            <div class="item-badge" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세</div>
+            <div class="item-content">
+              <div class="item-title">부가세 2기 확정신고 및 납부 (전년 7~12월)</div>
+              <div class="item-desc">법인·개인 일반과세자 부가가치세 확정신고</div>
+              <div class="item-law">부가가치세법 §49</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date">1/31</div>
+            <div class="item-badge" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</div>
+            <div class="item-content">
+              <div class="item-title">12월 입·퇴사자 4대보험 취득·상실 신고</div>
+              <div class="item-desc">전월 취득·상실 신고 마감</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date">1/31</div>
+            <div class="item-badge" style="background:var(--c-etc-bg);color:var(--c-etc);">기타</div>
+            <div class="item-content">
+              <div class="item-title">사업장 현황 신고 (면세사업자)</div>
+              <div class="item-desc">전년도 수입금액 등 현황 신고</div>
+              <div class="item-law">소득세법 §78</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">02</div>
+        <div class="month-name">2월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">연말정산</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+          <span class="msummary-tag" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">2/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">1월 귀속 원천세 납부</div>
+              <div class="item-desc">근로소득·사업소득·기타소득 원천징수세액 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">2/28</div>
+            <div class="item-badge" style="background:var(--c-income-bg);color:var(--c-income);">연말정산</div>
+            <div class="item-content">
+              <div class="item-title">연말정산 납부 및 환급</div>
+              <div class="item-desc">근로소득 연말정산 세액 납부·환급, 원천징수영수증 발급</div>
+              <div class="item-law">소득세법 §137</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date">2/28</div>
+            <div class="item-badge" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</div>
+            <div class="item-content">
+              <div class="item-title">건강보험료 연말정산</div>
+              <div class="item-desc">전년도 보수총액 신고 및 건강보험료 정산</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">03</div>
+        <div class="month-name">3월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-corp-bg);color:var(--c-corp);">법인세</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+          <span class="msummary-tag" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">3/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">2월 귀속 원천세 납부</div>
+              <div class="item-desc">근로소득·사업소득·기타소득 원천징수세액 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">3/31</div>
+            <div class="item-badge" style="background:var(--c-corp-bg);color:var(--c-corp);">법인세</div>
+            <div class="item-content">
+              <div class="item-title">법인세 신고 및 납부 (12월 결산법인)</div>
+              <div class="item-desc">전년도 법인세 과세표준 및 세액 신고·납부</div>
+              <div class="item-law">법인세법 §60</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date">3/31</div>
+            <div class="item-badge" style="background:var(--c-ins-bg);color:var(--c-ins);">4대보험</div>
+            <div class="item-content">
+              <div class="item-title">국민연금·고용보험 보수총액 신고</div>
+              <div class="item-desc">전년도 보수총액 신고 및 보험료 정산</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">04</div>
+        <div class="month-name">4월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세 예정</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">4/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">3월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">4/25</div>
+            <div class="item-badge" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세</div>
+            <div class="item-content">
+              <div class="item-title">부가세 1기 예정신고 및 납부 (1~3월)</div>
+              <div class="item-desc">법인사업자 의무 신고 / 개인 일반과세자는 고지납부 원칙 (직접신고 선택 가능)</div>
+              <div class="item-law">부가가치세법 §48</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">05</div>
+        <div class="month-name">5월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">종합소득세</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">5/11</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">4월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">5/31</div>
+            <div class="item-badge" style="background:var(--c-income-bg);color:var(--c-income);">소득세</div>
+            <div class="item-content">
+              <div class="item-title">종합소득세 신고 및 납부 (전년도 귀속)</div>
+              <div class="item-desc">사업소득·부동산임대소득·금융소득 등 종합소득 신고</div>
+              <div class="item-law">소득세법 §70</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date">5/31</div>
+            <div class="item-badge" style="background:var(--c-income-bg);color:var(--c-income);">소득세</div>
+            <div class="item-content">
+              <div class="item-title">개인지방소득세 신고 (위택스)</div>
+              <div class="item-desc">종합소득세 신고 시 동시 신고 가능</div>
+              <div class="item-law">지방세법 §91</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">06</div>
+        <div class="month-name">6월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">성실신고</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">6/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">5월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">6/30</div>
+            <div class="item-badge" style="background:var(--c-income-bg);color:var(--c-income);">소득세</div>
+            <div class="item-content">
+              <div class="item-title">성실신고확인 대상자 종합소득세 신고</div>
+              <div class="item-desc">일정 수입금액 이상 사업자 — 세무사 확인 후 신고 (1개월 연장)</div>
+              <div class="item-law">소득세법 §70의2</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">07</div>
+        <div class="month-name">7월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세 확정</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">7/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">6월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">7/25</div>
+            <div class="item-badge" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세</div>
+            <div class="item-content">
+              <div class="item-title">부가세 1기 확정신고 및 납부 (1~6월)</div>
+              <div class="item-desc">법인·개인 일반과세자 부가가치세 확정신고 납부</div>
+              <div class="item-law">부가가치세법 §49</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">08</div>
+        <div class="month-name">8월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-corp-bg);color:var(--c-corp);">법인세 중간예납</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">8/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">7월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">8/31</div>
+            <div class="item-badge" style="background:var(--c-corp-bg);color:var(--c-corp);">법인세</div>
+            <div class="item-content">
+              <div class="item-title">법인세 중간예납 (12월 결산법인)</div>
+              <div class="item-desc">직전 사업연도 산출세액의 50% 납부 또는 상반기 실적 기준 신고납부</div>
+              <div class="item-law">법인세법 §63</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">09</div>
+        <div class="month-name">9월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+          <span class="msummary-tag" style="background:var(--c-etc-bg);color:var(--c-etc);">재산세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">9/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">8월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date">9/30</div>
+            <div class="item-badge" style="background:var(--c-etc-bg);color:var(--c-etc);">지방세</div>
+            <div class="item-content">
+              <div class="item-title">재산세 2기분 납부 (건축물·토지)</div>
+              <div class="item-desc">토지분 재산세 납부 기한</div>
+              <div class="item-law">지방세법 §115</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">10</div>
+        <div class="month-name">10월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세 예정</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">10/12</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">9월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">10/25</div>
+            <div class="item-badge" style="background:var(--c-vat-bg);color:var(--c-vat);">부가세</div>
+            <div class="item-content">
+              <div class="item-title">부가세 2기 예정신고 및 납부 (7~9월)</div>
+              <div class="item-desc">법인사업자 의무 신고 / 개인 일반과세자는 고지납부 원칙</div>
+              <div class="item-law">부가가치세법 §48</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">11</div>
+        <div class="month-name">11월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">소득세 중간예납</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">11/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">10월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date deadline">11/30</div>
+            <div class="item-badge" style="background:var(--c-income-bg);color:var(--c-income);">소득세</div>
+            <div class="item-content">
+              <div class="item-title">소득세 중간예납 납부</div>
+              <div class="item-desc">직전 연도 산출세액의 50% 납부 (고지납부 원칙, 실적 기준 신고 선택 가능)</div>
+              <div class="item-law">소득세법 §65</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12월 -->
+    <div class="month-block">
+      <div class="month-header" onclick="toggle(this)">
+        <div class="month-num">12</div>
+        <div class="month-name">12월</div>
+        <div class="month-summary">
+          <span class="msummary-tag" style="background:var(--c-income-bg);color:var(--c-income);">연말정산 준비</span>
+          <span class="msummary-tag" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</span>
+        </div>
+        <div class="month-toggle">▾</div>
+      </div>
+      <div class="month-body open">
+        <div class="items-list">
+          <div class="item-row">
+            <div class="item-date deadline">12/10</div>
+            <div class="item-badge" style="background:var(--c-wht-bg);color:var(--c-wht);">원천세</div>
+            <div class="item-content">
+              <div class="item-title">11월 귀속 원천세 납부</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date">12월 중</div>
+            <div class="item-badge" style="background:var(--c-income-bg);color:var(--c-income);">연말정산</div>
+            <div class="item-content">
+              <div class="item-title">연말정산 자료 수집 및 간소화 서비스 준비</div>
+              <div class="item-desc">직원 공제 자료 수집, 연말정산 일정 안내 (1월 홈택스 간소화 서비스 오픈 전 준비)</div>
+            </div>
+          </div>
+          <div class="item-row">
+            <div class="item-date">12/31</div>
+            <div class="item-badge" style="background:var(--c-etc-bg);color:var(--c-etc);">기타</div>
+            <div class="item-content">
+              <div class="item-title">사업연도 종료 — 결산 준비</div>
+              <div class="item-desc">12월 결산법인 사업연도 종료, 재고조사·가지급금 정리 등 결산 준비</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="source-note">※ 출처: 국세청 (nts.go.kr), 법령 기준 2026년 / 공휴일·토요일의 경우 다음 영업일로 연장 (국세기본법 §5)</p>
+
+</div>
+
+<footer style="background:var(--green); border-top:1px solid rgba(200,232,74,0.15); padding:20px 24px;">
+  <div style="max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+    <div style="font-size:12px; color:rgba(255,255,255,0.3);">© 2026 원제우 세무사 사무소 · taxmancall.com · 032-321-4521</div>
+    <a href="index.html" style="font-size:12px; color:rgba(255,255,255,0.3); text-decoration:none;">← 홈으로</a>
+  </div>
+</footer>
+
+<script>
+function toggle(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.month-toggle');
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  arrow.classList.toggle('open', !isOpen);
+}
+</script>
+</body>
+</html>
