@@ -226,7 +226,7 @@ h2{font-size:clamp(1.35rem,3vw,1.8rem);color:var(--green-deep);line-height:1.45;
 }
 .stage-links{margin-top:12px;font-size:.93rem}
 .stage-links a{font-weight:700}
-.stage-links a + a{margin-left:16px}
+.stage-links{display:flex;flex-wrap:wrap;gap:6px 16px}
 
 /* 안전망(보험·금융) 레이어 — 골드 톤으로 구분 */
 .shield-stage::before{background:var(--gold);border-color:var(--gold-tint)}
@@ -396,6 +396,7 @@ footer a{color:#DFEDE4}
     <nav class="head-nav" aria-label="관련 페이지">
       <a href="https://taxmancall.com/">홈</a>
       <a href="#lifecycle">자산의 일생</a>
+      <a href="https://taxmancall.com/tax-guide/">재산 안내서</a>
       <a href="https://taxmancall.com/gift-tax1.0/">증여세 안내</a>
       <a href="https://taxmancall.com/inheritance-tax/">상속세 안내</a>
       <a href="#network">전문가 네트워크</a>
@@ -475,6 +476,10 @@ footer a{color:#DFEDE4}
         <div class="tax-tags">
           <span>양도소득세</span><span>종합부동산세</span><span>취득세</span><span>금융소득종합과세</span>
         </div>
+        <p class="stage-links">
+          <a href="https://taxmancall.com/tax-guide/#chwideuk">집·상가를 살 때 절차와 세금 →</a>
+          <a href="https://taxmancall.com/tax-guide/#yangdo">집을 팔 때 절차와 세금 →</a>
+        </p>
       </article>
 
       <article class="stage">
@@ -493,6 +498,7 @@ footer a{color:#DFEDE4}
         </div>
         <p class="stage-links">
           <a href="https://taxmancall.com/gift-tax1.0/">증여세 완전 안내 →</a>
+          <a href="https://taxmancall.com/tax-guide/#jeungyeo">집을 증여할 때 절차와 세금 →</a>
         </p>
       </article>
 
@@ -512,6 +518,7 @@ footer a{color:#DFEDE4}
         </div>
         <p class="stage-links">
           <a href="https://taxmancall.com/inheritance-tax/">상속세 완전 안내 →</a>
+          <a href="https://taxmancall.com/tax-guide/#sangsok">집을 상속받을 때 절차와 세금 →</a>
           <a href="https://taxmancall.com/pre-inheritance-tax/">상속재산 사전 정리 워크북 →</a>
         </p>
       </article>
