@@ -15,7 +15,8 @@
   .drop{position:relative;cursor:pointer}
   .drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
   .drop.on{background:#eef6ff;border-color:#4a90e2}
-  .drop.done{border-color:#117a2e;border-style:solid}
+  .drop.done{border-color:#117a2e;border-style:solid;background:#f1fbf4}
+  .drop.done .fn{color:#117a2e;font-weight:600}
   .fn{font-size:12px;color:#666}
   .opt{border-style:dashed;opacity:.9}
   button{padding:8px 14px;font-size:14px;cursor:pointer;margin-right:6px}
@@ -41,12 +42,12 @@
 
 <div class="card">
   <div class="row">
-    <div class="drop" data-k="rate"><b>① 외국환은행 환율 (달러·엔화)</b><span class="fn">여기에 끌어다 놓거나 클릭</span><input type="file" id="fRate" accept=".xls,.xlsx,.html,.htm"></div>
-    <div class="drop" data-k="sales"><b>② 수출신고내역 (홈택스 다운로드)</b><span class="fn">여기에 끌어다 놓거나 클릭</span><input type="file" id="fSales" accept=".xls,.xlsx"></div>
-    <div class="drop" data-k="form"><b>③ 위하고 직전 양식</b><span class="fn">여기에 끌어다 놓거나 클릭</span><input type="file" id="fForm" accept=".xls,.xlsx"></div>
+    <div class="drop" data-k="rate"><b>① 외국환은행 환율 (달러·엔화)</b><span class="fn">클릭해서 파일 선택</span><input type="file" id="fRate" accept=".xls,.xlsx,.html,.htm"></div>
+    <div class="drop" data-k="sales"><b>② 수출신고내역 (홈택스 다운로드)</b><span class="fn">클릭해서 파일 선택</span><input type="file" id="fSales" accept=".xls,.xlsx"></div>
+    <div class="drop" data-k="form"><b>③ 위하고 직전 양식</b><span class="fn">클릭해서 파일 선택</span><input type="file" id="fForm" accept=".xls,.xlsx"></div>
   </div>
   <div class="row" style="margin-top:12px">
-    <div class="drop opt" data-k="zip"><b>선택: 업체 증빙 압축파일 (면장 PDF) — 거래처명 채우기용</b><span class="fn">없으면 거래처명은 비워집니다</span><input type="file" id="fZip" accept=".zip"></div>
+    <div class="drop opt" data-k="zip"><b>선택: 업체 증빙 압축파일 (면장 PDF) — 거래처명 채우기용</b><span class="fn">없으면 거래처명은 비워집니다 · 클릭해서 파일 선택</span><input type="file" id="fZip" accept=".zip"></div>
   </div>
   <p style="margin-top:14px">
     <button id="run">처리 시작</button>
@@ -91,21 +92,20 @@
   const fmtNum = (n, dec = 0) => Number(n).toLocaleString("en-US", { minimumFractionDigits: dec, maximumFractionDigits: dec });
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const toYmd = (v) => {                       // 20260707 / "2026-07-07" / "2026.07.07" / "2026/07/07" 모두 허용
-    const m = String(v ?? "").match(/(20\d{2})[-./]?(\d{2})[-./]?(\d{2})/);
+    const m = String(v ?? "").match(/(20\d{2})\D{0,2}(\d{2})\D{0,2}(\d{2})/);
     return m ? m[1] + m[2] + m[3] : "";
   };
   const num = (v) => { const n = parseFloat(String(v ?? "").replace(/,/g, "")); return isNaN(n) ? null : n; };
 
-  // ---------- 파일 끌어놓기 ----------
+  // ---------- 파일 선택 (클릭) ----------
   document.querySelectorAll(".drop").forEach((box) => {
     const input = box.querySelector("input");
-    const mark = () => box.classList.toggle("done", input.files.length > 0);
-    input.addEventListener("change", mark);
-    box.addEventListener("dragover", (e) => { e.preventDefault(); box.classList.add("on"); });
-    box.addEventListener("dragleave", () => box.classList.remove("on"));
-    box.addEventListener("drop", (e) => {
-      e.preventDefault(); box.classList.remove("on");
-      if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; mark(); }
+    const hint = box.querySelector(".fn");
+    const hintDefault = hint.textContent;
+    input.addEventListener("change", () => {
+      const f = input.files[0];
+      box.classList.toggle("done", !!f);
+      hint.textContent = f ? "✔ 올라감: " + f.name : hintDefault;
     });
   });
 
@@ -219,7 +219,7 @@
       }
       if (!text.replace(/\s/g, "").includes("수출신고필증")) continue;
       const flat = text.replace(/\s+/g, "");
-      const declM = flat.match(/(\d{5}-\d{2}-[A-Z]?\d{5,6}X)/);
+      const declM = flat.match(/(\d{5}-\d{2}-[A-Z]?\d{5,6}X|6IP\d{2}-\d{2}-\d{5}PX)/);
       const payM = flat.match(/결제금액(EXW|FOB|CIF|CFR|DAP|DDU|DDP|CPT|CIP|FCA)-([A-Z]{3})-([\d,]+(?:\.\d{2})?)/);
       const buyerM = text.match(/구\s*매\s*자\s*(.+?)\s*\(구매자부호\)/);
       if (!declM) { log(`[면장] 신고번호 인식 실패: ${name}`); continue; }
@@ -277,7 +277,7 @@
         if (krw !== null) sum += krw;
 
         const buyer = doc && doc.buyer ? doc.buyer.slice(0, NAME_MAX) : "";
-        const amtStr = s.cur === "JPY" ? fmtNum(s.fca) : fmtNum(s.fca, 2);
+        const amtStr = s.cur === "JPY" || Number.isInteger(s.fca) ? fmtNum(s.fca) : fmtNum(s.fca, 2);
         const rateStr = rt ? fmtNum(rt.value, 2) : "";
         outRows.push({ y: +s.ymd.slice(0,4), m: +s.ymd.slice(4,6), d: +s.ymd.slice(6,8), buyer, krw,
                        item: `${s.decl} | ${s.cur} ${amtStr} | 환율 ${rateStr}`, issues });
@@ -302,9 +302,12 @@
       reportAoa = [["신고번호","선적일","통화","외화금액(홈택스)","구매자(면장)","기준율","기준일","원화(계산)","원화(홈택스)","판정"]];
       for (const r of report) reportAoa.push([r.decl, r.date, r.cur, r.fca, r.buyer, r.rate, r.rateDate, r.krwCalc, r.krwOrig, r.status]);
 
+      const missing = outRows.filter((r) => r.krw === null).length;
       $("summary").innerHTML = `총 ${sales.length}건 · 정상 <span class="ok">${okCnt}</span> · 확인필요 <span class="bad">${warnCnt}</span> · 공급가액 합계 ${fmtNum(sum)}원`;
       renderTable(report);
-      $("dlX").disabled = false; $("dlR").disabled = false;
+      $("dlR").disabled = false;
+      $("dlX").disabled = missing > 0;
+      if (missing > 0) { log(`환율 없음 ${missing}건: 업로드 파일을 만들 수 없습니다. 환율 파일을 확인하세요.`); }
       log("완료.");
     } catch (e) {
       log("오류: " + (e && e.message ? e.message : e));
