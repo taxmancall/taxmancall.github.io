@@ -110,37 +110,56 @@
   });
 
   // ---------- 환율 파일 (외국환은행 / 서울외국환중개 공통) ----------
-  // 결과: { USD: {YYYYMMDD: 원/달러}, JPY: {YYYYMMDD: 원/100엔} }
+  // 결과: rates[통화코드][YYYYMMDD] = 1단위당 원화 (JPY는 엔 1단위 기준, 표시용 100엔 값 별도)
+  const KO_NAME = { "달러": "USD", "엔": "JPY", "유로": "EUR", "위안": "CNY", "파운드": "GBP",
+    "호주달러": "AUD", "캐나다달러": "CAD", "스위스프랑": "CHF", "싱가포르달러": "SGD",
+    "홍콩달러": "HKD", "태국바트": "THB", "덴마크크로네": "DKK", "노르웨이크로네": "NOK",
+    "스웨덴크로나": "SEK", "뉴질랜드달러": "NZD" };
+  const PER100 = { JPY: true, IDR: true, VND: true };
+
+  function addRate(rates, code, dateKey, value, per100) {
+    if (!rates[code]) rates[code] = {};
+    rates[code][dateKey] = per100 ? value / 100 : value;   // 1단위당 원
+  }
+
+  // 서울외국환중개 HTML 표: 날짜 줄 다음이 "통화명 (코드)" 줄, 그다음이 환율
   function parseRateText(text, rates) {
     const lines = text.replace(/<[^>]+>/g, "\n").replace(/&nbsp;/g, " ")
-      .split("\n").map((s) => s.trim()).filter(Boolean);
+      .split("\n").map((x) => x.trim()).filter(Boolean);
     let n = 0;
     for (let i = 0; i < lines.length - 2; i++) {
       if (!/^20\d{2}\.\d{2}\.\d{2}$/.test(lines[i])) continue;
       const name = lines[i + 1], v = lines[i + 2];
       if (!/^[\d,]+\.\d+$/.test(v)) continue;
-      const key = lines[i].replace(/\./g, ""), val = num(v);
-      if (name.includes("(USD)")) { rates.USD[key] = val; n++; }
-      else if (name.includes("(JPY)")) { rates.JPY[key] = val; n++; }
+      const m = name.match(/\(([A-Z]{3})\)/);
+      if (!m) continue;
+      addRate(rates, m[1], lines[i].replace(/\./g, ""), num(v), /\(100\)/.test(name) || !!PER100[m[1]]);
+      n++;
     }
     return n;
   }
 
+  // 은행 엑셀: 한 행에 날짜, 통화(코드 또는 한글명), 환율이 있으면 인식
   function parseRateSheetRows(rows, rates) {
     let n = 0;
     for (const r of rows) {
       const cells = r.map((c) => String(c ?? "").trim()).filter((c) => c !== "");
       const dateCell = cells.map(toYmd).find((x) => x);
       if (!dateCell) continue;
-      const rowTxt = cells.join(" ");
-      const isUSD = /USD|달러/.test(rowTxt), isJPY = /JPY|엔/.test(rowTxt);
-      if (!isUSD && !isJPY) continue;
-      const nums = cells.map(num).filter((x) => x !== null && x > 0 && !(x >= 19000000 && x <= 20991231));
-      if (isUSD) { const v = nums.find((x) => x >= 500 && x <= 3000); if (v) { rates.USD[dateCell] = v; n++; } }
-      if (isJPY) {
-        const v = nums.find((x) => x >= 300 && x <= 1500) ?? nums.find((x) => x >= 3 && x <= 15);
-        if (v) { rates.JPY[dateCell] = v < 50 ? v * 100 : v; n++; }   // 1엔당 값이면 100엔 기준으로 환산
+      let code = null;
+      for (const c of cells) {
+        const m = c.match(/\b([A-Z]{3})\b/);
+        if (m) { code = m[1]; break; }
+        const ko = Object.keys(KO_NAME).find((k) => c.includes(k));
+        if (ko && !(ko === "엔" && c.includes("달러"))) { code = KO_NAME[ko]; break; }
       }
+      if (!code) continue;
+      const nums = cells.filter((c) => !toYmd(c)).map(num).filter((x) => x !== null && x > 0);
+      if (!nums.length) continue;
+      let v = nums[0];
+      if (code === "JPY" && v < 50) { addRate(rates, code, dateCell, v, false); n++; continue; } // 1엔당 값
+      addRate(rates, code, dateCell, v, !!PER100[code]);
+      n++;
     }
     return n;
   }
@@ -148,9 +167,7 @@
   async function parseRateFile(file, rates) {
     const buf = await file.arrayBuffer();
     const head = new TextDecoder("latin1").decode(buf.slice(0, 200)).trimStart();
-    if (head.startsWith("<")) {                       // 서울외국환중개 HTML 표(.xls)
-      return parseRateText(new TextDecoder("euc-kr").decode(buf), rates);
-    }
+    if (head.startsWith("<")) return parseRateText(new TextDecoder("euc-kr").decode(buf), rates);
     const wb = XLSX.read(buf, { type: "array", cellDates: false });
     let n = 0;
     for (const sn of wb.SheetNames) {
@@ -242,9 +259,9 @@
       if (!fRate || !fSales) { alert("① 환율 파일과 ② 수출신고내역을 올려 주세요."); return; }
 
       log("환율 파일 읽는 중...");
-      const rates = { USD: {}, JPY: {} };
+      const rates = {};
       const nRate = await parseRateFile(fRate, rates);
-      log(`  달러 ${Object.keys(rates.USD).length}일, 엔화 ${Object.keys(rates.JPY).length}일 (${nRate}건 인식)`);
+      log(`  인식한 통화: ${Object.keys(rates).map((c) => c + " " + Object.keys(rates[c]).length + "일").join(", ") || "없음"} (${nRate}건)`);
 
       log("수출신고내역 읽는 중...");
       const sales = await parseSales(fSales);
@@ -268,21 +285,19 @@
         if (fZip && doc && !doc.buyer) issues.push("구매자 확인필요");
 
         let krw = null;
-        if (rt) {
-          const unit = s.cur === "JPY" ? rt.value / 100 : rt.value;   // 1외화단위당 원
-          krw = Math.floor((s.fca * Math.round(unit * 10000)) / 10000); // 원 미만 절사
-        }
+        if (rt) krw = Math.floor((s.fca * Math.round(rt.value * 10000)) / 10000); // 원 미만 절사
         if (krw !== null && s.krwOrig !== null && krw !== s.krwOrig) issues.push(`홈택스 원화와 차이(${fmtNum(s.krwOrig)})`);
         if (issues.length) warnCnt++; else okCnt++;
         if (krw !== null) sum += krw;
 
         const buyer = doc && doc.buyer ? doc.buyer.slice(0, NAME_MAX) : "";
         const amtStr = s.cur === "JPY" || Number.isInteger(s.fca) ? fmtNum(s.fca) : fmtNum(s.fca, 2);
-        const rateStr = rt ? fmtNum(rt.value, 2) : "";
+        const rateShow = rt ? (s.cur === "JPY" ? rt.value * 100 : rt.value) : null;
+        const rateStr = rateShow !== null ? fmtNum(rateShow, 2) : "";
         outRows.push({ y: +s.ymd.slice(0,4), m: +s.ymd.slice(4,6), d: +s.ymd.slice(6,8), buyer, krw,
                        item: `${s.decl} | ${s.cur} ${amtStr} | 환율 ${rateStr}`, issues });
         report.push({ decl: s.decl, date: dotKey(s.ymd), cur: s.cur, fca: s.fca, buyer: doc ? doc.buyer : "",
-                      rate: rt ? rt.value : "", rateDate: rt ? dotKey(rt.date) + (rt.shifted ? " (직전영업일)" : "") : "",
+                      rate: rt ? (s.cur === "JPY" ? rt.value * 100 : rt.value) : "", rateDate: rt ? dotKey(rt.date) + (rt.shifted ? " (직전영업일)" : "") : "",
                       krwCalc: krw, krwOrig: s.krwOrig, status: issues.length ? issues.join(" / ") : "정상" });
       }
 
