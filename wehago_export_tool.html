@@ -42,15 +42,16 @@
 
 <div class="card">
   <div class="row">
-    <div class="drop" data-k="rate"><b>① 외국환은행 환율 (달러·엔화)</b><span class="fn">클릭해서 파일 선택</span><input type="file" id="fRate" accept=".xls,.xlsx,.html,.htm"></div>
-    <div class="drop" data-k="sales"><b>② 수출신고내역 (홈택스 다운로드)</b><span class="fn">클릭해서 파일 선택</span><input type="file" id="fSales" accept=".xls,.xlsx"></div>
-    <div class="drop" data-k="form"><b>③ 위하고 직전 양식</b><span class="fn">클릭해서 파일 선택</span><input type="file" id="fForm" accept=".xls,.xlsx"></div>
+    <div class="drop" data-k="rate"><b>① 외국환은행 환율 (달러·엔화)</b><span class="fn" data-default="클릭해서 파일 선택">클릭해서 파일 선택</span><input type="file" id="fRate" accept=".xls,.xlsx,.html,.htm" multiple></div>
+    <div class="drop" data-k="sales"><b>② 수출신고내역 (홈택스 다운로드)</b><span class="fn" data-default="클릭해서 파일 선택">클릭해서 파일 선택</span><input type="file" id="fSales" accept=".xls,.xlsx"></div>
+    <div class="drop" data-k="form"><b>③ 위하고 직전 양식</b><span class="fn" data-default="클릭해서 파일 선택">클릭해서 파일 선택</span><input type="file" id="fForm" accept=".xls,.xlsx"></div>
   </div>
   <div class="row" style="margin-top:12px">
-    <div class="drop opt" data-k="zip"><b>선택: 업체 증빙 압축파일 (면장 PDF) — 거래처명 채우기용</b><span class="fn">없으면 거래처명은 비워집니다 · 클릭해서 파일 선택</span><input type="file" id="fZip" accept=".zip"></div>
+    <div class="drop opt" data-k="zip"><b>선택: 업체 증빙 압축파일 (면장 PDF) — 거래처명 채우기용</b><span class="fn" data-default="없으면 거래처명은 비워집니다 · 클릭해서 파일 선택">없으면 거래처명은 비워집니다 · 클릭해서 파일 선택</span><input type="file" id="fZip" accept=".zip"></div>
   </div>
   <p style="margin-top:14px">
     <button id="run">처리 시작</button>
+    <button id="clear">입력 모두 비우기</button>
     <button id="dlX" disabled>위하고 업로드 파일 받기 (.xlsx)</button>
     <button id="dlR" disabled>검증 결과 받기 (.xlsx)</button>
   </p>
@@ -98,7 +99,25 @@
   const num = (v) => { const n = parseFloat(String(v ?? "").replace(/,/g, "")); return isNaN(n) ? null : n; };
 
   // ---------- 파일 선택 (클릭) ----------
+  // 환율 파일은 달러/엔화를 따로 올려도 모두 누적됩니다.
+  const rateFiles = [];
+  const rateBox = document.querySelector('.drop[data-k="rate"]');
+  const rateInput = $("fRate");
+  const rateHint = rateBox.querySelector(".fn");
+  const showRateFiles = () => {
+    rateBox.classList.toggle("done", rateFiles.length > 0);
+    rateHint.textContent = rateFiles.length
+      ? "✔ 올라감 (" + rateFiles.length + "개): " + rateFiles.map((f) => f.name).join(", ")
+      : "클릭해서 파일 선택 (달러·엔화 파일을 각각 올려도 됨)";
+  };
+  rateInput.addEventListener("change", () => {
+    for (const f of rateInput.files) rateFiles.push(f);
+    rateInput.value = "";      // 같은 화면에서 다음 파일을 계속 고를 수 있게 비움
+    showRateFiles();
+  });
+
   document.querySelectorAll(".drop").forEach((box) => {
+    if (box === rateBox) return;
     const input = box.querySelector("input");
     const hint = box.querySelector(".fn");
     const hintDefault = hint.textContent;
@@ -108,6 +127,16 @@
       hint.textContent = f ? "✔ 올라감: " + f.name : hintDefault;
     });
   });
+
+  $("clear").onclick = () => {
+    rateFiles.length = 0; showRateFiles();
+    for (const id of ["fSales", "fForm", "fZip"]) {
+      $(id).value = "";
+      const box = $(id).closest(".drop");
+      box.classList.remove("done");
+      box.querySelector(".fn").textContent = box.querySelector(".fn").dataset.default;
+    }
+  };
 
   // ---------- 환율 파일 (외국환은행 / 서울외국환중개 공통) ----------
   // 결과: rates[통화코드][YYYYMMDD] = 1단위당 원화 (JPY는 엔 1단위 기준, 표시용 100엔 값 별도)
@@ -255,13 +284,14 @@
     $("log").textContent = "";
     $("dlX").disabled = $("dlR").disabled = true;
     try {
-      const fRate = $("fRate").files[0], fSales = $("fSales").files[0], fForm = $("fForm").files[0], fZip = $("fZip").files[0];
-      if (!fRate || !fSales) { alert("① 환율 파일과 ② 수출신고내역을 올려 주세요."); return; }
+      const fSales = $("fSales").files[0], fForm = $("fForm").files[0], fZip = $("fZip").files[0];
+      if (!rateFiles.length || !fSales) { alert("① 환율 파일과 ② 수출신고내역을 올려 주세요."); return; }
 
       log("환율 파일 읽는 중...");
       const rates = {};
-      const nRate = await parseRateFile(fRate, rates);
-      log(`  인식한 통화: ${Object.keys(rates).map((c) => c + " " + Object.keys(rates[c]).length + "일").join(", ") || "없음"} (${nRate}건)`);
+      let nRate = 0;
+      for (const f of rateFiles) nRate += await parseRateFile(f, rates);
+      log(`  환율 파일 ${rateFiles.length}개, 인식한 통화: ${Object.keys(rates).map((c) => c + " " + Object.keys(rates[c]).length + "일").join(", ") || "없음"} (${nRate}건)`);
 
       log("수출신고내역 읽는 중...");
       const sales = await parseSales(fSales);
