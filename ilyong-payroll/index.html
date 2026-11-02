@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>일용직 급여 업로드 변환기</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap">
+<style>
+  /* 레이아웃: 상단 업로드 → 설정 → 요약 타일 → 결과 테이블(변환대상/확인필요) → 하단 고정 다운로드 바 */
+  :root{
+    --ink:#1b2430; --paper:#faf8f4; --panel:#ffffff; --line:#e4ddd0;
+    --muted:#746b5c; --accent:#9a6b1f; --accent-ink:#ffffff;
+    --good:#2f6f4e; --warn:#b2531a; --bad:#b23a3a;
+    --tab-num: 'Noto Sans KR', sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#eee7d9; --paper:#15130f; --panel:#1d1a14; --line:#352f23;
+      --muted:#a99c84; --accent:#d79a3c; --accent-ink:#1b1206;
+      --good:#6cbf8f; --warn:#e08a4d; --bad:#e2756f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#eee7d9; --paper:#15130f; --panel:#1d1a14; --line:#352f23;
+    --muted:#a99c84; --accent:#d79a3c; --accent-ink:#1b1206;
+    --good:#6cbf8f; --warn:#e08a4d; --bad:#e2756f;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper); color:var(--ink);
+    font-family:'Noto Sans KR', sans-serif;
+    padding-left:max(16px, env(safe-area-inset-left,0px));
+    padding-right:max(16px, env(safe-area-inset-right,0px));
+    padding-bottom: 96px;
+  }
+  .wrap{ max-width:880px; margin:0 auto; }
+  h1{ font-size:1.3rem; font-weight:800; letter-spacing:-.01em; margin:1.2rem 0 .15rem; }
+  .sub{ color:var(--muted); font-size:.85rem; margin-bottom:1.1rem; }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    padding:1rem 1.1rem; margin-bottom:1rem;
+  }
+  .card h2{ font-size:.92rem; font-weight:700; margin:0 0 .6rem; display:flex; align-items:center; gap:.4rem;}
+  .card h2 .n{ display:inline-flex; align-items:center; justify-content:center; width:1.3rem; height:1.3rem; border-radius:50%; background:var(--accent); color:var(--accent-ink); font-size:.72rem; font-weight:800;}
+
+  .drop{
+    border:1.5px dashed var(--line); border-radius:12px; padding:1.6rem 1rem; text-align:center;
+    cursor:pointer; transition:border-color .15s, background .15s; color:var(--muted);
+  }
+  .drop:hover, .drop.drag{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 7%, transparent); }
+  .drop strong{ color:var(--ink); }
+  input[type=file]{ display:none; }
+
+  .filepill{
+    display:inline-flex; align-items:center; gap:.5rem; background:color-mix(in srgb, var(--good) 14%, transparent);
+    color:var(--good); border-radius:999px; padding:.3rem .7rem; font-size:.8rem; font-weight:600; margin-top:.6rem;
+  }
+
+  .settings-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.7rem; }
+  .field label{ display:block; font-size:.72rem; color:var(--muted); margin-bottom:.25rem; }
+  .field input{
+    width:100%; padding:.45rem .55rem; border:1px solid var(--line); border-radius:8px;
+    background:var(--paper); color:var(--ink); font-size:.86rem; font-family:inherit;
+  }
+  .field input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+
+  .tiles{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.6rem; margin-bottom:1rem; }
+  .tile{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:.7rem .8rem; }
+  .tile .v{ font-size:1.3rem; font-weight:800; font-variant-numeric:tabular-nums; }
+  .tile .l{ font-size:.72rem; color:var(--muted); margin-top:.1rem; }
+  .tile.warn .v{ color:var(--warn); }
+
+  table{ width:100%; border-collapse:collapse; font-size:.82rem; }
+  th,td{ padding:.45rem .5rem; border-bottom:1px solid var(--line); text-align:left; vertical-align:middle;}
+  th{ color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.02em;}
+  td.num, th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .tablewrap{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+  .tablewrap table{ min-width:640px; }
+  tr.excluded{ opacity:.42; }
+  .rowinput{ width:100%; min-width:92px; padding:.3rem .4rem; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); font-size:.8rem; font-family:inherit; }
+  .rowinput.bad{ border-color:var(--bad); }
+  .chip{ display:inline-block; padding:.12rem .5rem; border-radius:999px; font-size:.68rem; font-weight:700; }
+  .chip.warn{ background:color-mix(in srgb, var(--warn) 16%, transparent); color:var(--warn); }
+  .daylist{ color:var(--muted); font-size:.76rem; }
+  .empty{ color:var(--muted); font-size:.85rem; padding:.6rem 0; }
+
+  .bar{
+    position:fixed; left:0; right:0; bottom:0; z-index:10;
+    padding:.7rem max(16px, env(safe-area-inset-right,0px)) max(.7rem, env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));
+    background:var(--panel); border-top:1px solid var(--line);
+    display:flex; align-items:center; gap:.8rem; justify-content:center;
+  }
+  .bar .inner{ max-width:880px; width:100%; display:flex; align-items:center; gap:.8rem; }
+  button.primary{
+    background:var(--accent); color:var(--accent-ink); border:none; border-radius:10px;
+    padding:.65rem 1.1rem; font-weight:700; font-size:.88rem; cursor:pointer; font-family:inherit;
+  }
+  button.primary:disabled{ opacity:.4; cursor:not-allowed; }
+  button.ghost{
+    background:transparent; border:1px solid var(--line); color:var(--ink); border-radius:10px;
+    padding:.65rem .9rem; font-weight:600; font-size:.84rem; cursor:pointer; font-family:inherit;
+  }
+  .status{ font-size:.8rem; color:var(--muted); flex:1; }
+  .status.ok{ color:var(--good); } .status.err{ color:var(--bad); }
+
+  .note{ font-size:.76rem; color:var(--muted); line-height:1.55; }
+  .note b{ color:var(--ink); }
+  footer.v{ text-align:center; color:var(--muted); font-size:.72rem; margin:1.5rem 0 .5rem; }
+  a, a:visited{ color:var(--accent); }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>일용직 급여 업로드 변환기</h1>
+  <div class="sub">원제우세무사사무소 — 회사 일용직 급여내역 엑셀을 위하고(WEHAGO)/SmartA 일용직급여자료입력 업로드 양식으로 변환합니다.</div>
+
+  <div class="card">
+    <h2><span class="n">1</span>급여내역 업로드</h2>
+    <div class="drop" id="drop">
+      <div>엑셀 파일을 끌어다 놓거나 클릭해서 선택하세요</div>
+      <div style="font-size:.76rem;margin-top:.3rem;">※ 두 형식 자동 인식 — ① 번호/근로자/급여/근무형태구분(4대보험·3.3%·일용)/특이사항 "월분 급여내역" 원본, ② 이름/주민번호/실지급액/근무일/비자 등 정리본</div>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <div id="filepillWrap"></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">2</span>변환 기준 (필요시 수정)</h2>
+    <div class="settings-grid">
+      <div class="field"><label>기본 근무시간(시간/일)</label><input type="number" id="setHours" value="8" min="0" step="0.5"></div>
+      <div class="field"><label>근무여부 표시값</label><input type="text" id="setMark" value="O" maxlength="4"></div>
+      <div class="field"><label>일 비과세 공제(원)</label><input type="number" id="setDeduction" value="150000" min="0" step="1000"></div>
+      <div class="field"><label>원천징수세율(%)</label><input type="number" id="setRate" value="6" min="0" step="0.1"></div>
+      <div class="field"><label>근로소득세액공제(%)</label><input type="number" id="setCredit" value="55" min="0" max="100" step="1"></div>
+    </div>
+    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. "근무여부" 값은 위하고/스마트에이 화면에서 근무시간·지급액 입력 시 자동 표시되는 동작에 근거한 추정값이라 최초 1건은 업로드 테스트로 확인하시길 권합니다.<br><b>실지급액→세전 환산</b>: 소득세법 제47조②(일용근로자 근로소득공제 1일 15만원) · 제129조①(원천징수세율 6%) · 제59조③(근로소득세액공제 55%), 지방세법(지방소득세=소득세의 10%)을 법령 기준으로 적용한 역산이며, 150,000원 초과액에 대해 일자별로 계산합니다. 소득세/지방소득세 칸 자체는 비워두어 위하고/SmartA가 사원등록정보 기준으로 다시 계산하도록 했습니다 — 세율이 바뀌었다면 위 숫자를 직접 고쳐주세요.</div>
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <h2><span class="n">3</span>변환 대상 <span id="targetCount" style="color:var(--muted); font-weight:500;"></span></h2>
+    <div class="tablewrap"><table id="targetTable"><thead><tr>
+      <th></th><th>사원명</th><th>구분</th><th>현장(코드)</th><th class="num">근무일수</th><th>근무일</th><th class="num">원본금액</th><th class="num">세전 일당(계산)</th><th class="num">세전 합계</th><th>주민등록번호</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div class="empty" id="targetEmpty">엑셀을 업로드하면 변환 대상 인원이 여기 표시됩니다.</div>
+  </div>
+
+  <div class="card" id="flaggedCard" hidden>
+    <h2><span class="n">!</span>확인 필요 <span id="flagCount" style="color:var(--muted); font-weight:500;"></span></h2>
+    <div class="note" style="margin-bottom:.5rem;">아래 인원은 업로드 대상에서 자동 제외됐습니다. 원본 파일을 고쳐서 다시 올려주세요.</div>
+    <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
+  </div>
+
+  <footer class="v">일용직 급여 업로드 변환기 v1.0 · 원제우세무사사무소 내부용</footer>
+</div>
+
+<div class="bar">
+  <div class="inner">
+    <span class="status" id="status">예시 데이터로 미리보기 중입니다. 실제 급여내역 파일을 올려주세요.</span>
+    <button class="ghost" id="resetBtn" type="button">초기화</button>
+    <button class="primary" id="downloadBtn" type="button" disabled>업로드 양식(.xlsx) 다운로드</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- 핵심 변환 로직 (2026.08~09 작업 시 확정된 규칙) ----------
+
+  function normHeader(s){
+    if(s===null||s===undefined) return "";
+    return String(s).replace(/\s+/g,"");
+  }
+
+  // 특이사항 셀을 근무일(1~31) 목록으로 해석. 쉼표 누락 등으로 "12,13,14,1517"처럼
+  // 범위를 벗어나는 토큰이 섞이면 조용히 끼워넣지 않고 invalid에 담아 호출부에서 확인 필요로 처리한다.
+  function parseDays(raw){
+    if(raw===null||raw===undefined) return {days:[], invalid:[]};
+    if(typeof raw === "number"){
+      var n = Math.trunc(raw);
+      return (n>=1 && n<=31) ? {days:[n], invalid:[]} : {days:[], invalid:[String(raw)]};
+    }
+    var s = String(raw).trim();
+    if(!s) return {days:[], invalid:[]};
+    var parts = s.split(/[,\s\/]+/);
+    var days = [], invalid = [];
+    parts.forEach(function(tok){
+      tok = tok.trim();
+      if(tok==="") return;
+      if(/^\d+$/.test(tok)){
+        var v = parseInt(tok,10);
+        if(v>=1 && v<=31) days.push(v); else invalid.push(tok);
+      } else {
+        invalid.push(tok);
+      }
+    });
+    return {days: Array.from(new Set(days)).sort(function(a,b){return a-b;}), invalid: invalid};
+  }
+
+  function splitPay(total, n){
+    total = Math.round(total);
+    var base = Math.floor(total/n);
+    var rem = total - base*n;
+    var out = [];
+    for(var i=0;i<n;i++) out.push(base + (i<rem?1:0));
+    return out;
+  }
+
+  function findHeaderCols(aoa){
+    var maxScan = Math.min(aoa.length, 8);
+    var headerRow=-1, subRow=-1, col={};
+    for(var r=0;r<maxScan;r++){
+      var row = aoa[r] || [];
+      var norm = row.map(normHeader);
+      if(norm.indexOf("번호")>-1 && norm.indexOf("근로자")>-1){
+        headerRow = r;
+        norm.forEach(function(v,i){
+          if(v==="번호") col.no=i;
+          else if(v==="근로자") col.name=i;
+          else if(v==="급여") col.pay=i;
+          else if(v==="특이사항") col.note=i;
+        });
+      }
+      if(norm.indexOf("4대보험")>-1 && norm.indexOf("일용")>-1){
+        subRow = r;
+        norm.forEach(function(v,i){ if(v==="일용") col.ilyong=i; });
+      }
+    }
+    if(headerRow<0 || subRow<0) return null;
+    var required = ["no","name","pay","note","ilyong"];
+    for(var k=0;k<required.length;k++){ if(!(required[k] in col)) return null; }
+    col.dataStart = Math.max(headerRow, subRow) + 1;
+    return col;
+  }
+
+  function extractSite(aoa){
+    for(var r=0;r<Math.min(aoa.length,6);r++){
+      var row = aoa[r]||[];
+      for(var c=0;c<row.length;c++){
+        var v = row[c];
+        if(v && String(v).indexOf("업")>-1 && String(v).indexOf("체")>-1 && String(v).indexOf("명")>-1){
+          var text = String(v).replace(/.*업\s*체\s*명\s*:\s*/,"").trim().replace(/^_+|_+$/g,"").trim();
+          return text;
+        }
+      }
+    }
+    return "";
+  }
+
+  // 형식 A: 번호/근로자/급여/근무형태구분(4대보험·3.3%·일용)/특이사항 — "OO월분 급여내역" 원본 서식
+  function extractFromSheetA(aoa, sheetName){
+    var col = findHeaderCols(aoa);
+    if(!col) return null;
+    var records=[], flagged=[];
+    var site = extractSite(aoa);
+    for(var r=col.dataStart; r<aoa.length; r++){
+      var row = aoa[r]||[];
+      var no = row[col.no], name = row[col.name], pay = row[col.pay], mark = row[col.ilyong], note = row[col.note];
+      if(no===null||no===undefined||no==="") continue;
+      if(name===null||name===undefined) continue;
+      var nameStr = String(name).trim();
+      if(nameStr===""||nameStr==="계") continue;
+
+      var isIlyong = mark!==null && mark!==undefined && String(mark).trim()!=="";
+      var payNum = (pay===null||pay===undefined||pay==="") ? 0 : Number(pay);
+      var hasPay = !isNaN(payNum) && payNum>0;
+
+      if(!(isIlyong && hasPay)){
+        flagged.push({sheet:sheetName, no:no, name:nameStr, reason:"일용미체크 또는 급여없음"});
+        continue;
+      }
+      var parsed = parseDays(note);
+      var days = parsed.days;
+      if(parsed.invalid.length>0){
+        flagged.push({sheet:sheetName, no:no, name:nameStr, reason:"특이사항에 1~31 범위를 벗어난 값("+parsed.invalid.join(", ")+") 포함 - 쉼표 누락 등 오타 확인: "+JSON.stringify(note===undefined?null:note)});
+        continue;
+      }
+      if(days.length===0){
+        flagged.push({sheet:sheetName, no:no, name:nameStr, reason:"특이사항(근무일) 인식 불가: "+JSON.stringify(note===undefined?null:note)});
+        continue;
+      }
+      records.push({sheet:sheetName, site:site, no:no, name:nameStr, pay:payNum, days:days, jumin:"", include:true, mode:"gross", format:"A"});
+    }
+    return {records:records, flagged:flagged};
+  }
+
+  // 형식 B: 이름/주민번호/실지급액(세후)/근무일/비자 등 — 이미 일용 대상만 정리된 간이 서식
+  function findHeaderColsB(aoa){
+    var maxScan = Math.min(aoa.length, 8);
+    var col={}, headerRow=-1;
+    for(var r=0;r<maxScan;r++){
+      var row = aoa[r]||[];
+      var norm = row.map(normHeader);
+      var hasName = norm.indexOf("이름")>-1 || norm.indexOf("성명")>-1;
+      var hasNote = norm.indexOf("근무일")>-1;
+      var payIdx = -1;
+      norm.forEach(function(v,i){ if(v.indexOf("지급액")>-1) payIdx=i; });
+      if(hasName && hasNote && payIdx>-1){
+        headerRow = r;
+        norm.forEach(function(v,i){
+          if(v==="이름"||v==="성명") col.name=i;
+          else if(v.indexOf("주민")>-1) col.jumin=i;
+          else if(v==="근무일") col.note=i;
+          else if(v.indexOf("비자")>-1) col.visa=i;
+        });
+        col.pay = payIdx;
+      }
+    }
+    if(headerRow<0) return null;
+    var required = ["name","pay","note"];
+    for(var k=0;k<required.length;k++){ if(!(required[k] in col)) return null; }
+    col.dataStart = headerRow + 1;
+    return col;
+  }
+
+  function extractFromSheetB(aoa, sheetName){
+    var col = findHeaderColsB(aoa);
+    if(!col) return null;
+    var records=[], flagged=[];
+    var site = extractSite(aoa);
+    for(var r=col.dataStart; r<aoa.length; r++){
+      var row = aoa[r]||[];
+      var name = row[col.name], pay = row[col.pay], note = row[col.note];
+      var jumin = (col.jumin!==undefined) ? row[col.jumin] : null;
+      if(name===null||name===undefined) continue;
+      var nameStr = String(name).trim();
+      if(nameStr===""||nameStr==="계"||nameStr==="합계") continue;
+
+      var payNum = (pay===null||pay===undefined||pay==="") ? 0 : Number(pay);
+      if(!(!isNaN(payNum) && payNum>0)){
+        flagged.push({sheet:sheetName, no:r+1, name:nameStr, reason:"실지급액 없음"});
+        continue;
+      }
+      var parsed = parseDays(note);
+      var days = parsed.days;
+      if(parsed.invalid.length>0){
+        flagged.push({sheet:sheetName, no:r+1, name:nameStr, reason:"근무일에 1~31 범위를 벗어난 값("+parsed.invalid.join(", ")+") 포함 - 쉼표 누락 등 오타 확인: "+JSON.stringify(note===undefined?null:note)});
+        continue;
+      }
+      if(days.length===0){
+        flagged.push({sheet:sheetName, no:r+1, name:nameStr, reason:"근무일 인식 불가: "+JSON.stringify(note===undefined?null:note)});
+        continue;
+      }
+      records.push({
+        sheet:sheetName, site:site, no:r+1, name:nameStr, pay:payNum, days:days,
+        jumin: jumin? String(jumin).replace(/[^0-9]/g,"") : "",
+        include:true, mode:"net", format:"B"
+      });
+    }
+    return {records:records, flagged:flagged};
+  }
+
+  function extractAll(workbook){
+    var allRecords=[], allFlagged=[];
+    workbook.SheetNames.forEach(function(sn){
+      var ws = workbook.Sheets[sn];
+      var aoa = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+      var res = extractFromSheetA(aoa, sn);
+      if(!res) res = extractFromSheetB(aoa, sn);
+      if(!res) res = {records:[], flagged:[{sheet:sn, no:"-", name:"-", reason:"헤더 인식 실패 - 시트 건너뜀 (지원 형식: 번호/근로자/급여/근무형태구분/특이사항 또는 이름/실지급액/근무일)"}]};
+      allRecords = allRecords.concat(res.records);
+      allFlagged = allFlagged.concat(res.flagged);
+    });
+    return {records:allRecords, flagged:allFlagged};
+  }
+
+  // ---------- 일용근로소득 세전 환산 (실지급액 → 세전지급액) ----------
+  // 소득세법 제47조제2항(일용근로자 근로소득공제 1일 15만원), 제129조제1항제4호(원천징수세율 6%),
+  // 제59조제3항(일용근로자 근로소득세액공제 55%), 지방세법 제103조의13(지방소득세 = 소득세의 10%)
+  // 를 law.go.kr 현행 조문으로 확인하여 반영. 1일 단위로 계산(특이사항/근무일의 일자별 적용).
+  function dailyTax(gross, tax){
+    var base = Math.max(0, gross - tax.deduction);
+    var incomeTax = Math.floor(base * (tax.rate/100) * (1 - tax.credit/100));
+    var localTax = Math.floor(incomeTax * 0.1);
+    return {incomeTax:incomeTax, localTax:localTax, total: incomeTax+localTax};
+  }
+
+  function grossUpDaily(net, tax){
+    net = Math.round(net);
+    if(net<=tax.deduction) return {gross:net, incomeTax:0, localTax:0, tax:0};
+    var netRate = 1 - (tax.rate/100)*(1-tax.credit/100)*1.1;
+    var estGross = Math.round((net - tax.deduction*(1-netRate)) / netRate);
+    for(var g=Math.max(tax.deduction, estGross-10); g<=estGross+10; g++){
+      var t = dailyTax(g, tax);
+      if(g - t.total === net){ return {gross:g, incomeTax:t.incomeTax, localTax:t.localTax, tax:t.total}; }
+    }
+    // 정확히 일치하는 정수 원이 없으면(드묾) 가장 가까운 값으로 근사
+    var bestDiff=Infinity, best=null;
+    for(var g2=Math.max(tax.deduction, estGross-30); g2<=estGross+30; g2++){
+      var t2 = dailyTax(g2, tax);
+      var diff = Math.abs((g2-t2.total)-net);
+      if(diff<bestDiff){ bestDiff=diff; best={gross:g2, incomeTax:t2.incomeTax, localTax:t2.localTax, tax:t2.total, approx:true}; }
+    }
+    return best;
+  }
+
+  function computeDailyAmounts(rec, settings){
+    var n = rec.days.length;
+    if(rec.mode==="net"){
+      var dailyNets = splitPay(rec.pay, n);
+      return dailyNets.map(function(net){ return grossUpDaily(net, settings.tax); });
+    }
+    var dailyGross = splitPay(rec.pay, n);
+    return dailyGross.map(function(g){ return {gross:g, incomeTax:null, localTax:null, tax:null}; });
+  }
+
+  function buildUploadRows(records, settings){
+    var rows=[];
+    records.filter(function(r){return r.include;}).forEach(function(rec){
+      var amounts = computeDailyAmounts(rec, settings);
+      rec.days.forEach(function(day, i){
+        rows.push({
+          일자:day, 근무여부:settings.mark, 사원명:rec.name,
+          주민등록번호:(rec.jumin||"").replace(/[^0-9]/g,""),
+          현장코드:rec.site||"", 공수:1,
+          근무시간_정상:settings.hours, 근무시간_연장:"",
+          지급액_정상:amounts[i].gross, 지급액_연장:"",
+          기타비과세:"", 고용보험:"", 국민연금:"", 건강보험:"", 장기요양보험:"", 소득세:"", 지방소득세:""
+        });
+      });
+    });
+    return rows;
+  }
+
+  // ---------- 위하고/SmartA 업로드 양식 구조 그대로 생성 (헤더 문구·병합 셀·컬럼 순서 동일) ----------
+
+  var TITLE_TEXT = " 일용직급여자료입력     ※ 본 서식은 SmartA 인사급여 일용직급여자료입력 메뉴로 Excel DATA를 자동 변환하기 위한 서식입니다.";
+  var NOTE_TEXT = "◈ 일용직급여자료입력으로 엑셀을 변환하기전 일용직사원등록의 사원정보를 먼저 작업하셔야 합니다.\n\n◈ 일자와 주민등록번호는 반드시 기재하셔야 합니다. 변환시 일용직사원등록의 주민등록번호로 인식하여 변환이 됩니다.\n◈ 일자를 입력시에는 반드시 해당 근무월(귀속월)의 일자를 입력해 주십시오 예) 2015년 1월 1일 일 경우 -> 1(○) , 2015.01.01 (X), 01.01 (X)\n◈ 동일한 일자에 중복해서 입력할 경우에는 가장 처음 입력한 데이타를 변환하여 줍니다.\n◈ 주민등록번호를 입력할때에는 특수문자를 제외하고 (-)없이 숫자 13자리로 입력합니다.\n◈ 고용보험,국민연금,건강보험,소득세,지방소득세는 엑셀 변환시 선택에 따라 사원등록정보,소득세율에 따라 재계산이 가능합니다.\n\n▣ 본서식을 변형하여 사용시 일용직 사원등록 메뉴로 변환되지 않을수 있습니다.";
+  var HEADER2 = [" ","일자","근무\n여부","사원명","주민등록번호","현장(코드)","공수","근무시간","","지급액","","기타비과세","고용보험","국민연금","건강보험","장기요양보험","소득세","지방소득세"];
+  var HEADER3 = ["","","","","","","","정상","연장","정상","연장","","","","","","",""];
+  var COLKEYS = ["일자","근무여부","사원명","주민등록번호","현장코드","공수","근무시간_정상","근무시간_연장","지급액_정상","지급액_연장","기타비과세","고용보험","국민연금","건강보험","장기요양보험","소득세","지방소득세"];
+
+  function buildWorkbook(rows){
+    var aoa = [];
+    aoa.push([TITLE_TEXT]);
+    aoa.push([NOTE_TEXT]);
+    aoa.push(HEADER2.slice());
+    aoa.push(HEADER3.slice());
+    rows.forEach(function(r, i){
+      var line = new Array(18).fill("");
+      line[0] = i+1;
+      COLKEYS.forEach(function(key, j){ line[j+1] = r[key]; });
+      aoa.push(line);
+    });
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!merges"] = [
+      {s:{r:0,c:0}, e:{r:0,c:17}},
+      {s:{r:1,c:0}, e:{r:1,c:17}},
+      {s:{r:2,c:0}, e:{r:3,c:0}},
+      {s:{r:2,c:1}, e:{r:3,c:1}},
+      {s:{r:2,c:2}, e:{r:3,c:2}},
+      {s:{r:2,c:3}, e:{r:3,c:3}},
+      {s:{r:2,c:4}, e:{r:3,c:4}},
+      {s:{r:2,c:5}, e:{r:3,c:5}},
+      {s:{r:2,c:6}, e:{r:3,c:6}},
+      {s:{r:2,c:7}, e:{r:2,c:8}},
+      {s:{r:2,c:9}, e:{r:2,c:10}},
+      {s:{r:2,c:11}, e:{r:3,c:11}},
+      {s:{r:2,c:12}, e:{r:3,c:12}},
+      {s:{r:2,c:13}, e:{r:3,c:13}},
+      {s:{r:2,c:14}, e:{r:3,c:14}},
+      {s:{r:2,c:15}, e:{r:3,c:15}},
+      {s:{r:2,c:16}, e:{r:3,c:16}},
+      {s:{r:2,c:17}, e:{r:3,c:17}}
+    ];
+    ws["!cols"] = [{wch:5},{wch:6},{wch:7},{wch:10},{wch:14},{wch:10},{wch:6},{wch:6},{wch:6},{wch:9},{wch:9},{wch:9},{wch:8},{wch:8},{wch:8},{wch:9},{wch:8},{wch:9}];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    return wb;
+  }
+
+  // ---------- 상태/렌더 ----------
+
+  var state = {
+    records: [],
+    flagged: [],
+    isSample: true,
+    settings: { hours: 8, mark: "O", tax: {deduction:150000, rate:6, credit:55} }
+  };
+
+  function sampleRecords(){
+    return [
+      {sheet:"예시", site:"예시현장", no:1, name:"홍길동", pay:400000, days:[3,4], jumin:"", include:true, mode:"gross", format:"A"},
+      {sheet:"예시", site:"예시현장", no:2, name:"김철수", pay:900000, days:[10,11,12], jumin:"", include:true, mode:"gross", format:"A"},
+      {sheet:"예시", site:"예시현장", no:3, name:"이영희", pay:285000, days:[20], jumin:"", include:true, mode:"net", format:"B"}
+    ];
+  }
+
+  var fmt = new Intl.NumberFormat("ko-KR");
+
+  function computeDailyPreview(rec){
+    return computeDailyAmounts(rec, state.settings);
+  }
+
+  function render(){
+    var records = state.records, flagged = state.flagged;
+
+    // 타일
+    var included = records.filter(function(r){return r.include;});
+    var totalRows = included.reduce(function(a,r){return a+r.days.length;},0);
+    var totalGross = included.reduce(function(a,r){
+      var amts = computeDailyPreview(r);
+      return a + amts.reduce(function(s,x){return s+x.gross;},0);
+    },0);
+    document.getElementById("tiles").innerHTML =
+      '<div class="tile"><div class="v">'+included.length+'명</div><div class="l">변환 대상 인원</div></div>'+
+      '<div class="tile"><div class="v">'+totalRows+'행</div><div class="l">생성될 업로드 행수</div></div>'+
+      '<div class="tile"><div class="v">'+fmt.format(totalGross)+'원</div><div class="l">세전 지급액 합계</div></div>'+
+      '<div class="tile'+(flagged.length?' warn':'')+'"><div class="v">'+flagged.length+'건</div><div class="l">확인 필요</div></div>';
+
+    // 변환 대상 테이블
+    var tbody = document.querySelector("#targetTable tbody");
+    tbody.innerHTML = "";
+    document.getElementById("targetEmpty").hidden = records.length>0;
+    document.getElementById("targetTable").hidden = records.length===0;
+    document.getElementById("targetCount").textContent = records.length ? "("+records.length+"명)" : "";
+
+    records.forEach(function(rec, idx){
+      var amounts = computeDailyPreview(rec);
+      var grosses = amounts.map(function(a){return a.gross;});
+      var dailyLabel = (new Set(grosses)).size===1 ? (fmt.format(grosses[0])+"원/일") : (fmt.format(Math.min.apply(null,grosses))+"~"+fmt.format(Math.max.apply(null,grosses))+"원/일");
+      var grossTotal = grosses.reduce(function(a,b){return a+b;},0);
+      var modeChip = rec.mode==="net" ? '<span class="chip warn">실지급액→세전</span>' : '<span class="chip" style="background:color-mix(in srgb, var(--good) 16%, transparent); color:var(--good);">급여(세전)</span>';
+      var tr = document.createElement("tr");
+      if(!rec.include) tr.className = "excluded";
+      tr.innerHTML =
+        '<td><input type="checkbox" data-act="include" data-idx="'+idx+'" '+(rec.include?"checked":"")+'></td>'+
+        '<td>'+escapeHtml(rec.name)+'</td>'+
+        '<td>'+modeChip+'</td>'+
+        '<td><input class="rowinput" data-act="site" data-idx="'+idx+'" value="'+escapeAttr(rec.site||"")+'" placeholder="현장명 입력"></td>'+
+        '<td class="num">'+rec.days.length+'일</td>'+
+        '<td class="daylist">'+rec.days.join(", ")+'</td>'+
+        '<td class="num">'+fmt.format(rec.pay)+'원</td>'+
+        '<td class="num">'+dailyLabel+'</td>'+
+        '<td class="num">'+fmt.format(grossTotal)+'원</td>'+
+        '<td><input class="rowinput'+(rec.jumin && rec.jumin.replace(/[^0-9]/g,"").length!==13 ? " bad":"")+'" data-act="jumin" data-idx="'+idx+'" value="'+escapeAttr(rec.jumin||"")+'" placeholder="990101-1234567" maxlength="14"></td>';
+      tbody.appendChild(tr);
+    });
+
+    // 확인 필요
+    document.getElementById("flaggedCard").hidden = flagged.length===0;
+    document.getElementById("flagCount").textContent = flagged.length ? "("+flagged.length+"건)" : "";
+    var fb = document.getElementById("flaggedBody");
+    fb.innerHTML = "";
+    flagged.forEach(function(f){
+      var tr = document.createElement("tr");
+      tr.innerHTML = '<td>'+escapeHtml(f.sheet)+'</td><td>'+escapeHtml(String(f.no))+'</td><td>'+escapeHtml(f.name)+'</td><td><span class="chip warn">'+escapeHtml(f.reason)+'</span></td>';
+      fb.appendChild(tr);
+    });
+
+    document.getElementById("downloadBtn").disabled = included.length===0;
+
+    tbody.querySelectorAll("[data-act]").forEach(function(el){
+      el.addEventListener("change", onRowEdit);
+      el.addEventListener("input", onRowEdit);
+    });
+  }
+
+  function onRowEdit(e){
+    var idx = parseInt(e.target.getAttribute("data-idx"),10);
+    var act = e.target.getAttribute("data-act");
+    var rec = state.records[idx];
+    if(!rec) return;
+    if(act==="include") rec.include = e.target.checked;
+    else if(act==="site") rec.site = e.target.value;
+    else if(act==="jumin") rec.jumin = e.target.value;
+    if(act==="include" || e.type==="change"){ render(); }
+    else {
+      // 입력 중에는 전체 재렌더 없이 유효성 표시만 갱신 (포커스 유지)
+      var digits = (rec.jumin||"").replace(/[^0-9]/g,"");
+      if(act==="jumin") e.target.classList.toggle("bad", rec.jumin && digits.length!==13);
+    }
+  }
+
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  function setStatus(msg, kind){
+    var el = document.getElementById("status");
+    el.textContent = msg;
+    el.className = "status" + (kind ? " "+kind : "");
+  }
+
+  // ---------- 파일 처리 ----------
+
+  function readTaxSettingsFromUI(){
+    state.settings.hours = parseFloat(document.getElementById("setHours").value) || 8;
+    state.settings.mark = document.getElementById("setMark").value || "O";
+    state.settings.tax = {
+      deduction: parseFloat(document.getElementById("setDeduction").value) || 0,
+      rate: parseFloat(document.getElementById("setRate").value) || 0,
+      credit: parseFloat(document.getElementById("setCredit").value) || 0
+    };
+  }
+
+  function handleWorkbook(workbook, fromSample){
+    readTaxSettingsFromUI();
+
+    var res = extractAll(workbook);
+    state.records = res.records;
+    state.flagged = res.flagged;
+    state.isSample = !!fromSample;
+    render();
+  }
+
+  function loadSample(){
+    state.records = sampleRecords();
+    state.flagged = [];
+    state.isSample = true;
+    render();
+    setStatus("예시 데이터로 미리보기 중입니다. 실제 급여내역 파일을 올려주세요.");
+  }
+
+  document.getElementById("fileInput").addEventListener("change", function(e){
+    var f = e.target.files[0];
+    if(f) readFile(f);
+  });
+
+  var drop = document.getElementById("drop");
+  drop.addEventListener("click", function(){ document.getElementById("fileInput").click(); });
+  drop.addEventListener("dragover", function(e){ e.preventDefault(); drop.classList.add("drag"); });
+  drop.addEventListener("dragleave", function(){ drop.classList.remove("drag"); });
+  drop.addEventListener("drop", function(e){
+    e.preventDefault(); drop.classList.remove("drag");
+    var f = e.dataTransfer.files[0];
+    if(f) readFile(f);
+  });
+
+  function readFile(file){
+    setStatus("파일 읽는 중...");
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, {type:"array", cellText:false, cellDates:false});
+        handleWorkbook(workbook, false);
+        document.getElementById("filepillWrap").innerHTML = '<div class="filepill">✓ '+escapeHtml(file.name)+'</div>';
+        setStatus(state.records.length ? "변환 준비 완료. 아래에서 확인 후 다운로드하세요." : "대상 인원을 찾지 못했습니다. 파일 형식을 확인해주세요.", state.records.length? "ok":"err");
+      }catch(err){
+        setStatus("파일을 읽는 중 오류가 발생했습니다: "+err.message, "err");
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    document.getElementById("fileInput").value = "";
+    document.getElementById("filepillWrap").innerHTML = "";
+    loadSample();
+  });
+
+  ["setHours","setMark","setDeduction","setRate","setCredit"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", function(){
+      readTaxSettingsFromUI(); render();
+    });
+  });
+
+  // ---------- 다운로드 (일반 브라우저: 앵커 다운로드) ----------
+
+  function saveBlob(blob, fname){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  document.getElementById("downloadBtn").addEventListener("click", function(){
+    var btn = this;
+    var included = state.records.filter(function(r){return r.include;});
+    if(included.length===0) return;
+
+    var badJumin = included.find(function(r){ var d=(r.jumin||"").replace(/[^0-9]/g,""); return r.jumin && d.length!==13; });
+
+    btn.disabled = true;
+    setStatus("파일 생성 중...");
+    try{
+      var rows = buildUploadRows(state.records, state.settings);
+      var wb = buildWorkbook(rows);
+      var out = XLSX.write(wb, {bookType:"xlsx", type:"array"});
+      var blob = new Blob([out], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+      var fname = "위하고_일용직급여업로드_"+new Date().toISOString().slice(0,10).replace(/-/g,"")+".xlsx";
+      saveBlob(blob, fname);
+      setStatus("저장 완료: "+fname + (badJumin ? " · 주민등록번호 형식을 다시 확인해주세요." : ""), badJumin?"err":"ok");
+    } catch(err){
+      setStatus("파일 생성 중 오류: "+err.message, "err");
+    } finally {
+      btn.disabled = included.length===0;
+    }
+  });
+
+  // ---------- 시작 ----------
+  loadSample();
+})();
+</script>
+
+</body>
+</html>
