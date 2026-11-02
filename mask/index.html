@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>식별정보 마스킹 도구 — 원제우세무사사무소</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="vendor/tesseract.min.js"></script>
+<style>
+:root{
+  --bg:#f6f7f5;
+  --panel:#ffffff;
+  --fg:#1d2420;
+  --muted:#5c6660;
+  --line:#d8ddd9;
+  --accent:#0e6b5c;
+  --accent-soft:#e3efec;
+  --mark-bg:#fff3c4;
+  --mark-fg:#6b5300;
+  --danger:#a33d2e;
+  --font:"IBM Plex Sans KR",-apple-system,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#151917;--panel:#1d2320;--fg:#e6eae7;--muted:#9aa49e;
+    --line:#333c37;--accent:#55b8a4;--accent-soft:#1f322d;
+    --mark-bg:#4a3f14;--mark-fg:#f0d98a;--danger:#e0806f;color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--font);
+  padding:20px 16px 48px;line-height:1.6;font-size:15px;
+}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header h1{font-size:21px;font-weight:700;margin:0 0 2px;letter-spacing:-.01em}
+.privacy{
+  display:inline-flex;align-items:center;gap:6px;margin-top:6px;
+  font-size:12.5px;color:var(--accent);background:var(--accent-soft);
+  border:1px solid var(--accent);border-radius:999px;padding:3px 12px;font-weight:500;
+}
+.privacy svg{width:13px;height:13px;flex:none}
+.sub{color:var(--muted);font-size:13.5px;margin:4px 0 0}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--line)}
+.tabs button{
+  appearance:none;background:none;border:none;border-bottom:2px solid transparent;
+  margin-bottom:-2px;padding:9px 16px;font:inherit;font-weight:500;font-size:14.5px;
+  color:var(--muted);cursor:pointer;
+}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.panel h2{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin:0 0 10px;text-transform:uppercase}
+.opts{display:flex;flex-wrap:wrap;gap:8px 18px}
+.opts label{display:inline-flex;align-items:center;gap:7px;font-size:14px;cursor:pointer}
+.opts input[type="checkbox"]{width:16px;height:16px;accent-color:var(--accent);margin:0}
+.opts .off,.off{color:var(--muted)}
+.namebox{margin-top:12px;display:flex;flex-direction:column;gap:5px}
+.namebox label{font-size:13.5px;color:var(--muted)}
+.namebox input{
+  font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);
+  border-radius:7px;background:var(--bg);color:var(--fg);width:100%;
+}
+.namebox input:focus-visible{outline:2px solid var(--accent);outline-offset:-1px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:2px}
+textarea{
+  width:100%;min-height:150px;resize:vertical;font:inherit;font-size:14px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:8px;
+  background:var(--bg);color:var(--fg);line-height:1.55;
+}
+textarea:focus-visible{outline:2px solid var(--accent);outline-offset:-1px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+button.act{
+  appearance:none;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer;
+  padding:9px 18px;border-radius:8px;border:1px solid var(--accent);
+  background:var(--accent);color:#fff;
+}
+@media (prefers-color-scheme: dark){button.act{color:#10211d}}
+button.ghost{
+  appearance:none;font:inherit;font-weight:500;font-size:14px;cursor:pointer;
+  padding:9px 16px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel);color:var(--fg);
+}
+button.act:focus-visible,button.ghost:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+.filedrop{
+  border:1.5px dashed var(--line);border-radius:9px;padding:22px 16px;text-align:center;
+  color:var(--muted);font-size:14px;cursor:pointer;background:var(--bg);
+}
+.filedrop.drag{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.filedrop strong{color:var(--fg);font-weight:500}
+#fileInput,#pdfInput{display:none}
+.pdfpages{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg)}
+.pdfpages canvas{width:100%;height:auto;display:block;border:1px solid var(--line);background:#fff}
+.pagelabel{font-size:12px;color:var(--muted);margin:2px 0 -6px}
+.radios{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px;margin-top:6px}
+.radios label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.radios input{accent-color:var(--accent);margin:0}
+.fileinfo{font-size:13.5px;margin-top:8px;color:var(--muted)}
+.fileinfo b{color:var(--fg);font-weight:500}
+select{
+  font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);
+  border-radius:7px;background:var(--panel);color:var(--fg);max-width:100%;
+}
+.counts{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.counts span{
+  font-size:12.5px;background:var(--accent-soft);color:var(--accent);
+  border-radius:999px;padding:2px 10px;font-weight:500;font-variant-numeric:tabular-nums;
+}
+.counts span.zero{background:var(--bg);color:var(--muted)}
+.result-pre{
+  background:var(--bg);border:1px solid var(--line);border-radius:8px;
+  padding:12px;font-family:var(--mono);font-size:13px;line-height:1.7;
+  white-space:pre-wrap;word-break:break-all;max-height:320px;overflow:auto;min-width:0;
+}
+mark{background:var(--mark-bg);color:var(--mark-fg);border-radius:3px;padding:0 2px;font-weight:500}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;max-height:340px;overflow-y:auto}
+table{border-collapse:collapse;font-size:12.5px;min-width:100%}
+td,th{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:5px 9px;white-space:nowrap;text-align:left;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--panel);font-weight:700;color:var(--muted);font-size:11.5px}
+.note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.toast{color:var(--accent);font-size:13.5px;font-weight:500}
+.err{color:var(--danger);font-size:13.5px}
+.steps{margin:0;padding-left:18px;font-size:13.5px;color:var(--muted)}
+.steps li{margin:2px 0}
+footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
+@media (max-width:480px){.opts{gap:8px 14px} td,th{padding:4px 7px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>식별정보 마스킹 도구</h1>
+  <div><span class="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3.5V11c0 5-3.4 8.6-8 11-4.6-2.4-8-6-8-11V5.5L12 2z"/></svg>모든 처리는 이 브라우저 안에서만 — 서버 전송 없음</span></div>
+  <p class="sub">거래처 자료를 AI나 외부에 올리기 전, 주민번호·계좌·카드·전화번호와 이름을 자동으로 가립니다.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button id="tabText" role="tab" aria-selected="true" aria-controls="paneText">텍스트 마스킹</button>
+  <button id="tabFile" role="tab" aria-selected="false" aria-controls="paneFile">엑셀 · CSV 파일</button>
+  <button id="tabPdf" role="tab" aria-selected="false" aria-controls="panePdf">PDF 파일</button>
+</div>
+
+<section class="panel">
+  <h2>가릴 항목</h2>
+  <div class="opts">
+    <label><input type="checkbox" id="optRrn" checked> 주민등록번호 <span class="off">→ 801212-*******</span></label>
+    <label><input type="checkbox" id="optCard" checked> 카드번호 <span class="off">→ 끝 4자리만</span></label>
+    <label><input type="checkbox" id="optPhone" checked> 전화번호 <span class="off">→ 가운데 가림</span></label>
+    <label><input type="checkbox" id="optAcct" checked> 계좌번호(10자리 이상 숫자) <span class="off">→ 끝 4자리만</span></label>
+    <label><input type="checkbox" id="optAddr" checked> 주소 <span class="off">→ 도로명·번지·동호수 가림</span></label>
+    <label><input type="checkbox" id="optAutoName" checked> 이름 자동 인식 <span class="off">→ 성명:·주민번호 앞·~님/씨, 엑셀 성명 열</span></label>
+    <label><input type="checkbox" id="optBiz"> 사업자등록번호 <span class="off">(기본 유지 — 필요 시 체크)</span></label>
+  </div>
+  <div class="namebox">
+    <label for="optNames">추가로 가릴 이름 (쉼표로 구분)</label>
+    <input type="text" id="optNames" placeholder="예: 홍길동, 김철수" autocomplete="off">
+    <div class="hint">이름은 성만 남기고 ○ 처리됩니다 (홍길동 → 홍○○). 자동 인식이 못 잡은 이름은 여기에 직접 적어 주세요 — 자동 인식은 보조 수단이라 완벽하지 않습니다.</div>
+  </div>
+</section>
+
+<section class="panel" id="paneText" role="tabpanel">
+  <h2>원본 텍스트</h2>
+  <textarea id="srcText" placeholder="여기에 원본 내용을 붙여넣으세요.&#10;예) 성명: 홍길동 (801212-1234567), 연락처 010-1234-5678, 국민은행 123456-04-123456"></textarea>
+  <div class="btnrow">
+    <button class="act" id="btnMaskText">마스킹 실행</button>
+    <button class="ghost" id="btnCopyText" disabled>결과 복사</button>
+    <span id="toastText" class="toast" role="status"></span>
+  </div>
+  <div id="textResultWrap" hidden style="margin-top:14px">
+    <div class="counts" id="textCounts"></div>
+    <div class="result-pre" id="textResult"></div>
+    <p class="note">노란 표시가 마스킹된 자리입니다. 「결과 복사」 후 Claude 대화창에 붙여넣으면 됩니다.</p>
+  </div>
+</section>
+
+<section class="panel" id="paneFile" role="tabpanel" hidden>
+  <h2>엑셀 · CSV 파일</h2>
+  <div class="filedrop" id="dropZone" tabindex="0" role="button" aria-label="파일 선택">
+    <strong>클릭해서 파일 선택</strong> 또는 여기로 끌어다 놓기<br>
+    <span style="font-size:12.5px">.xlsx · .xls · .csv — 파일은 PC 밖으로 나가지 않습니다</span>
+  </div>
+  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+  <div class="fileinfo" id="fileInfo" hidden></div>
+  <div class="btnrow" id="sheetRow" hidden>
+    <label for="sheetSel" style="font-size:13.5px;color:var(--muted)">시트</label>
+    <select id="sheetSel"></select>
+    <button class="act" id="btnMaskFile">마스킹 실행</button>
+  </div>
+  <div id="fileResultWrap" hidden style="margin-top:14px">
+    <div class="counts" id="fileCounts"></div>
+    <div class="tablewrap"><table id="previewTable"></table></div>
+    <div class="btnrow">
+      <button class="ghost" id="btnCopyTsv">마스킹 결과 전체 복사 (엑셀 붙여넣기용)</button>
+      <span id="toastFile" class="toast" role="status"></span>
+    </div>
+    <ol class="steps">
+      <li>위 버튼으로 복사한 뒤, 엑셀에서 <b>새 시트</b>에 붙여넣기 (Ctrl+V)</li>
+      <li>마스킹본을 별도 파일로 저장해서 그 파일만 업로드</li>
+    </ol>
+  </div>
+  <p class="err" id="fileErr" role="alert" hidden></p>
+</section>
+
+<section class="panel" id="panePdf" role="tabpanel" hidden>
+  <h2>PDF 파일</h2>
+  <div class="filedrop" id="pdfDrop" tabindex="0" role="button" aria-label="PDF 선택">
+    <strong>클릭해서 PDF 선택</strong> 또는 여기로 끌어다 놓기<br>
+    <span style="font-size:12.5px">.pdf — 홈택스 출력물·명세서·계약서 등, 파일은 PC 밖으로 나가지 않습니다</span>
+  </div>
+  <input type="file" id="pdfInput" accept=".pdf,application/pdf">
+  <div class="fileinfo" id="pdfInfo" hidden></div>
+  <div class="btnrow" id="pdfRow" hidden>
+    <button class="act" id="btnMaskPdf">마스킹 실행</button>
+    <label style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;cursor:pointer"><input type="checkbox" id="optOcr" style="width:16px;height:16px;accent-color:var(--accent);margin:0"> 글자 인식(OCR)으로 처리 <span class="off">— 스캔본이거나 숫자가 안 잡힐 때, 느림</span></label>
+    <span id="pdfProg" class="toast" role="status"></span>
+  </div>
+  <p class="hint" id="ocrHint" hidden>OCR은 페이지를 그림으로 보고 글자를 읽어내므로 PDF 안 글자 정보가 깨져 있어도 됩니다. 인식 엔진과 한글 데이터(약 10MB)는 이 사이트에서 함께 내려받고, 인식 자체는 이 브라우저 안에서만 돌아갑니다(파일 전송 없음). 페이지당 몇 초씩 걸리고, 인식 오류가 있을 수 있으니 결과를 꼭 확인하세요.</p>
+  <div id="pdfResultWrap" hidden style="margin-top:14px">
+    <div class="counts" id="pdfCounts"></div>
+    <div class="radios" role="radiogroup" aria-label="결과 보기">
+      <label><input type="radio" name="pdfView" value="img" checked> 가려진 PDF 미리보기 (검은 박스)</label>
+      <label><input type="radio" name="pdfView" value="text"> 추출 텍스트 (노란 표시)</label>
+    </div>
+    <div class="pdfpages" id="pdfPages" style="margin-top:8px"></div>
+    <div class="result-pre" id="pdfText" hidden style="margin-top:8px"></div>
+    <div class="btnrow">
+      <button class="act" id="btnSavePdf">가려진 PDF 저장</button>
+      <button class="ghost" id="btnCopyPdfText">마스킹 텍스트 복사</button>
+      <span id="toastPdf" class="toast" role="status"></span>
+    </div>
+    <p class="note">저장되는 PDF는 페이지를 이미지로 바꾼 뒤 가린 자리에 검은 박스를 덧씌운 것이라, 원래 글자가 파일 안에 남지 않습니다. 박스 위치는 글자 폭을 추정한 것이니 저장 전 미리보기로 확인하세요. 텍스트만 올리면 되는 경우에는 「마스킹 텍스트 복사」가 더 가볍습니다.</p>
+  </div>
+  <p class="err" id="pdfErr" role="alert" hidden></p>
+</section>
+
+<footer>원제우세무사사무소 내부용 v3.4 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $ = function(id){ return document.getElementById(id); };
+var M0="\u0000", M1="\u0001";
+
+/* ---------- 설정 저장 (브라우저 편의용, 실패해도 무시) ---------- */
+function loadPrefs(){
+  try{
+    var p = JSON.parse(localStorage.getItem("maskPrefs")||"{}");
+    ["Rrn","Card","Phone","Acct","Biz","Addr","AutoName"].forEach(function(k){
+      if (typeof p[k]==="boolean") $("opt"+k).checked = p[k];
+    });
+  }catch(e){}
+}
+function savePrefs(){
+  try{
+    var p={};
+    ["Rrn","Card","Phone","Acct","Biz","Addr","AutoName"].forEach(function(k){ p[k]=$("opt"+k).checked; });
+    localStorage.setItem("maskPrefs", JSON.stringify(p));
+  }catch(e){}
+}
+loadPrefs();
+["Rrn","Card","Phone","Acct","Biz","Addr","AutoName"].forEach(function(k){
+  $("opt"+k).addEventListener("change", savePrefs);
+});
+
+/* ---------- 마스킹 핵심 ---------- */
+function getOpts(){
+  var names = $("optNames").value.split(",").map(function(s){return s.trim();})
+              .filter(function(s){return s.length>=2;});
+  return {
+    rrn:$("optRrn").checked, card:$("optCard").checked, phone:$("optPhone").checked,
+    acct:$("optAcct").checked, biz:$("optBiz").checked,
+    addr:$("optAddr").checked, autoName:$("optAutoName").checked, names:names
+  };
+}
+function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
+function maskName(nm){ return nm.charAt(0) + Array(nm.length).join("○"); }
+
+var NAME_STOP = ["주민번호","등록번호","생년월일","전화번호","연락처","휴대폰","핸드폰","계좌번호","사업자","사장","부장","차장","과장","대리","주임","팀장","실장","원장","소장","세무사","회계사","변호사","법무사","선생","고객","회원","담당","담당자","어머니","아버지","어머","아버","사모","목사","전도사","교수","박사","작가","기사","의원","관장","감독","코치","의사","약사","간호사","본인","배우자","자녀","부모"];
+function isStopName(w){
+  if (NAME_STOP.indexOf(w) >= 0) return true;
+  return /(번호|주소|일자|금액|은행|계좌|명세)$/.test(w);
+}
+function collectAutoNames(s){
+  var found = {}, m;
+  var re1 = /(성\s*명|이\s*름|성함|예금주|대표자|대표|고객명|수취인|신청인|납세자|피상속인|상속인|근로자|명의자|계약자|피보험자|수익자|담당자)\s*[:：]?\s*([가-힣]{2,4})(?![가-힣])/g;
+  while ((m = re1.exec(s))) if (!isStopName(m[2])) found[m[2]] = 1;
+  var re2 = /([가-힣]{2,4})\s*[\(（:：]?\s*(?=\d{6}\s*[-–—]?\s*[1-8]\d{6})/g;
+  while ((m = re2.exec(s))) if (!isStopName(m[1])) found[m[1]] = 1;
+  var re3 = /([가-힣]{2,3})(?=\s?(?:님|씨)(?:께|의|이|은|는|을|를|과|와|도|만|한테|에게)?(?![가-힣]))/g;
+  while ((m = re3.exec(s))) if (!isStopName(m[1])) found[m[1]] = 1;
+  return Object.keys(found);
+}
+
+function maskText(input, opts, counts){
+  var s = String(input);
+  var wrap = function(t){ return M0+t+M1; };
+
+  var allNames = opts.names.slice();
+  if (opts.autoName){
+    collectAutoNames(s).forEach(function(n){ if (allNames.indexOf(n) < 0) allNames.push(n); });
+  }
+  if (allNames.length){
+    allNames.sort(function(a,b){ return b.length - a.length; });
+    allNames.forEach(function(nm){
+      s = s.replace(new RegExp(escRe(nm),"g"), function(){
+        counts.name++; return wrap(maskName(nm));
+      });
+    });
+  }
+  if (opts.rrn){
+    s = s.replace(/(\d{6})\s*[-–—]?\s*([1-8]\d{6})(?!\d)/g, function(m,a){
+      counts.rrn++; return wrap(a+"-*******");
+    });
+  }
+  if (opts.card){
+    s = s.replace(/(^|[^\d])(\d{4}[- ]\d{4}[- ]\d{4}[- ])(\d{4})(?!\d)/g, function(m,pre,mid,last){
+      counts.card++; return pre+wrap("****-****-****-"+last);
+    });
+  }
+  if (opts.phone){
+    s = s.replace(/(^|[^\d])(01[016789][- .]?\d{3,4}[- .]?)(\d{4})(?!\d)/g, function(m,pre,mid,last){
+      counts.phone++; return pre+wrap("010-****-"+last);
+    });
+    s = s.replace(/(^|[^\d])(0\d{1,2})[- .]\d{3,4}[- .](\d{4})(?!\d)/g, function(m,pre,area,last){
+      counts.phone++; return pre+wrap(area+"-***-"+last);
+    });
+  }
+  if (opts.biz){
+    s = s.replace(/(^|[^\d])\d{3}\s*-\s*\d{2}\s*-\s*\d{5}(?!\d)/g, function(m,pre){
+      counts.biz++; return pre+wrap("***-**-*****");
+    });
+  }
+  if (opts.addr){
+    s = s.replace(/(?<!\d)\d{1,4}\s*동\s*\d{1,4}\s*호(?![가-힣\d])/g, function(){
+      counts.addr++; return wrap("**동 **호");
+    });
+    s = s.replace(/(?<![\d가-힣])\d{1,4}\s*호(?![가-힣\d])/g, function(m){
+      counts.addr++; return wrap("**호");
+    });
+    s = s.replace(/([가-힣]{2,15}(?:대로|로|길)(?:\d{1,3}번?[가-힣]?길)?)(\s*지하)?\s*\d{1,4}(?:\s*-\s*\d{1,4})?(?!\d)(?!\s*(?:년|월|일|시간|시|분|초|개|명|건|차|회|호선|원|만|억|천|%|배|살|세))/g, function(m, road){
+      counts.addr++; return wrap(road + " **");
+    });
+    s = s.replace(/([가-힣]{2,10}(?:동|읍|면|리)\s*)(?:산\s*)?\d{1,4}(?:\s*-\s*\d{1,4})?(\s*번지)?(?![\d가-힣])/g, function(m, dong, bunji){
+      counts.addr++; return dong + wrap("**" + (bunji || ""));
+    });
+  }
+  if (opts.acct){
+    s = s.replace(/(^|[^\d*\u0000-\u0001])(\d[\d-]{7,18}\d)(?![\d*])/g, function(m,pre,num){
+      var digits = num.replace(/-/g,"");
+      if (!/^\d+$/.test(digits) || digits.length<10 || digits.length>16) return m;
+      if (/^\d{3}-\d{2}-\d{5}$/.test(num)) return m;
+      counts.acct++;
+      return pre+wrap("*".repeat(digits.length-4)+digits.slice(-4));
+    });
+  }
+  return s;
+}
+function newCounts(){ return {rrn:0,card:0,phone:0,acct:0,biz:0,addr:0,name:0}; }
+function stripMarks(s){ return s.replace(/[\u0000\u0001]/g,""); }
+function escHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function toHighlighted(s){ return escHtml(s).replace(/\u0000/g,"<mark>").replace(/\u0001/g,"</mark>"); }
+var LABELS = {rrn:"주민번호",card:"카드",phone:"전화",acct:"계좌",biz:"사업자",addr:"주소",name:"이름"};
+function renderCounts(el,c){
+  var html = "";
+  Object.keys(LABELS).forEach(function(k){
+    html += '<span class="'+(c[k]?"":"zero")+'">'+LABELS[k]+" "+c[k]+"건</span>";
+  });
+  el.innerHTML = html;
+}
+
+/* ---------- 탭 ---------- */
+var TABS = {text:["tabText","paneText"], file:["tabFile","paneFile"], pdf:["tabPdf","panePdf"]};
+function selectTab(which){
+  Object.keys(TABS).forEach(function(k){
+    var on = k===which;
+    $(TABS[k][0]).setAttribute("aria-selected", on);
+    $(TABS[k][1]).hidden = !on;
+  });
+}
+$("tabText").addEventListener("click", function(){ selectTab("text"); });
+$("tabFile").addEventListener("click", function(){ selectTab("file"); });
+$("tabPdf").addEventListener("click", function(){ selectTab("pdf"); });
+
+/* ---------- 텍스트 모드 ---------- */
+var lastTextResult = "";
+$("btnMaskText").addEventListener("click", function(){
+  var c = newCounts();
+  var out = maskText($("srcText").value, getOpts(), c);
+  lastTextResult = stripMarks(out);
+  $("textResult").innerHTML = toHighlighted(out) || '<span style="color:var(--muted)">내용이 없습니다.</span>';
+  renderCounts($("textCounts"), c);
+  $("textResultWrap").hidden = false;
+  $("btnCopyText").disabled = !lastTextResult;
+  $("toastText").textContent = "";
+});
+$("btnCopyText").addEventListener("click", function(){ copyText(lastTextResult, $("toastText")); });
+function copyText(text, toastEl){
+  function ok(){ toastEl.textContent="복사됨 ✓"; setTimeout(function(){toastEl.textContent="";},2500); }
+  function fallback(){
+    var ta=document.createElement("textarea");
+    ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); ok(); }catch(e){ toastEl.textContent="복사 실패 — 직접 선택해 주세요"; }
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(ok, fallback);
+  } else fallback();
+}
+
+/* ---------- 파일 모드 ---------- */
+var wb = null, lastTsv = "";
+var drop = $("dropZone");
+drop.addEventListener("click", function(){ $("fileInput").click(); });
+drop.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("fileInput").click(); } });
+["dragenter","dragover"].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add("drag"); }); });
+["dragleave","drop"].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove("drag"); }); });
+drop.addEventListener("drop", function(e){ if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+$("fileInput").addEventListener("change", function(){ if (this.files && this.files[0]) handleFile(this.files[0]); });
+
+function handleFile(file){
+  $("fileErr").hidden = true;
+  $("fileResultWrap").hidden = true;
+  var reader = new FileReader();
+  reader.onerror = function(){ showFileErr("파일을 읽지 못했습니다. 다시 시도해 주세요."); };
+  reader.onload = function(e){
+    try{
+      var buf = e.target.result;
+      if (/\.csv$/i.test(file.name)){
+        var text;
+        try{ text = new TextDecoder("utf-8",{fatal:true}).decode(buf); }
+        catch(err){ text = new TextDecoder("euc-kr").decode(buf); }
+        wb = XLSX.read(text, {type:"string"});
+      } else {
+        wb = XLSX.read(new Uint8Array(buf), {type:"array"});
+      }
+      var sel = $("sheetSel");
+      sel.innerHTML = "";
+      wb.SheetNames.forEach(function(nm){
+        var o = document.createElement("option"); o.value=nm; o.textContent=nm; sel.appendChild(o);
+      });
+      $("fileInfo").innerHTML = "<b>"+escHtml(file.name)+"</b> · 시트 "+wb.SheetNames.length+"개";
+      $("fileInfo").hidden = false;
+      $("sheetRow").hidden = false;
+    }catch(err){
+      showFileErr("이 파일 형식을 열 수 없습니다. 암호가 걸린 파일이면 암호를 풀고 다시 시도해 주세요.");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function showFileErr(msg){ var el=$("fileErr"); el.textContent=msg; el.hidden=false; }
+
+$("btnMaskFile").addEventListener("click", function(){
+  if (!wb) return;
+  var ws = wb.Sheets[$("sheetSel").value];
+  var rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:""});
+  var opts = getOpts(), c = newCounts();
+  var nameCols = {};
+  if (opts.autoName && rows.length){
+    var hdrRe = /(성\s*명|이\s*름|성함|예금주|대표자|고객명|수취인|명의자|근로자|사원명|직원명|상속인|피상속인)/;
+    (rows[0]||[]).forEach(function(h,i){ if (hdrRe.test(String(h))) nameCols[i] = true; });
+  }
+  var masked = rows.map(function(row, r){
+    return row.map(function(cell, ci){
+      var v = cell==null ? "" : String(cell);
+      if (r > 0 && nameCols[ci] && /^[가-힣]{2,5}$/.test(v.trim())){
+        c.name++; return M0 + maskName(v.trim()) + M1;
+      }
+      return maskText(v, opts, c);
+    });
+  });
+  lastTsv = masked.map(function(row){
+    return row.map(function(cell){ return stripMarks(cell).replace(/\t/g," ").replace(/\r?\n/g," "); }).join("\t");
+  }).join("\n");
+  var tbl = $("previewTable"), html = "";
+  var maxR = Math.min(masked.length, 60);
+  for (var r=0; r<maxR; r++){
+    var maxC = Math.min(masked[r].length, 20);
+    html += "<tr>";
+    for (var col=0; col<maxC; col++) html += "<td>"+toHighlighted(masked[r][col])+"</td>";
+    html += "</tr>";
+  }
+  tbl.innerHTML = html || "<tr><td>빈 시트입니다.</td></tr>";
+  renderCounts($("fileCounts"), c);
+  $("fileResultWrap").hidden = false;
+  $("toastFile").textContent = masked.length>60 ? "미리보기는 60행까지 — 복사에는 전체 "+masked.length+"행이 포함됩니다" : "";
+});
+$("btnCopyTsv").addEventListener("click", function(){ copyText(lastTsv, $("toastFile")); });
+
+/* ---------- PDF 모드 ---------- */
+var pdfDoc = null, pdfName = "", pdfCanvases = [], lastPdfText = "";
+var BASE = location.href.replace(/[?#].*$/, "").replace(/[^\/]*$/, "");   /* 이 페이지의 절대 경로 (워커에서도 같은 기준으로 쓰기 위해) */
+if (window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = BASE + "vendor/pdf.worker.min.js";
+}
+var pdrop = $("pdfDrop");
+pdrop.addEventListener("click", function(){ $("pdfInput").click(); });
+pdrop.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("pdfInput").click(); } });
+["dragenter","dragover"].forEach(function(ev){ pdrop.addEventListener(ev, function(e){ e.preventDefault(); pdrop.classList.add("drag"); }); });
+["dragleave","drop"].forEach(function(ev){ pdrop.addEventListener(ev, function(e){ e.preventDefault(); pdrop.classList.remove("drag"); }); });
+pdrop.addEventListener("drop", function(e){ if (e.dataTransfer.files && e.dataTransfer.files[0]) handlePdf(e.dataTransfer.files[0]); });
+$("pdfInput").addEventListener("change", function(){ if (this.files && this.files[0]) handlePdf(this.files[0]); });
+function showPdfErr(msg){ var el=$("pdfErr"); el.textContent=msg; el.hidden=false; }
+
+function handlePdf(file){
+  $("pdfErr").hidden = true;
+  $("pdfResultWrap").hidden = true;
+  $("pdfRow").hidden = true;
+  if (!window.pdfjsLib){ showPdfErr("PDF 처리 모듈을 불러오지 못했습니다. 새로고침해 주세요."); return; }
+  pdfName = file.name;
+  var reader = new FileReader();
+  reader.onerror = function(){ showPdfErr("파일을 읽지 못했습니다. 다시 시도해 주세요."); };
+  reader.onload = function(e){
+    pdfjsLib.getDocument({
+      data:new Uint8Array(e.target.result),
+      cMapUrl:BASE+"vendor/cmaps/", cMapPacked:true,            /* 한글 CID 폰트(UniKS 등) 글자 복원에 필요 */
+      standardFontDataUrl:BASE+"vendor/standard_fonts/"
+    }).promise.then(function(doc){
+      pdfDoc = doc;
+      $("pdfInfo").innerHTML = "<b>"+escHtml(file.name)+"</b> · "+doc.numPages+"페이지";
+      $("pdfInfo").hidden = false;
+      $("pdfRow").hidden = false;
+    }, function(err){
+      var msg = (err && err.name==="PasswordException") ? "암호가 걸린 PDF입니다. 암호를 풀고 다시 시도해 주세요." : "이 PDF를 열 수 없습니다.";
+      showPdfErr(msg);
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* 마스킹 결과(마커 포함)를 원문 좌표의 구간으로 역산 */
+function spansFromMarked(orig, marked){
+  var spans = [], p = 0, pending = -1, i = 0, n = marked.length;
+  while (i < n){
+    if (marked.charAt(i) === M0){
+      var j = marked.indexOf(M1, i);
+      if (j < 0) j = n;
+      if (pending < 0) pending = p;
+      i = j + 1;
+    } else {
+      var k = i;
+      while (k < n && marked.charAt(k) !== M0) k++;
+      var tok = marked.slice(i, k);
+      var idx = orig.indexOf(tok, p);
+      if (idx < 0){ return [[0, orig.length]]; }
+      if (pending >= 0){ spans.push([pending, idx]); pending = -1; }
+      p = idx + tok.length;
+      i = k;
+    }
+  }
+  if (pending >= 0) spans.push([pending, orig.length]);
+  return spans.filter(function(s){ return s[1] > s[0]; });
+}
+
+function charW(ch){
+  if (/[가-힣ㄱ-ㆎ一-鿿！-～]/.test(ch)) return 1;
+  if (/\s/.test(ch)) return 0.45;   /* 한글 PDF의 공백은 반각(0.5em)인 경우가 많음 */
+  if (/[0-9A-Za-z]/.test(ch)) return 0.52;
+  return 0.45;
+}
+function cumWidths(str){
+  var acc = [0], t = 0;
+  for (var i=0;i<str.length;i++){ t += charW(str.charAt(i)); acc.push(t); }
+  return acc;
+}
+
+function groupLines(items){
+  var lines = [];
+  items.forEach(function(it){
+    if (!it.str) return;
+    var y = it.transform[5], x = it.transform[4];
+    var line = null;
+    for (var i=0;i<lines.length;i++){ if (Math.abs(lines[i].y - y) < Math.max(2, it.height*0.5)){ line = lines[i]; break; } }
+    if (!line){ line = {y:y, items:[]}; lines.push(line); }
+    line.items.push({x:x, str:it.str, end:x + (it.width||0), it:it});
+  });
+  lines.sort(function(a,b){ return b.y - a.y; });
+  lines.forEach(function(l){
+    l.items.sort(function(a,b){ return a.x - b.x; });
+    var s = "", prevEnd = null;
+    l.items.forEach(function(t){
+      var tx = t.it.transform, fs = Math.hypot(tx[2], tx[3]) || t.it.height || 10;
+      if (prevEnd !== null && t.x - prevEnd > fs * 0.33) s += " ";
+      t.off = s.length;
+      s += t.str; prevEnd = t.end;
+    });
+    l.text = s;
+  });
+  return lines;
+}
+/* OCR 결과 보정: "184 - 10" → "184-10", "노 해동"·"사 업 자" 처럼 한 글자씩 떨어진 한글 붙이기 (공백만 제거하므로 글자 매핑 유지) */
+function ocrNormalize(s){
+  s = s.replace(/(\d)[ \u00a0]*([-–—])[ \u00a0]*(?=\d)/g, "$1$2");
+  var prev;
+  do { prev = s; s = s.replace(/(^|[^가-힣])([가-힣])[ \u00a0]+(?=[가-힣])/g, "$1$2").replace(/([가-힣])[ \u00a0]+([가-힣])(?=$|[^가-힣])/g, "$1$2"); } while (s !== prev);
+  return s;
+}
+function normalizeSpacedDigits(s){
+  return s.replace(/(?:\d[  ](?=[\d-]|$)|-[  ](?=\d)|\d(?=[  ]-)){5,}\d?/g, function(m){
+    return m.replace(/[  ]/g, "");
+  });
+}
+
+/* ---------- OCR (Tesseract.js, 브라우저 내 실행 — 엔진·언어 데이터 모두 이 사이트에서 로드) ---------- */
+var ocrWorker = null;
+function getOcrWorker(progressEl){
+  if (ocrWorker) return Promise.resolve(ocrWorker);
+  if (!window.Tesseract) return Promise.reject(new Error("OCR 모듈을 불러오지 못했습니다. 새로고침해 주세요."));
+  return Tesseract.createWorker("kor+eng", 1, {
+    workerPath: BASE + "vendor/worker.min.js",
+    corePath: BASE + "vendor/",
+    langPath: BASE + "vendor/lang/",
+    gzip: true,
+    logger: function(m){
+      if (m.status === "loading language traineddata" || m.status === "loading tesseract core" || m.status === "initializing api"){
+        progressEl.textContent = "글자 인식 엔진 준비 중… " + Math.round((m.progress||0)*100) + "%";
+      }
+    }
+  }).then(function(w){
+    return w.setParameters({preserve_interword_spaces:"1"}).then(function(){ ocrWorker = w; return w; });
+  });
+}
+function ocrLines(data){
+  var lines = [];
+  (data.lines || []).forEach(function(ln){
+    var words = (ln.words || []).filter(function(w){ return w.text && w.text.trim(); });
+    if (!words.length) return;
+    var s = "", items = [];
+    words.forEach(function(w, i){
+      if (i) s += " ";
+      items.push({str:w.text, off:s.length, px:w.bbox});
+      s += w.text;
+    });
+    lines.push({text:s, items:items, ocr:true});
+  });
+  return lines;
+}
+function drawOcrBoxes(ctx, line, pOpts){
+  var dummy = newCounts();
+  var out = maskText(line.text, pOpts, dummy);
+  if (out.indexOf(M0) < 0) return;
+  var spans = spansFromMarked(line.text, out);
+  line.items.forEach(function(t){
+    var s0 = t.off, s1 = t.off + t.str.length, len = t.str.length || 1;
+    var sub = [];
+    spans.forEach(function(sp){
+      var a = Math.max(sp[0], s0), b = Math.min(sp[1], s1);
+      if (b > a) sub.push([a - s0, b - s0]);
+    });
+    if (!sub.length) return;
+    var covered = sub.reduce(function(n,sp){ return n + (sp[1]-sp[0]); }, 0);
+    if (covered / len >= 0.5) sub = [[0, len]];
+    var bx = t.px, w = bx.x1 - bx.x0, h = bx.y1 - bx.y0;
+    var cw = cumWidths(t.str), total = cw[len] || 1;
+    sub.forEach(function(sp){
+      var x0 = bx.x0 + w * (cw[sp[0]]/total), x1 = bx.x0 + w * (cw[sp[1]]/total);
+      var pad = h * 0.3;
+      ctx.fillRect(x0 - pad, bx.y0 - h*0.2, (x1 - x0) + pad*2, h*1.4);
+    });
+  });
+}
+
+function drawLineBoxes(ctx, vp, line, pOpts){
+  var dummy = newCounts();
+  var out = maskText(line.text, pOpts, dummy);
+  if (out.indexOf(M0) < 0) return;
+  var spans = spansFromMarked(line.text, out);
+  line.items.forEach(function(t){
+    var s0 = t.off, s1 = t.off + t.str.length, len = t.str.length || 1;
+    var sub = [];
+    spans.forEach(function(sp){
+      var a = Math.max(sp[0], s0), b = Math.min(sp[1], s1);
+      if (b > a) sub.push([a - s0, b - s0]);
+    });
+    if (!sub.length) return;
+    var covered = sub.reduce(function(n,sp){ return n + (sp[1]-sp[0]); }, 0);
+    var tx = t.it.transform, fs = Math.hypot(tx[2], tx[3]) || t.it.height || 10;
+    var w = t.it.width || (len * fs * 0.6);
+    if (covered / len >= 0.5) sub = [[0, len]];
+    var cw = cumWidths(t.str), total = cw[len] || 1;
+    sub.forEach(function(sp){
+      var x0 = tx[4] + w * (cw[sp[0]]/total), x1 = tx[4] + w * (cw[sp[1]]/total);
+      var pad = fs * 0.35;
+      var r = vp.convertToViewportRectangle([x0 - pad, tx[5] - fs*0.3, x1 + pad, tx[5] + fs*1.0]);
+      ctx.fillRect(Math.min(r[0],r[2]), Math.min(r[1],r[3]), Math.abs(r[2]-r[0]), Math.abs(r[3]-r[1]));
+    });
+  });
+}
+
+$("btnMaskPdf").addEventListener("click", function(){
+  if (!pdfDoc) return;
+  var opts = getOpts(), c = newCounts();
+  var useOcr = $("optOcr").checked;
+  var SCALE = useOcr ? 2.5 : 2;
+  var pagesEl = $("pdfPages");
+  pagesEl.innerHTML = ""; pdfCanvases = [];
+  var markedPages = [], textChars = 0;
+  $("btnMaskPdf").disabled = true;
+  $("pdfErr").hidden = true;
+  $("toastPdf").textContent = "";
+
+  var seq = Promise.resolve();
+  for (var pn = 1; pn <= pdfDoc.numPages; pn++){
+    (function(pageNo){
+      seq = seq.then(function(){
+        $("pdfProg").textContent = pageNo+" / "+pdfDoc.numPages+" 페이지 처리 중…";
+        return pdfDoc.getPage(pageNo).then(function(page){
+          var vp = page.getViewport({scale:SCALE});
+          var canvas = document.createElement("canvas");
+          canvas.width = Math.floor(vp.width); canvas.height = Math.floor(vp.height);
+          var ctx = canvas.getContext("2d");
+          return page.render({canvasContext:ctx, viewport:vp}).promise.then(function(){
+            if (!useOcr) return page.getTextContent();
+            return getOcrWorker($("pdfProg")).then(function(w){
+              $("pdfProg").textContent = pageNo+" / "+pdfDoc.numPages+" 페이지 글자 인식 중…";
+              return w.recognize(canvas);
+            }).then(function(res){ return {ocr:true, data:res.data}; });
+          }).then(function(tc){
+            var lines;
+            if (tc.ocr){
+              lines = ocrLines(tc.data);
+            } else {
+              var items = tc.items.filter(function(it){ return it.str && it.transform; });
+              lines = groupLines(items);
+            }
+            lines.forEach(function(l){
+              var norm = normalizeSpacedDigits(l.text);
+              if (l.ocr) norm = ocrNormalize(norm);
+              if (norm !== l.text){
+                var map = [], j = 0;
+                for (var i=0;i<l.text.length;i++){
+                  map.push(j);
+                  if (j < norm.length && l.text.charAt(i) === norm.charAt(j)) j++;
+                }
+                l.items.forEach(function(t){ t.off = map[t.off] != null ? map[t.off] : norm.length; });
+                l.text = norm;
+              }
+            });
+            var pageText = lines.map(function(l){ return l.text; }).join("\n");
+            textChars += pageText.replace(/\s/g,"").length;
+
+            var pOpts = Object.assign({}, opts, {names: opts.names.slice()});
+            if (opts.autoName){
+              collectAutoNames(pageText).forEach(function(n){ if (pOpts.names.indexOf(n)<0) pOpts.names.push(n); });
+            }
+            var markedText = maskText(pageText, pOpts, c);
+            markedPages.push(markedText);
+
+            ctx.fillStyle = "#000";
+            lines.forEach(function(l){ if (l.ocr) drawOcrBoxes(ctx, l, pOpts); else drawLineBoxes(ctx, vp, l, pOpts); });
+            var lab = document.createElement("div"); lab.className="pagelabel"; lab.textContent = pageNo+" 페이지";
+            pagesEl.appendChild(lab); pagesEl.appendChild(canvas);
+            pdfCanvases.push({canvas:canvas, w:vp.width/SCALE, h:vp.height/SCALE});
+          });
+        });
+      });
+    })(pn);
+  }
+  seq.then(function(){
+    $("btnMaskPdf").disabled = false;
+    $("pdfProg").textContent = "";
+    var all = markedPages.map(function(t,i){ return "── "+(i+1)+" 페이지 ──\n"+t; }).join("\n\n");
+    lastPdfText = stripMarks(all);
+    $("pdfText").innerHTML = toHighlighted(all);
+    renderCounts($("pdfCounts"), c);
+    $("pdfResultWrap").hidden = false;
+    if (textChars === 0){
+      showPdfErr(useOcr ? "글자를 읽어내지 못했습니다. 해상도가 너무 낮거나 빈 페이지일 수 있습니다." : "이 PDF에는 글자 정보가 없습니다(스캔 이미지). 「글자 인식(OCR)으로 처리」를 켜고 다시 실행해 보세요.");
+    } else if (!useOcr && c.rrn === 0 && c.addr === 0 && c.phone === 0){
+      $("toastPdf").textContent = "숫자 항목이 하나도 안 잡혔어요. PDF 글자 정보가 깨져 있을 수 있으니 「OCR」을 켜고 다시 실행해 보세요.";
+    }
+    applyPdfView();
+  }).catch(function(err){
+    $("btnMaskPdf").disabled = false;
+    $("pdfProg").textContent = "";
+    showPdfErr("처리 중 오류가 났습니다: " + (err && err.message ? err.message : err));
+  });
+});
+
+function applyPdfView(){
+  var v = document.querySelector('input[name="pdfView"]:checked').value;
+  $("pdfPages").hidden = v !== "img";
+  $("pdfText").hidden = v !== "text";
+}
+Array.prototype.forEach.call(document.querySelectorAll('input[name="pdfView"]'), function(r){ r.addEventListener("change", applyPdfView); });
+$("optOcr").addEventListener("change", function(){ $("ocrHint").hidden = !this.checked; });
+$("btnCopyPdfText").addEventListener("click", function(){ copyText(lastPdfText, $("toastPdf")); });
+
+$("btnSavePdf").addEventListener("click", function(){
+  if (!pdfCanvases.length) return;
+  if (!window.jspdf || !window.jspdf.jsPDF){ $("toastPdf").textContent = "PDF 저장 모듈을 불러오지 못했습니다."; return; }
+  try{
+    var JsPDF = window.jspdf.jsPDF, doc = null;
+    pdfCanvases.forEach(function(p){
+      var orient = p.w > p.h ? "l" : "p";
+      if (!doc) doc = new JsPDF({orientation:orient, unit:"pt", format:[p.w, p.h], compress:true});
+      else doc.addPage([p.w, p.h], orient);
+      doc.addImage(p.canvas.toDataURL("image/jpeg", 0.85), "JPEG", 0, 0, p.w, p.h);
+    });
+    doc.save(pdfName.replace(/\.pdf$/i,"") + "_마스킹.pdf");
+    $("toastPdf").textContent = "저장됨 ✓"; setTimeout(function(){ $("toastPdf").textContent=""; }, 2500);
+  }catch(e){ $("toastPdf").textContent = "저장 실패: " + e.message; }
+});
+})();
+</script>
+</body>
+</html>
