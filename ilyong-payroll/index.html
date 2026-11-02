@@ -160,7 +160,7 @@
     <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
   </div>
 
-  <footer class="v">일용직 급여 업로드 변환기 v1.2 · 원제우세무사사무소 내부용</footer>
+  <footer class="v">일용직 급여 업로드 변환기 v1.3 · 원제우세무사사무소 내부용</footer>
 </div>
 
 <div class="bar">
@@ -207,6 +207,46 @@
     return {days: Array.from(new Set(days)).sort(function(a,b){return a-b;}), invalid: invalid};
   }
 
+  // 주민등록번호 정규화: 숫자만 남기고, 엑셀이 숫자로 저장해 앞자리 0이 사라진 12자리는 0을 복원
+  function normJumin(v){
+    if(v===null||v===undefined||v==="") return "";
+    var d;
+    if(typeof v === "number") d = String(Math.round(v));
+    else d = String(v).replace(/[^0-9]/g,"");
+    if(d.length===12) d = "0"+d;
+    return d;
+  }
+
+  // 시트에 이름+주민번호 열이 함께 있으면 {이름: 주민번호} 사전을 만든다 (다른 시트의 인명부도 활용)
+  function collectJuminMap(workbook){
+    var map = {}, dup = {};
+    workbook.SheetNames.forEach(function(sn){
+      var aoa = XLSX.utils.sheet_to_json(workbook.Sheets[sn], {header:1, defval:null, raw:true});
+      var nameCols = ["근로자","이름","성명","사원명","성명(상호)"];
+      for(var r=0;r<Math.min(aoa.length,8);r++){
+        var norm = (aoa[r]||[]).map(normHeader);
+        var ni=-1, ji=-1;
+        norm.forEach(function(v,i){
+          if(ni<0 && nameCols.indexOf(v)>-1) ni=i;
+          if(ji<0 && v.indexOf("주민")>-1) ji=i;
+        });
+        if(ni<0 || ji<0) continue;
+        for(var k=r+1;k<aoa.length;k++){
+          var row = aoa[k]||[];
+          var nm = row[ni]; if(nm===null||nm===undefined) continue;
+          nm = String(nm).trim(); if(!nm) continue;
+          var j = normJumin(row[ji]);
+          if(j.length!==13) continue;
+          if(map[nm] && map[nm]!==j) dup[nm]=true;
+          map[nm] = j;
+        }
+        break;
+      }
+    });
+    Object.keys(dup).forEach(function(n){ delete map[n]; });
+    return map;
+  }
+
   function splitPay(total, n){
     total = Math.round(total);
     var base = Math.floor(total/n);
@@ -229,6 +269,7 @@
           else if(v==="근로자") col.name=i;
           else if(v==="급여") col.pay=i;
           else if(v==="특이사항") col.note=i;
+          else if(v.indexOf("주민")>-1) col.jumin=i;
         });
       }
       if(norm.indexOf("4대보험")>-1 && norm.indexOf("일용")>-1){
@@ -289,7 +330,7 @@
         flagged.push({sheet:sheetName, no:no, name:nameStr, reason:"특이사항(근무일) 인식 불가: "+JSON.stringify(note===undefined?null:note)});
         continue;
       }
-      records.push({sheet:sheetName, site:"", siteName:site, no:no, name:nameStr, pay:payNum, days:days, jumin:"", include:true, mode:"gross", format:"A"});
+      records.push({sheet:sheetName, site:"", siteName:site, no:no, name:nameStr, pay:payNum, days:days, jumin:(col.jumin!==undefined ? normJumin(row[col.jumin]) : ""), include:true, mode:"gross", format:"A"});
     }
     return {records:records, flagged:flagged};
   }
@@ -353,7 +394,7 @@
       }
       records.push({
         sheet:sheetName, site:"", siteName:site, no:r+1, name:nameStr, pay:payNum, days:days,
-        jumin: jumin? String(jumin).replace(/[^0-9]/g,"") : "",
+        jumin: normJumin(jumin),
         include:true, mode:"net", format:"B"
       });
     }
@@ -370,6 +411,10 @@
       if(!res) res = {records:[], flagged:[{sheet:sn, no:"-", name:"-", reason:"헤더 인식 실패 - 시트 건너뜀 (지원 형식: 번호/근로자/급여/근무형태구분/특이사항 또는 이름/실지급액/근무일)"}]};
       allRecords = allRecords.concat(res.records);
       allFlagged = allFlagged.concat(res.flagged);
+    });
+    var jm = collectJuminMap(workbook);
+    allRecords.forEach(function(rec){
+      if(!rec.jumin && jm[rec.name]) rec.jumin = jm[rec.name];
     });
     return {records:allRecords, flagged:allFlagged};
   }
