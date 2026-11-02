@@ -140,8 +140,10 @@
       <div class="field"><label>일 비과세 공제(원)</label><input type="number" id="setDeduction" value="150000" min="0" step="1000"></div>
       <div class="field"><label>원천징수세율(%)</label><input type="number" id="setRate" value="6" min="0" step="0.1"></div>
       <div class="field"><label>근로소득세액공제(%)</label><input type="number" id="setCredit" value="55" min="0" max="100" step="1"></div>
+      <div class="field"><label>엑셀 금액 기준</label><select id="setBasis"><option value="net" selected>세후(실지급액) → 세전 역산</option><option value="gross">세전(임금총액) 그대로</option></select></div>
+      <div class="field"><label>고용보험 근로자부담(%)</label><input type="number" id="setEi" value="0.9" min="0" step="0.1"></div>
     </div>
-    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. 근무여부는 위하고 양식 안내에 따라 여=1 / 부=0, 현장코드는 위하고에 등록된 숫자 코드(없으면 비워둠), 주민등록번호는 하이픈 없는 13자리 텍스트로 만듭니다.<br><b>실지급액→세전 환산</b>: 소득세법 제47조②(일용근로자 근로소득공제 1일 15만원) · 제129조①(원천징수세율 6%) · 제59조③(근로소득세액공제 55%), 지방세법(지방소득세=소득세의 10%)을 법령 기준으로 적용한 역산이며, 150,000원 초과액에 대해 일자별로 계산합니다. 소득세/지방소득세 칸 자체는 비워두어 위하고/SmartA가 사원등록정보 기준으로 다시 계산하도록 했습니다 — 세율이 바뀌었다면 위 숫자를 직접 고쳐주세요.</div>
+    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. 근무여부는 위하고 양식 안내에 따라 여=1 / 부=0, 현장코드는 위하고에 등록된 숫자 코드(없으면 비워둠), 주민등록번호는 하이픈 없는 13자리 텍스트로 만듭니다.<br><b>세후→세전 환산</b>: 임금총액 − 고용보험(근로자 0.9%, 10원 미만 절사 — 위하고 직접입력 결과와 동일) − 소득세·지방소득세 = 엑셀의 세후 금액이 되도록 일자별로 역산합니다. 소득세는 소득세법 제47조②(1일 15만원 공제) · 제129조①(6%) · 제59조③(세액공제 55%)로 계산하고, 소득세 산출액이 1천원 미만이면 소액부징수(소득세법 제86조)로 0원 처리합니다(일당 약 18.7만원 이하는 소득세 0). 지방소득세=소득세의 10%. 계산된 고용보험·소득세·지방소득세는 업로드 파일의 해당 칸에 채워 넣으므로 위하고 차인지급액이 엑셀 금액과 일치합니다. 고용보험 요율이 다르면 위 요율을 고쳐주세요.</div>
   </div>
 
   <div class="tiles" id="tiles"></div>
@@ -164,7 +166,7 @@
     <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
   </div>
 
-  <footer class="v">일용직 급여 업로드 변환기 v1.6 · 원제우세무사사무소 내부용</footer>
+  <footer class="v">일용직 급여 업로드 변환기 v1.7 · 원제우세무사사무소 내부용</footer>
 </div>
 
 <div class="bar">
@@ -470,40 +472,42 @@
   // 소득세법 제47조제2항(일용근로자 근로소득공제 1일 15만원), 제129조제1항제4호(원천징수세율 6%),
   // 제59조제3항(일용근로자 근로소득세액공제 55%), 지방세법 제103조의13(지방소득세 = 소득세의 10%)
   // 를 law.go.kr 현행 조문으로 확인하여 반영. 1일 단위로 계산(특이사항/근무일의 일자별 적용).
+  function eiOf(gross, ratePct){
+    var v = Math.round(gross * (ratePct||0) * 1000) / 100000; // 원 단위(요율%)
+    return Math.floor(v/10)*10; // 10원 미만 절사
+  }
   function dailyTax(gross, tax){
     var base = Math.max(0, gross - tax.deduction);
     var incomeTax = Math.floor(base * (tax.rate/100) * (1 - tax.credit/100));
+    if(incomeTax < 1000) incomeTax = 0; // 소액부징수(소득세법 제86조)
     var localTax = Math.floor(incomeTax * 0.1);
     return {incomeTax:incomeTax, localTax:localTax, total: incomeTax+localTax};
   }
-
-  function grossUpDaily(net, tax){
+  function forwardDaily(g, settings){
+    var t = dailyTax(g, settings.tax);
+    var ei = eiOf(g, settings.ei);
+    return {gross:g, ei:ei, incomeTax:t.incomeTax, localTax:t.localTax, tax:t.total, net:g-ei-t.total};
+  }
+  function grossUpDaily(net, settings){
     net = Math.round(net);
-    if(net<=tax.deduction) return {gross:net, incomeTax:0, localTax:0, tax:0};
-    var netRate = 1 - (tax.rate/100)*(1-tax.credit/100)*1.1;
-    var estGross = Math.round((net - tax.deduction*(1-netRate)) / netRate);
-    for(var g=Math.max(tax.deduction, estGross-10); g<=estGross+10; g++){
-      var t = dailyTax(g, tax);
-      if(g - t.total === net){ return {gross:g, incomeTax:t.incomeTax, localTax:t.localTax, tax:t.total}; }
-    }
-    // 정확히 일치하는 정수 원이 없으면(드묾) 가장 가까운 값으로 근사
-    var bestDiff=Infinity, best=null;
-    for(var g2=Math.max(tax.deduction, estGross-30); g2<=estGross+30; g2++){
-      var t2 = dailyTax(g2, tax);
-      var diff = Math.abs((g2-t2.total)-net);
-      if(diff<bestDiff){ bestDiff=diff; best={gross:g2, incomeTax:t2.incomeTax, localTax:t2.localTax, tax:t2.total, approx:true}; }
+    var hi = Math.ceil(net*1.3)+2000, best=null, bestDiff=Infinity;
+    for(var g=net; g<=hi; g++){
+      var f = forwardDaily(g, settings);
+      if(f.net===net) return f;
+      var d = Math.abs(f.net-net);
+      if(d<bestDiff){ bestDiff=d; best=f; best.approx=true; }
+      if(f.net>net+50) break;
     }
     return best;
   }
 
   function computeDailyAmounts(rec, settings){
     var n = rec.days.length;
-    if(rec.mode==="net"){
-      var dailyNets = splitPay(rec.pay, n);
-      return dailyNets.map(function(net){ return grossUpDaily(net, settings.tax); });
+    var parts = splitPay(rec.pay, n);
+    if(settings.basis==="gross"){
+      return parts.map(function(g){ return forwardDaily(g, settings); });
     }
-    var dailyGross = splitPay(rec.pay, n);
-    return dailyGross.map(function(g){ return {gross:g, incomeTax:null, localTax:null, tax:null}; });
+    return parts.map(function(net){ return grossUpDaily(net, settings); });
   }
 
   function buildUploadRows(records, settings){
@@ -517,7 +521,7 @@
           현장코드:(/^\d+$/.test(String(rec.site||"").trim()) ? Number(String(rec.site).trim()) : ""), 공수:1,
           근무시간_정상:settings.hours, 근무시간_연장:"",
           지급액_정상:amounts[i].gross, 지급액_연장:"",
-          기타비과세:"", 고용보험:"", 국민연금:"", 건강보험:"", 장기요양보험:"", 소득세:"", 지방소득세:""
+          기타비과세:"", 고용보험:(amounts[i].ei||""), 국민연금:"", 건강보험:"", 장기요양보험:"", 소득세:(amounts[i].incomeTax||""), 지방소득세:(amounts[i].localTax||"")
         });
       });
     });
@@ -586,7 +590,7 @@
     records: [],
     flagged: [],
     isSample: true,
-    settings: { hours: 8, mark: 1, tax: {deduction:150000, rate:6, credit:55} }
+    settings: { hours: 8, mark: 1, ei: 0.9, basis: "net", tax: {deduction:150000, rate:6, credit:55} }
   };
 
   function sampleRecords(){
@@ -631,7 +635,7 @@
       var grosses = amounts.map(function(a){return a.gross;});
       var dailyLabel = (new Set(grosses)).size===1 ? (fmt.format(grosses[0])+"원/일") : (fmt.format(Math.min.apply(null,grosses))+"~"+fmt.format(Math.max.apply(null,grosses))+"원/일");
       var grossTotal = grosses.reduce(function(a,b){return a+b;},0);
-      var modeChip = rec.mode==="net" ? '<span class="chip warn">실지급액→세전</span>' : '<span class="chip" style="background:color-mix(in srgb, var(--good) 16%, transparent); color:var(--good);">급여(세전)</span>';
+      var modeChip = state.settings.basis!=="gross" ? '<span class="chip warn">세후→세전</span>' : '<span class="chip" style="background:color-mix(in srgb, var(--good) 16%, transparent); color:var(--good);">급여(세전)</span>';
       var tr = document.createElement("tr");
       if(!rec.include) tr.className = "excluded";
       tr.innerHTML =
@@ -707,6 +711,8 @@
       rate: parseFloat(document.getElementById("setRate").value) || 0,
       credit: parseFloat(document.getElementById("setCredit").value) || 0
     };
+    state.settings.ei = parseFloat(document.getElementById("setEi").value) || 0;
+    state.settings.basis = document.getElementById("setBasis").value === "gross" ? "gross" : "net";
   }
 
   function handleWorkbook(workbook, fromSample){
@@ -765,7 +771,7 @@
     loadSample();
   });
 
-  ["setHours","setMark","setDeduction","setRate","setCredit"].forEach(function(id){
+  ["setHours","setMark","setDeduction","setRate","setCredit","setEi","setBasis"].forEach(function(id){
     document.getElementById(id).addEventListener("change", function(){
       readTaxSettingsFromUI(); render();
     });
