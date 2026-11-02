@@ -160,12 +160,13 @@
     <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
   </div>
 
-  <footer class="v">일용직 급여 업로드 변환기 v1.3 · 원제우세무사사무소 내부용</footer>
+  <footer class="v">일용직 급여 업로드 변환기 v1.4 · 원제우세무사사무소 내부용</footer>
 </div>
 
 <div class="bar">
   <div class="inner">
     <span class="status" id="status">예시 데이터로 미리보기 중입니다. 실제 급여내역 파일을 올려주세요.</span>
+    <button class="ghost" id="copyBtn" type="button" title="위하고 일용직사원등록에 입력할 이름·주민번호 목록을 복사합니다">사원 목록 복사</button>
     <button class="ghost" id="resetBtn" type="button">초기화</button>
     <button class="primary" id="downloadBtn" type="button" disabled>업로드 양식(.xlsx) 다운로드</button>
   </div>
@@ -717,6 +718,30 @@
     document.getElementById(id).addEventListener("change", function(){
       readTaxSettingsFromUI(); render();
     });
+  });
+
+  // ---------- 사원 목록 복사 (위하고 일용직사원등록 입력용) ----------
+
+  document.getElementById("copyBtn").addEventListener("click", function(){
+    var seen = {}, lines = ["이름\t주민등록번호"];
+    state.records.filter(function(r){return r.include;}).forEach(function(r){
+      var j = (r.jumin||"").replace(/[^0-9]/g,"");
+      var key = r.name+"|"+j;
+      if(seen[key]) return;
+      seen[key] = true;
+      lines.push(r.name+"\t"+(j.length===13 ? j.slice(0,6)+"-"+j.slice(6) : j));
+    });
+    var text = lines.join("\n");
+    var done = function(){ setStatus((lines.length-1)+"명의 이름·주민번호를 복사했습니다. 위하고 사원등록에 붙여넣거나 보면서 입력하세요.", "ok"); };
+    var fallback = function(){
+      var ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); done(); }catch(e){ setStatus("복사에 실패했습니다.", "err"); }
+      document.body.removeChild(ta);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
   });
 
   // ---------- 다운로드 (일반 브라우저: 앵커 다운로드) ----------
