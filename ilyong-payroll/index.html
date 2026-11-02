@@ -136,12 +136,12 @@
     <h2><span class="n">2</span>변환 기준 (필요시 수정)</h2>
     <div class="settings-grid">
       <div class="field"><label>기본 근무시간(시간/일)</label><input type="number" id="setHours" value="8" min="0" step="0.5"></div>
-      <div class="field"><label>근무여부 표시값</label><input type="text" id="setMark" value="O" maxlength="4"></div>
+      <div class="field"><label>근무여부 값 (여=1, 부=0)</label><input type="number" id="setMark" value="1" min="0" max="1" step="1"></div>
       <div class="field"><label>일 비과세 공제(원)</label><input type="number" id="setDeduction" value="150000" min="0" step="1000"></div>
       <div class="field"><label>원천징수세율(%)</label><input type="number" id="setRate" value="6" min="0" step="0.1"></div>
       <div class="field"><label>근로소득세액공제(%)</label><input type="number" id="setCredit" value="55" min="0" max="100" step="1"></div>
     </div>
-    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. "근무여부" 값은 위하고/스마트에이 화면에서 근무시간·지급액 입력 시 자동 표시되는 동작에 근거한 추정값이라 최초 1건은 업로드 테스트로 확인하시길 권합니다.<br><b>실지급액→세전 환산</b>: 소득세법 제47조②(일용근로자 근로소득공제 1일 15만원) · 제129조①(원천징수세율 6%) · 제59조③(근로소득세액공제 55%), 지방세법(지방소득세=소득세의 10%)을 법령 기준으로 적용한 역산이며, 150,000원 초과액에 대해 일자별로 계산합니다. 소득세/지방소득세 칸 자체는 비워두어 위하고/SmartA가 사원등록정보 기준으로 다시 계산하도록 했습니다 — 세율이 바뀌었다면 위 숫자를 직접 고쳐주세요.</div>
+    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. 근무여부는 위하고 양식 안내에 따라 여=1 / 부=0, 현장코드는 위하고에 등록된 숫자 코드(없으면 비워둠), 주민등록번호는 하이픈 없는 13자리 텍스트로 만듭니다.<br><b>실지급액→세전 환산</b>: 소득세법 제47조②(일용근로자 근로소득공제 1일 15만원) · 제129조①(원천징수세율 6%) · 제59조③(근로소득세액공제 55%), 지방세법(지방소득세=소득세의 10%)을 법령 기준으로 적용한 역산이며, 150,000원 초과액에 대해 일자별로 계산합니다. 소득세/지방소득세 칸 자체는 비워두어 위하고/SmartA가 사원등록정보 기준으로 다시 계산하도록 했습니다 — 세율이 바뀌었다면 위 숫자를 직접 고쳐주세요.</div>
   </div>
 
   <div class="tiles" id="tiles"></div>
@@ -160,7 +160,7 @@
     <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
   </div>
 
-  <footer class="v">일용직 급여 업로드 변환기 v1.1 · 원제우세무사사무소 내부용</footer>
+  <footer class="v">일용직 급여 업로드 변환기 v1.2 · 원제우세무사사무소 내부용</footer>
 </div>
 
 <div class="bar">
@@ -422,7 +422,7 @@
         rows.push({
           일자:day, 근무여부:settings.mark, 사원명:rec.name,
           주민등록번호:(rec.jumin||"").replace(/[^0-9]/g,""),
-          현장코드:rec.site||"", 공수:1,
+          현장코드:(/^\d+$/.test(String(rec.site||"").trim()) ? Number(String(rec.site).trim()) : ""), 공수:1,
           근무시간_정상:settings.hours, 근무시간_연장:"",
           지급액_정상:amounts[i].gross, 지급액_연장:"",
           기타비과세:"", 고용보험:"", 국민연금:"", 건강보험:"", 장기요양보험:"", 소득세:"", 지방소득세:""
@@ -435,7 +435,7 @@
   // ---------- 위하고/SmartA 업로드 양식 구조 그대로 생성 (헤더 문구·병합 셀·컬럼 순서 동일) ----------
 
   var TITLE_TEXT = " 일용직급여자료입력     ※ 본 서식은 SmartA 인사급여 일용직급여자료입력 메뉴로 Excel DATA를 자동 변환하기 위한 서식입니다.";
-  var NOTE_TEXT = "◈ 일용직급여자료입력으로 엑셀을 변환하기전 일용직사원등록의 사원정보를 먼저 작업하셔야 합니다.\n\n◈ 일자와 주민등록번호는 반드시 기재하셔야 합니다. 변환시 일용직사원등록의 주민등록번호로 인식하여 변환이 됩니다.\n◈ 일자를 입력시에는 반드시 해당 근무월(귀속월)의 일자를 입력해 주십시오 예) 2015년 1월 1일 일 경우 -> 1(○) , 2015.01.01 (X), 01.01 (X)\n◈ 동일한 일자에 중복해서 입력할 경우에는 가장 처음 입력한 데이타를 변환하여 줍니다.\n◈ 주민등록번호를 입력할때에는 특수문자를 제외하고 (-)없이 숫자 13자리로 입력합니다.\n◈ 고용보험,국민연금,건강보험,소득세,지방소득세는 엑셀 변환시 선택에 따라 사원등록정보,소득세율에 따라 재계산이 가능합니다.\n\n▣ 본서식을 변형하여 사용시 일용직 사원등록 메뉴로 변환되지 않을수 있습니다.";
+  var NOTE_TEXT = "◈ 일용직급여자료입력으로 엑셀을 변환하기전 일용직사원등록의 사원정보를 먼저 작업하셔야 합니다.\n\n◈ 일자와 주민등록번호는 반드시 기재하셔야 합니다. 변환시 일용직사원등록의 주민등록번호로 인식하여 변환이 됩니다.        \n◈ 일자를 입력시에는 반드시 해당 근무월(귀속월)의 일자를 입력해 주십시오 예) 2015년 1월 1일 일 경우 -> 1(○) , 2015.01.01 (X), 01.01 (X)\n◈ 동일한 일자에 중복해서 입력할 경우에는 가장 처음 입력한 데이타를 변환하여 줍니다. (같은 일자에 동일한 사원을 중복해서 입력하지 말아주십시오.)\n◈ 주민등록번호를 입력할때에는 ' : / ? -\"등 특수문자를 제외하고 입력하세요. 예) (-)없이 숫자 13자리로 입력합니다.\n◈ 고용보험,국민연금,건강보험,소득세,지방소득세는 엑셀 변환시 선택에 따라 사원등록정보,소득세율에 따라 재계산이 가능합니다. \n◈ 근무시간은 소수점 둘째자리까지 입력가능합니다. \n◈ 만근공수는 업로드 대상 사원의 일자를 '99'로 입력 후 업로드를 하시면 됩니다. (만근공수는 근무시간(정상,연장),지급액 (연장) 항목은 업로드되지 않습니다.)\n◈ 만근공수를 업로드하는 경우 \"공수\" 항목에 데이터가 입력되어 있지 않았다면 만근공수 전체 데이터가 업로드 되지 않습니다. (만근공수 입력 시 \"공수\" 항목은 필수입력 사항입니다.)\n\n▣ 본서식을 변형하여 사용시 일용직 사원등록 메뉴로 변환되지 않을수 있습니다.";
   var HEADER2 = [" ","일자","근무\n여부","사원명","주민등록번호","현장(코드)","공수","근무시간","","지급액","","기타비과세","고용보험","국민연금","건강보험","장기요양보험","소득세","지방소득세"];
   var HEADER3 = ["","","","","","","","정상","연장","정상","연장","","","","","","",""];
   var COLKEYS = ["일자","근무여부","사원명","주민등록번호","현장코드","공수","근무시간_정상","근무시간_연장","지급액_정상","지급액_연장","기타비과세","고용보험","국민연금","건강보험","장기요양보험","소득세","지방소득세"];
@@ -447,9 +447,10 @@
     aoa.push(HEADER2.slice());
     aoa.push(HEADER3.slice());
     rows.forEach(function(r, i){
-      var line = new Array(18).fill("");
+      var line = new Array(18).fill(null);
       line[0] = i+1;
-      COLKEYS.forEach(function(key, j){ line[j+1] = r[key]; });
+      // 빈 값은 문자열("")이 아니라 완전히 빈 셀로 둔다 (위하고가 값이 있는 것으로 오인하지 않도록)
+      COLKEYS.forEach(function(key, j){ line[j+1] = (r[key]==="" || r[key]===undefined) ? null : r[key]; });
       aoa.push(line);
     });
     var ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -473,7 +474,15 @@
       {s:{r:2,c:16}, e:{r:3,c:16}},
       {s:{r:2,c:17}, e:{r:3,c:17}}
     ];
-    ws["!cols"] = [{wch:5},{wch:6},{wch:7},{wch:10},{wch:14},{wch:10},{wch:6},{wch:6},{wch:6},{wch:9},{wch:9},{wch:9},{wch:8},{wch:8},{wch:8},{wch:9},{wch:8},{wch:9}];
+    ws["!cols"] = [{wch:5.55},{wch:4.88},{wch:5.33},{wch:9.55},{wch:20.77},{wch:11.44},{wch:8.43},{wch:20.77},{wch:20.77},{wch:20.77},{wch:8.43},{wch:15.77},{wch:8.43},{wch:8.43},{wch:8.43},{wch:8.43},{wch:8.43},{wch:8.43}];
+    // 위하고 양식의 열 서식 (주민번호 @ 텍스트, 공수 0.0, 근무시간 0.00, 지급액 ###,###,###, 공제 #,##0)
+    var FMT = {4:"@", 5:"0;[RED]0", 6:"0.0_);[RED]\\(0.0\\)", 7:"0.00_);[RED]\\(0.00\\)", 8:"0.00_);[RED]\\(0.00\\)", 9:"###,###,###", 10:"###,###,###"};
+    for(var rr=4; rr<aoa.length; rr++){
+      for(var cc=4; cc<18; cc++){
+        var ref = XLSX.utils.encode_cell({r:rr,c:cc});
+        if(ws[ref]){ ws[ref].z = FMT[cc] || "#,##0_);[RED]\\(#,##0\\)"; }
+      }
+    }
     var wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
     return wb;
@@ -485,7 +494,7 @@
     records: [],
     flagged: [],
     isSample: true,
-    settings: { hours: 8, mark: "O", tax: {deduction:150000, rate:6, credit:55} }
+    settings: { hours: 8, mark: 1, tax: {deduction:150000, rate:6, credit:55} }
   };
 
   function sampleRecords(){
@@ -595,7 +604,7 @@
 
   function readTaxSettingsFromUI(){
     state.settings.hours = parseFloat(document.getElementById("setHours").value) || 8;
-    state.settings.mark = document.getElementById("setMark").value || "O";
+    var mk = parseInt(document.getElementById("setMark").value,10); state.settings.mark = (mk===0) ? 0 : 1;
     state.settings.tax = {
       deduction: parseFloat(document.getElementById("setDeduction").value) || 0,
       rate: parseFloat(document.getElementById("setRate").value) || 0,
