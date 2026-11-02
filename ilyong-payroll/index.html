@@ -147,9 +147,13 @@
   <div class="tiles" id="tiles"></div>
 
   <div class="card">
-    <h2><span class="n">3</span>변환 대상 <span id="targetCount" style="color:var(--muted); font-weight:500;"></span></h2>
+    <h2><span class="n">3</span>변환 대상 <span id="targetCount" style="color:var(--muted); font-weight:500;"></span>
+      <span style="margin-left:auto; display:flex; gap:.4rem;">
+        <button class="ghost" id="selNone" type="button" style="padding:.3rem .65rem; font-size:.76rem;">전체 해제</button>
+        <button class="ghost" id="selAllBtn" type="button" style="padding:.3rem .65rem; font-size:.76rem;">전체 선택</button>
+      </span></h2>
     <div class="tablewrap"><table id="targetTable"><thead><tr>
-      <th></th><th>사원명</th><th>구분</th><th>현장코드(위하고 등록값)</th><th class="num">근무일수</th><th>근무일</th><th class="num">원본금액</th><th class="num">세전 일당(계산)</th><th class="num">세전 합계</th><th>주민등록번호</th>
+      <th><input type="checkbox" id="selAll" title="전체 선택/해제"></th><th>사원명</th><th>구분</th><th>현장코드(위하고 등록값)</th><th class="num">근무일수</th><th>근무일</th><th class="num">원본금액</th><th class="num">세전 일당(계산)</th><th class="num">세전 합계</th><th>주민등록번호</th>
     </tr></thead><tbody></tbody></table></div>
     <div class="empty" id="targetEmpty">엑셀을 업로드하면 변환 대상 인원이 여기 표시됩니다.</div>
   </div>
@@ -160,7 +164,7 @@
     <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
   </div>
 
-  <footer class="v">일용직 급여 업로드 변환기 v1.4 · 원제우세무사사무소 내부용</footer>
+  <footer class="v">일용직 급여 업로드 변환기 v1.5 · 원제우세무사사무소 내부용</footer>
 </div>
 
 <div class="bar">
@@ -615,6 +619,11 @@
 
     document.getElementById("downloadBtn").disabled = included.length===0;
 
+    // 머리글 체크박스 상태 (전체 선택 / 일부 선택 / 전체 해제)
+    var selAll = document.getElementById("selAll");
+    selAll.checked = records.length>0 && included.length===records.length;
+    selAll.indeterminate = included.length>0 && included.length<records.length;
+
     tbody.querySelectorAll("[data-act]").forEach(function(el){
       el.addEventListener("change", onRowEdit);
       el.addEventListener("input", onRowEdit);
@@ -719,6 +728,16 @@
       readTaxSettingsFromUI(); render();
     });
   });
+
+  // ---------- 전체 선택 / 해제 ----------
+
+  function setAllInclude(flag){
+    state.records.forEach(function(r){ r.include = flag; });
+    render();
+  }
+  document.getElementById("selNone").addEventListener("click", function(){ setAllInclude(false); });
+  document.getElementById("selAllBtn").addEventListener("click", function(){ setAllInclude(true); });
+  document.getElementById("selAll").addEventListener("change", function(e){ setAllInclude(e.target.checked); });
 
   // ---------- 사원 목록 복사 (위하고 일용직사원등록 입력용) ----------
 
