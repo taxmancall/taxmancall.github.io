@@ -149,7 +149,7 @@
   <div class="card">
     <h2><span class="n">3</span>변환 대상 <span id="targetCount" style="color:var(--muted); font-weight:500;"></span></h2>
     <div class="tablewrap"><table id="targetTable"><thead><tr>
-      <th></th><th>사원명</th><th>구분</th><th>현장(코드)</th><th class="num">근무일수</th><th>근무일</th><th class="num">원본금액</th><th class="num">세전 일당(계산)</th><th class="num">세전 합계</th><th>주민등록번호</th>
+      <th></th><th>사원명</th><th>구분</th><th>현장코드(위하고 등록값)</th><th class="num">근무일수</th><th>근무일</th><th class="num">원본금액</th><th class="num">세전 일당(계산)</th><th class="num">세전 합계</th><th>주민등록번호</th>
     </tr></thead><tbody></tbody></table></div>
     <div class="empty" id="targetEmpty">엑셀을 업로드하면 변환 대상 인원이 여기 표시됩니다.</div>
   </div>
@@ -160,7 +160,7 @@
     <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
   </div>
 
-  <footer class="v">일용직 급여 업로드 변환기 v1.0 · 원제우세무사사무소 내부용</footer>
+  <footer class="v">일용직 급여 업로드 변환기 v1.1 · 원제우세무사사무소 내부용</footer>
 </div>
 
 <div class="bar">
@@ -289,7 +289,7 @@
         flagged.push({sheet:sheetName, no:no, name:nameStr, reason:"특이사항(근무일) 인식 불가: "+JSON.stringify(note===undefined?null:note)});
         continue;
       }
-      records.push({sheet:sheetName, site:site, no:no, name:nameStr, pay:payNum, days:days, jumin:"", include:true, mode:"gross", format:"A"});
+      records.push({sheet:sheetName, site:"", siteName:site, no:no, name:nameStr, pay:payNum, days:days, jumin:"", include:true, mode:"gross", format:"A"});
     }
     return {records:records, flagged:flagged};
   }
@@ -352,7 +352,7 @@
         continue;
       }
       records.push({
-        sheet:sheetName, site:site, no:r+1, name:nameStr, pay:payNum, days:days,
+        sheet:sheetName, site:"", siteName:site, no:r+1, name:nameStr, pay:payNum, days:days,
         jumin: jumin? String(jumin).replace(/[^0-9]/g,"") : "",
         include:true, mode:"net", format:"B"
       });
@@ -490,9 +490,9 @@
 
   function sampleRecords(){
     return [
-      {sheet:"예시", site:"예시현장", no:1, name:"홍길동", pay:400000, days:[3,4], jumin:"", include:true, mode:"gross", format:"A"},
-      {sheet:"예시", site:"예시현장", no:2, name:"김철수", pay:900000, days:[10,11,12], jumin:"", include:true, mode:"gross", format:"A"},
-      {sheet:"예시", site:"예시현장", no:3, name:"이영희", pay:285000, days:[20], jumin:"", include:true, mode:"net", format:"B"}
+      {sheet:"예시", site:"", siteName:"예시현장", no:1, name:"홍길동", pay:400000, days:[3,4], jumin:"", include:true, mode:"gross", format:"A"},
+      {sheet:"예시", site:"", siteName:"예시현장", no:2, name:"김철수", pay:900000, days:[10,11,12], jumin:"", include:true, mode:"gross", format:"A"},
+      {sheet:"예시", site:"", siteName:"예시현장", no:3, name:"이영희", pay:285000, days:[20], jumin:"", include:true, mode:"net", format:"B"}
     ];
   }
 
@@ -537,7 +537,7 @@
         '<td><input type="checkbox" data-act="include" data-idx="'+idx+'" '+(rec.include?"checked":"")+'></td>'+
         '<td>'+escapeHtml(rec.name)+'</td>'+
         '<td>'+modeChip+'</td>'+
-        '<td><input class="rowinput" data-act="site" data-idx="'+idx+'" value="'+escapeAttr(rec.site||"")+'" placeholder="현장명 입력"></td>'+
+        '<td><input class="rowinput" data-act="site" data-idx="'+idx+'" value="'+escapeAttr(rec.site||"")+'" placeholder="'+escapeAttr(rec.siteName ? '코드 (원본: '+rec.siteName+')' : '위하고 현장코드')+'"></td>'+
         '<td class="num">'+rec.days.length+'일</td>'+
         '<td class="daylist">'+rec.days.join(", ")+'</td>'+
         '<td class="num">'+fmt.format(rec.pay)+'원</td>'+
@@ -682,7 +682,12 @@
     var included = state.records.filter(function(r){return r.include;});
     if(included.length===0) return;
 
-    var badJumin = included.find(function(r){ var d=(r.jumin||"").replace(/[^0-9]/g,""); return r.jumin && d.length!==13; });
+    var badList = included.filter(function(r){ return (r.jumin||"").replace(/[^0-9]/g,"").length!==13; });
+    if(badList.length>0){
+      var names = badList.slice(0,6).map(function(r){return r.name;}).join(", ") + (badList.length>6 ? " 외 "+(badList.length-6)+"명" : "");
+      setStatus("주민등록번호(13자리)가 없는 인원이 있습니다: "+names+" — 표에 입력하거나 체크 해제 후 다시 시도하세요.", "err");
+      return;
+    }
 
     btn.disabled = true;
     setStatus("파일 생성 중...");
@@ -693,7 +698,7 @@
       var blob = new Blob([out], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
       var fname = "위하고_일용직급여업로드_"+new Date().toISOString().slice(0,10).replace(/-/g,"")+".xlsx";
       saveBlob(blob, fname);
-      setStatus("저장 완료: "+fname + (badJumin ? " · 주민등록번호 형식을 다시 확인해주세요." : ""), badJumin?"err":"ok");
+      setStatus("저장 완료: "+fname, "ok");
     } catch(err){
       setStatus("파일 생성 중 오류: "+err.message, "err");
     } finally {
