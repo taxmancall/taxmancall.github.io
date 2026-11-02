@@ -164,7 +164,7 @@
     <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
   </div>
 
-  <footer class="v">일용직 급여 업로드 변환기 v1.5 · 원제우세무사사무소 내부용</footer>
+  <footer class="v">일용직 급여 업로드 변환기 v1.6 · 원제우세무사사무소 내부용</footer>
 </div>
 
 <div class="bar">
@@ -210,6 +210,21 @@
       }
     });
     return {days: Array.from(new Set(days)).sort(function(a,b){return a-b;}), invalid: invalid};
+  }
+
+  // 금액 파싱: 숫자는 그대로, 문자열은 콤마·공백·'원' 제거 후 변환
+  function toNum(v){
+    if(v===null||v===undefined||v==="") return 0;
+    if(typeof v === "number") return v;
+    var n = Number(String(v).replace(/[,\s원]/g,""));
+    return isNaN(n) ? 0 : n;
+  }
+
+  // 근무일 목록처럼 보이는 셀인지 (예: "5,6,7,9", "1", 12)
+  function looksLikeDays(v){
+    if(v===null||v===undefined||v==="") return false;
+    if(typeof v === "number") return v>=1 && v<=31 && Math.floor(v)===v;
+    return /^\d{1,2}([,\s\/]+\d{1,2})*$/.test(String(v).trim());
   }
 
   // 주민등록번호 정규화: 숫자만 남기고, 엑셀이 숫자로 저장해 앞자리 0이 사라진 12자리는 0을 복원
@@ -264,16 +279,18 @@
   function findHeaderCols(aoa){
     var maxScan = Math.min(aoa.length, 8);
     var headerRow=-1, subRow=-1, col={};
+    var NAME_HEADERS = ["근로자","이름","성명","사원명"];
     for(var r=0;r<maxScan;r++){
       var row = aoa[r] || [];
       var norm = row.map(normHeader);
-      if(norm.indexOf("번호")>-1 && norm.indexOf("근로자")>-1){
+      var hasName = norm.some(function(v){ return NAME_HEADERS.indexOf(v)>-1; });
+      if(hasName && norm.indexOf("급여")>-1){
         headerRow = r;
         norm.forEach(function(v,i){
           if(v==="번호") col.no=i;
-          else if(v==="근로자") col.name=i;
+          else if(NAME_HEADERS.indexOf(v)>-1 && col.name===undefined) col.name=i;
           else if(v==="급여") col.pay=i;
-          else if(v==="특이사항") col.note=i;
+          else if(v==="특이사항" || v==="근무일") col.note=i;
           else if(v.indexOf("주민")>-1) col.jumin=i;
         });
       }
@@ -283,9 +300,22 @@
       }
     }
     if(headerRow<0 || subRow<0) return null;
-    var required = ["no","name","pay","note","ilyong"];
+    var required = ["name","pay","ilyong"];
     for(var k=0;k<required.length;k++){ if(!(required[k] in col)) return null; }
     col.dataStart = Math.max(headerRow, subRow) + 1;
+
+    // 특이사항(근무일) 머리글이 비어 있으면: 일용 열 오른쪽에서 근무일 모양의 값이 가장 많은 열을 근무일 열로 본다
+    if(col.note===undefined){
+      var best=-1, bestScore=0, width=0;
+      for(var rr=col.dataStart; rr<aoa.length; rr++){ width = Math.max(width, (aoa[rr]||[]).length); }
+      for(var c=col.ilyong+1; c<width; c++){
+        var score=0;
+        for(var q=col.dataStart; q<aoa.length; q++){ if(looksLikeDays((aoa[q]||[])[c])) score++; }
+        if(score>bestScore){ bestScore=score; best=c; }
+      }
+      if(best<0) return null;
+      col.note = best;
+    }
     return col;
   }
 
@@ -312,13 +342,13 @@
     for(var r=col.dataStart; r<aoa.length; r++){
       var row = aoa[r]||[];
       var no = row[col.no], name = row[col.name], pay = row[col.pay], mark = row[col.ilyong], note = row[col.note];
-      if(no===null||no===undefined||no==="") continue;
       if(name===null||name===undefined) continue;
       var nameStr = String(name).trim();
       if(nameStr===""||nameStr==="계") continue;
+      if(no===null||no===undefined||no==="") no = r+1;
 
       var isIlyong = mark!==null && mark!==undefined && String(mark).trim()!=="";
-      var payNum = (pay===null||pay===undefined||pay==="") ? 0 : Number(pay);
+      var payNum = toNum(pay);
       var hasPay = !isNaN(payNum) && payNum>0;
 
       if(!(isIlyong && hasPay)){
@@ -382,7 +412,7 @@
       var nameStr = String(name).trim();
       if(nameStr===""||nameStr==="계"||nameStr==="합계") continue;
 
-      var payNum = (pay===null||pay===undefined||pay==="") ? 0 : Number(pay);
+      var payNum = toNum(pay);
       if(!(!isNaN(payNum) && payNum>0)){
         flagged.push({sheet:sheetName, no:r+1, name:nameStr, reason:"실지급액 없음"});
         continue;
@@ -417,6 +447,18 @@
       allRecords = allRecords.concat(res.records);
       allFlagged = allFlagged.concat(res.flagged);
     });
+    // 같은 사람이 여러 시트에 같은 내용(이름·근무일·금액)으로 적혀 있으면 먼저 나온 것만 쓴다
+    var seenKey = {}, uniq = [];
+    allRecords.forEach(function(rec){
+      var key = rec.name+"|"+rec.days.join(",")+"|"+Math.round(rec.pay);
+      if(seenKey[key]){
+        allFlagged.push({sheet:rec.sheet, no:rec.no, name:rec.name, reason:"'"+seenKey[key]+"' 시트에 같은 내용(이름·근무일·금액)이 있어 중복으로 제외"});
+      } else {
+        seenKey[key] = rec.sheet;
+        uniq.push(rec);
+      }
+    });
+    allRecords = uniq;
     var jm = collectJuminMap(workbook);
     allRecords.forEach(function(rec){
       if(!rec.jumin && jm[rec.name]) rec.jumin = jm[rec.name];
