@@ -227,6 +227,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="hint" id="ocrHint" hidden>OCR은 페이지를 그림으로 보고 글자를 읽어내므로 PDF 안 글자 정보가 깨져 있어도 됩니다. 인식 엔진과 한글 데이터(약 10MB)는 이 사이트에서 함께 내려받고, 인식 자체는 이 브라우저 안에서만 돌아갑니다(파일 전송 없음). 페이지당 몇 초씩 걸리고, 인식 오류가 있을 수 있으니 결과를 꼭 확인하세요.</p>
   <div id="pdfResultWrap" hidden style="margin-top:14px">
     <div class="counts" id="pdfCounts"></div>
+    <p class="hint" id="pdfNames" style="margin:-4px 0 8px"></p>
     <div class="radios" role="radiogroup" aria-label="결과 보기">
       <label><input type="radio" name="pdfView" value="img" checked> 가려진 PDF 미리보기 (검은 박스)</label>
       <label><input type="radio" name="pdfView" value="text"> 추출 텍스트 (노란 표시)</label>
@@ -243,7 +244,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v3.6 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v3.7 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -291,14 +292,25 @@ function isStopName(w){
   if (NAME_STOP.indexOf(w) >= 0) return true;
   return /(번호|주소|일자|금액|은행|계좌|명세)$/.test(w);
 }
-function collectAutoNames(s){
+function collectAutoNames(s, ocr){
   var found = {}, m;
-  var re1 = /(성\s*명|이\s*름|성함|예금주|대표자|대표|고객명|수취인|신청인|납세자|피상속인|상속인|근로자|명의자|계약자|피보험자|수익자|담당자)\s*[:：]?\s*([가-힣]{2,4})(?![가-힣])/g;
+  var re1 = /(성\s*명|이\s*름|성함|예금주|대표자|대표|고객명|수취인|신청인|신고인|납세자|납세의무자|피상속인|상속인|수증자|증여자|양도인|양수인|임대인|임차인|근로자|명의자|계약자|피보험자|수익자|담당자|배우자|자녀|대리인|세무대리인)\s*[:：|｜()\s]*([가-힣]{2,4})(?![가-힣])/g;
   while ((m = re1.exec(s))) if (!isStopName(m[2])) found[m[2]] = 1;
   var re2 = /([가-힣]{2,4})\s*[\(（:：]?\s*(?=\d{6}\s*[-–—]?\s*[1-8]\d{6})/g;
   while ((m = re2.exec(s))) if (!isStopName(m[1])) found[m[1]] = 1;
   var re3 = /([가-힣]{2,3})(?=\s?(?:님|씨)(?:께|의|이|은|는|을|를|과|와|도|만|한테|에게)?(?![가-힣]))/g;
   while ((m = re3.exec(s))) if (!isStopName(m[1])) found[m[1]] = 1;
+  if (ocr){
+    /* OCR은 한글 음절 사이에 공백을 끼워 넣는 경우가 많아("신고 인양 지연") 한글 사이 공백을 모두 지운 텍스트로 한 번 더 — 3글자 이름 우선, 2글자는 뒤에 한글이 없을 때만 */
+    var compact = s.replace(/([가-힣])[ \u00a0]+(?=[가-힣])/g, "$1");
+    var LBL = "(?:성명|이름|성함|예금주|대표자|고객명|수취인|신청인|신고인|납세자|납세의무자|피상속인|상속인|수증자|증여자|양도인|양수인|임대인|임차인|근로자|명의자|계약자|피보험자|수익자|배우자|대리인)";
+    var re4 = new RegExp(LBL + "[:：|｜()\\s]*([가-힣]{3})(?![가-힣])", "g");
+    while ((m = re4.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
+    var re5 = new RegExp(LBL + "[:：|｜()\\s]*([가-힣]{2})(?![가-힣])", "g");
+    while ((m = re5.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
+    var re6 = /([가-힣]{2,3})\s*[\(（:：|]?\s*(?=\d{6}\s*[-–—]?\s*[1-8]\d{6})/g;
+    while ((m = re6.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
+  }
   return Object.keys(found);
 }
 
@@ -308,12 +320,14 @@ function maskText(input, opts, counts){
 
   var allNames = opts.names.slice();
   if (opts.autoName){
-    collectAutoNames(s).forEach(function(n){ if (allNames.indexOf(n) < 0) allNames.push(n); });
+    collectAutoNames(s, opts.ocr).forEach(function(n){ if (allNames.indexOf(n) < 0) allNames.push(n); });
   }
   if (allNames.length){
     allNames.sort(function(a,b){ return b.length - a.length; });
     allNames.forEach(function(nm){
-      s = s.replace(new RegExp(escRe(nm),"g"), function(){
+      /* OCR 모드에서는 "양 지연", "양지 연"처럼 글자 사이 공백이 있어도 같은 이름으로 봄 */
+      var pat = opts.ocr ? nm.split("").map(escRe).join("[ \\u00a0]*") : escRe(nm);
+      s = s.replace(new RegExp(pat,"g"), function(){
         counts.name++; return wrap(maskName(nm));
       });
     });
@@ -505,7 +519,7 @@ $("btnMaskFile").addEventListener("click", function(){
 $("btnCopyTsv").addEventListener("click", function(){ copyText(lastTsv, $("toastFile")); });
 
 /* ---------- PDF 모드 ---------- */
-var pdfDoc = null, pdfName = "", pdfCanvases = [], lastPdfText = "";
+var pdfDoc = null, pdfName = "", pdfCanvases = [], lastPdfText = "", lastAutoNames = [];
 var BASE = location.href.replace(/[?#].*$/, "").replace(/[^\/]*$/, "");   /* 이 페이지의 절대 경로 (워커에서도 같은 기준으로 쓰기 위해) */
 if (window.pdfjsLib){
   pdfjsLib.GlobalWorkerOptions.workerSrc = BASE + "vendor/pdf.worker.min.js";
@@ -722,11 +736,12 @@ $("btnMaskPdf").addEventListener("click", function(){
   $("pdfErr").hidden = true;
   $("toastPdf").textContent = "";
 
+  var pages = [];
   var seq = Promise.resolve();
   for (var pn = 1; pn <= pdfDoc.numPages; pn++){
     (function(pageNo){
       seq = seq.then(function(){
-        $("pdfProg").textContent = pageNo+" / "+pdfDoc.numPages+" 페이지 처리 중…";
+        $("pdfProg").textContent = pageNo+" / "+pdfDoc.numPages+" 페이지 읽는 중…";
         return pdfDoc.getPage(pageNo).then(function(page){
           var vp = page.getViewport({scale:SCALE});
           var canvas = document.createElement("canvas");
@@ -761,31 +776,38 @@ $("btnMaskPdf").addEventListener("click", function(){
             });
             var pageText = lines.map(function(l){ return l.text; }).join("\n");
             textChars += pageText.replace(/\s/g,"").length;
-
-            var pOpts = Object.assign({}, opts, {names: opts.names.slice()});
-            if (opts.autoName){
-              collectAutoNames(pageText).forEach(function(n){ if (pOpts.names.indexOf(n)<0) pOpts.names.push(n); });
-            }
-            var markedText = maskText(pageText, pOpts, c);
-            markedPages.push(markedText);
-
-            ctx.fillStyle = "#000";
-            lines.forEach(function(l){ if (l.ocr) drawOcrBoxes(ctx, l, pOpts); else drawLineBoxes(ctx, vp, l, pOpts); });
-            var lab = document.createElement("div"); lab.className="pagelabel"; lab.textContent = pageNo+" 페이지";
-            pagesEl.appendChild(lab); pagesEl.appendChild(canvas);
-            pdfCanvases.push({canvas:canvas, w:vp.width/SCALE, h:vp.height/SCALE});
+            pages.push({no:pageNo, canvas:canvas, ctx:ctx, vp:vp, lines:lines, text:pageText});
           });
         });
       });
     })(pn);
   }
   seq.then(function(){
+    /* 2단계: 문서 전체에서 이름을 모은 뒤 모든 페이지에 적용 — 1페이지에서 '신고인 양○○'로 잡힌 이름이 다른 페이지 표 안에 단독으로 나와도 가려지도록 */
+    var pOpts = Object.assign({}, opts, {names: opts.names.slice(), ocr: useOcr});
+    if (opts.autoName){
+      collectAutoNames(pages.map(function(p){ return p.text; }).join("\n"), useOcr).forEach(function(n){
+        if (pOpts.names.indexOf(n) < 0) pOpts.names.push(n);
+      });
+    }
+    pages.forEach(function(p){
+      var markedText = maskText(p.text, pOpts, c);
+      markedPages.push(markedText);
+      p.ctx.fillStyle = "#000";
+      p.lines.forEach(function(l){ if (l.ocr) drawOcrBoxes(p.ctx, l, pOpts); else drawLineBoxes(p.ctx, p.vp, l, pOpts); });
+      var lab = document.createElement("div"); lab.className="pagelabel"; lab.textContent = p.no+" 페이지";
+      pagesEl.appendChild(lab); pagesEl.appendChild(p.canvas);
+      pdfCanvases.push({canvas:p.canvas, w:p.vp.width/SCALE, h:p.vp.height/SCALE});
+    });
+    lastAutoNames = pOpts.names.slice();
     $("btnMaskPdf").disabled = false;
     $("pdfProg").textContent = "";
     var all = markedPages.map(function(t,i){ return "── "+(i+1)+" 페이지 ──\n"+t; }).join("\n\n");
     lastPdfText = stripMarks(all);
     $("pdfText").innerHTML = toHighlighted(all);
     renderCounts($("pdfCounts"), c);
+    var nm = $("pdfNames");
+    nm.textContent = pOpts.names.length ? "가린 이름: " + pOpts.names.map(function(n){ return maskName(n)+"("+n.charAt(0)+"…)"; }).join(", ") + " — 빠진 이름은 위 '추가로 가릴 이름'에 적고 다시 실행" : "자동 인식된 이름 없음 — 위 '추가로 가릴 이름'에 직접 적어 주세요";
     $("pdfResultWrap").hidden = false;
     if (textChars === 0){
       showPdfErr(useOcr ? "글자를 읽어내지 못했습니다. 해상도가 너무 낮거나 빈 페이지일 수 있습니다." : "이 PDF에는 글자 정보가 없습니다(스캔 이미지). 「글자 인식(OCR)으로 처리」를 켜고 다시 실행해 보세요.");
