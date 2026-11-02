@@ -242,7 +242,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v3.4 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v3.5 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -600,6 +600,12 @@ function groupLines(items){
 }
 /* OCR 결과 보정: "184 - 10" → "184-10", "노 해동"·"사 업 자" 처럼 한 글자씩 떨어진 한글 붙이기 (공백만 제거하므로 글자 매핑 유지) */
 function ocrNormalize(s){
+  /* 숫자 덩어리 안에서 OCR이 흔히 틀리는 글자 교정: O→0, I·l·|→1, S→5, Z→2, B→8 (숫자가 4개 이상 섞인 토큰만) */
+  s = s.replace(/[0-9OoDIl|!SZB\-–—]{6,}/g, function(tok){
+    var d = (tok.match(/\d/g)||[]).length;
+    if (d < 4 || d < tok.replace(/[\-–—]/g,"").length*0.6) return tok;
+    return tok.replace(/[OoD]/g,"0").replace(/[Il|!]/g,"1").replace(/S/g,"5").replace(/Z/g,"2").replace(/B/g,"8");
+  });
   s = s.replace(/(\d)[ \u00a0]*([-–—])[ \u00a0]*(?=\d)/g, "$1$2");
   var prev;
   do { prev = s; s = s.replace(/(^|[^가-힣])([가-힣])[ \u00a0]+(?=[가-힣])/g, "$1$2").replace(/([가-힣])[ \u00a0]+([가-힣])(?=$|[^가-힣])/g, "$1$2"); } while (s !== prev);
