@@ -143,7 +143,7 @@
       <div class="field"><label>엑셀 금액 기준</label><select id="setBasis"><option value="net" selected>세후(실지급액) → 세전 역산</option><option value="gross">세전(임금총액) 그대로</option></select></div>
       <div class="field"><label>고용보험 근로자부담(%)</label><input type="number" id="setEi" value="0.9" min="0" step="0.1"></div>
     </div>
-    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. 근무여부는 위하고 양식 안내에 따라 여=1 / 부=0, 현장코드는 위하고에 등록된 숫자 코드(없으면 비워둠), 주민등록번호는 하이픈 없는 13자리 텍스트로 만듭니다.<br><b>세후→세전 환산</b>: 임금총액 − 고용보험(근로자 0.9%, 10원 미만 절사 — 위하고 직접입력 결과와 동일) − 소득세·지방소득세 = 엑셀의 세후 금액이 되도록 일자별로 역산합니다. 소득세는 소득세법 제47조②(1일 15만원 공제) · 제129조①(6%) · 제59조③(세액공제 55%)로 계산하고, 소득세 산출액이 1천원 미만이면 소액부징수(소득세법 제86조)로 0원 처리합니다(일당 약 18.7만원 이하는 소득세 0). 지방소득세=소득세의 10%. 계산된 고용보험·소득세·지방소득세는 업로드 파일의 해당 칸에 채워 넣으므로 위하고 차인지급액이 엑셀 금액과 일치합니다. 고용보험 요율이 다르면 위 요율을 고쳐주세요.</div>
+    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. 근무여부는 위하고 양식 안내에 따라 여=1 / 부=0, 현장코드는 위하고에 등록된 숫자 코드(없으면 비워둠), 주민등록번호는 하이픈 없는 13자리 텍스트로 만듭니다.<br><b>세후→세전 환산</b>: 임금총액 − 고용보험(근로자 0.9%, 10원 미만 절사 — 위하고 직접입력 결과와 동일) − 소득세·지방소득세 = 엑셀의 세후 금액이 되도록 일자별로 역산합니다. 소득세는 소득세법 제47조②(1일 15만원 공제) · 제129조①(6%) · 제59조③(세액공제 55%)로 계산하고, 소득세 산출액이 1천원 미만이면 소액부징수(소득세법 제86조)로 0원 처리합니다(일당 약 18.7만원 이하는 소득세 0). 지방소득세=소득세의 10%(소득세·지방소득세 모두 10원 미만 절사, 위하고 계산 결과와 동일). 계산된 고용보험·소득세·지방소득세는 업로드 파일의 해당 칸에 채워 넣으므로 위하고 차인지급액이 엑셀 금액과 일치합니다. 고용보험 요율이 다르면 위 요율을 고쳐주세요.</div>
   </div>
 
   <div class="tiles" id="tiles"></div>
@@ -478,9 +478,9 @@
   }
   function dailyTax(gross, tax){
     var base = Math.max(0, gross - tax.deduction);
-    var incomeTax = Math.floor(base * (tax.rate/100) * (1 - tax.credit/100));
+    var incomeTax = Math.floor(base * (tax.rate/100) * (1 - tax.credit/100) / 10) * 10; // 10원 미만 절사(위하고 동일)
     if(incomeTax < 1000) incomeTax = 0; // 소액부징수(소득세법 제86조)
-    var localTax = Math.floor(incomeTax * 0.1);
+    var localTax = Math.floor(incomeTax * 0.1 / 10) * 10;
     return {incomeTax:incomeTax, localTax:localTax, total: incomeTax+localTax};
   }
   function forwardDaily(g, settings){
