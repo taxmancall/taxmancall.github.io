@@ -141,9 +141,10 @@
       <div class="field"><label>원천징수세율(%)</label><input type="number" id="setRate" value="6" min="0" step="0.1"></div>
       <div class="field"><label>근로소득세액공제(%)</label><input type="number" id="setCredit" value="55" min="0" max="100" step="1"></div>
       <div class="field"><label>엑셀 금액 기준</label><select id="setBasis"><option value="net" selected>세후(실지급액) → 세전 역산</option><option value="gross">세전(임금총액) 그대로</option></select></div>
+      <div class="field"><label>만 65세 이상 고용보험 제외</label><select id="setEi65"><option value="1" selected>제외(근로자부담 0)</option><option value="0">제외 안 함</option></select></div>
       <div class="field"><label>고용보험 근로자부담(%)</label><input type="number" id="setEi" value="0.9" min="0" step="0.1"></div>
     </div>
-    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. 근무여부는 위하고 양식 안내에 따라 여=1 / 부=0, 현장코드는 위하고에 등록된 숫자 코드(없으면 비워둠), 주민등록번호는 하이픈 없는 13자리 텍스트로 만듭니다.<br><b>세후→세전 환산</b>: 임금총액 − 고용보험(근로자 0.9%, 10원 미만 절사 — 위하고 직접입력 결과와 동일) − 소득세·지방소득세 = 엑셀의 세후 금액이 되도록 일자별로 역산합니다. 소득세는 소득세법 제47조②(1일 15만원 공제) · 제129조①(6%) · 제59조③(세액공제 55%)로 계산하고, 소득세 산출액이 1천원 미만이면 소액부징수(소득세법 제86조)로 0원 처리합니다(일당 약 18.7만원 이하는 소득세 0). 지방소득세=소득세의 10%(소득세·지방소득세 모두 10원 미만 절사, 위하고 계산 결과와 동일). 계산된 고용보험·소득세·지방소득세는 업로드 파일의 해당 칸에 채워 넣으므로 위하고 차인지급액이 엑셀 금액과 일치합니다. 고용보험 요율이 다르면 위 요율을 고쳐주세요.</div>
+    <div class="note" style="margin-top:.6rem;">일당 = 급여총액(또는 실지급액) ÷ 근무일수 (나머지는 앞쪽 근무일부터 1원씩 배분). 특이사항/근무일에 적힌 일자는 전부 근무한 것으로 처리합니다. 근무여부는 위하고 양식 안내에 따라 여=1 / 부=0, 현장코드는 위하고에 등록된 숫자 코드(없으면 비워둠), 주민등록번호는 하이픈 없는 13자리 텍스트로 만듭니다.<br><b>세후→세전 환산</b>: 임금총액 − 고용보험(근로자 0.9%, 10원 미만 절사 — 위하고 직접입력 결과와 동일) − 소득세·지방소득세 = 엑셀의 세후 금액이 되도록 일자별로 역산합니다. 소득세는 소득세법 제47조②(1일 15만원 공제) · 제129조①(6%) · 제59조③(세액공제 55%)로 계산하고, 소득세 산출액이 1천원 미만이면 소액부징수(소득세법 제86조)로 0원 처리합니다(일당 약 18.7만원 이하는 소득세 0). 지방소득세=소득세의 10%(소득세·지방소득세 모두 10원 미만 절사, 위하고 계산 결과와 동일). 계산된 고용보험·소득세·지방소득세는 업로드 파일의 해당 칸에 채워 넣으므로 위하고 차인지급액이 엑셀 금액과 일치합니다. 고용보험 요율이 다르면 위 요율을 고쳐주세요. 만 65세 이상(주민번호 기준)은 고용보험법 제10조②에 따라 65세 이후 고용된 경우 실업급여(제4장) 적용 제외라 근로자 고용보험료를 0원으로 처리합니다(65세 이전부터 계속 가입 중인 경우는 "제외 안 함"으로 변경).</div>
   </div>
 
   <div class="tiles" id="tiles"></div>
@@ -166,7 +167,7 @@
     <div class="tablewrap"><table><thead><tr><th>시트</th><th>번호</th><th>성명</th><th>사유</th></tr></thead><tbody id="flaggedBody"></tbody></table></div>
   </div>
 
-  <footer class="v">일용직 급여 업로드 변환기 v1.7 · 원제우세무사사무소 내부용</footer>
+  <footer class="v">일용직 급여 업로드 변환기 v1.8 · 원제우세무사사무소 내부용</footer>
 </div>
 
 <div class="bar">
@@ -501,8 +502,22 @@
     return best;
   }
 
+  // 만 65세 이상 여부 (주민번호 기준, 오늘 날짜 기준)
+  function isOver65(jumin){
+    var j = String(jumin||"").replace(/[^0-9]/g,"");
+    if(j.length<7) return false;
+    var c = j.charAt(6), yy = parseInt(j.substr(0,2),10), mm = parseInt(j.substr(2,2),10), dd = parseInt(j.substr(4,2),10);
+    var century = ("1256".indexOf(c)>=0) ? 1900 : ("3478".indexOf(c)>=0) ? 2000 : ("90".indexOf(c)>=0) ? 1800 : 0;
+    if(!century) return false;
+    var birth = new Date(century+yy, mm-1, dd), t = new Date();
+    var age = t.getFullYear()-birth.getFullYear();
+    if(t.getMonth()<birth.getMonth() || (t.getMonth()===birth.getMonth() && t.getDate()<birth.getDate())) age--;
+    return age>=65;
+  }
+
   function computeDailyAmounts(rec, settings){
     var n = rec.days.length;
+    if(settings.ei65 && isOver65(rec.jumin)){ settings = Object.assign({}, settings, {ei:0}); }
     var parts = splitPay(rec.pay, n);
     if(settings.basis==="gross"){
       return parts.map(function(g){ return forwardDaily(g, settings); });
@@ -590,7 +605,7 @@
     records: [],
     flagged: [],
     isSample: true,
-    settings: { hours: 8, mark: 1, ei: 0.9, basis: "net", tax: {deduction:150000, rate:6, credit:55} }
+    settings: { hours: 8, mark: 1, ei: 0.9, ei65: true, basis: "net", tax: {deduction:150000, rate:6, credit:55} }
   };
 
   function sampleRecords(){
@@ -636,6 +651,7 @@
       var dailyLabel = (new Set(grosses)).size===1 ? (fmt.format(grosses[0])+"원/일") : (fmt.format(Math.min.apply(null,grosses))+"~"+fmt.format(Math.max.apply(null,grosses))+"원/일");
       var grossTotal = grosses.reduce(function(a,b){return a+b;},0);
       var modeChip = state.settings.basis!=="gross" ? '<span class="chip warn">세후→세전</span>' : '<span class="chip" style="background:color-mix(in srgb, var(--good) 16%, transparent); color:var(--good);">급여(세전)</span>';
+      if(state.settings.ei65 && isOver65(rec.jumin)) modeChip += ' <span class="chip">65세↑ 고용보험 0</span>';
       var tr = document.createElement("tr");
       if(!rec.include) tr.className = "excluded";
       tr.innerHTML =
@@ -711,6 +727,7 @@
       rate: parseFloat(document.getElementById("setRate").value) || 0,
       credit: parseFloat(document.getElementById("setCredit").value) || 0
     };
+    state.settings.ei65 = document.getElementById("setEi65").value !== "0";
     state.settings.ei = parseFloat(document.getElementById("setEi").value) || 0;
     state.settings.basis = document.getElementById("setBasis").value === "gross" ? "gross" : "net";
   }
@@ -771,7 +788,7 @@
     loadSample();
   });
 
-  ["setHours","setMark","setDeduction","setRate","setCredit","setEi","setBasis"].forEach(function(id){
+  ["setHours","setMark","setDeduction","setRate","setCredit","setEi","setEi65","setBasis"].forEach(function(id){
     document.getElementById(id).addEventListener("change", function(){
       readTaxSettingsFromUI(); render();
     });
