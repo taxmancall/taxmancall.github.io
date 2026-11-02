@@ -157,6 +157,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
     <label><input type="checkbox" id="optPhone" checked> 전화번호 <span class="off">→ 가운데 가림</span></label>
     <label><input type="checkbox" id="optAcct" checked> 계좌번호(10자리 이상 숫자) <span class="off">→ 끝 4자리만</span></label>
     <label><input type="checkbox" id="optAddr" checked> 주소 <span class="off">→ 도로명·번지·동호수 가림</span></label>
+    <label><input type="checkbox" id="optEmail" checked> 전자우편 <span class="off">→ h***@***.com</span></label>
     <label><input type="checkbox" id="optAutoName" checked> 이름 자동 인식 <span class="off">→ 성명:·주민번호 앞·~님/씨, 엑셀 성명 열</span></label>
     <label><input type="checkbox" id="optBiz"> 사업자등록번호 <span class="off">(기본 유지 — 필요 시 체크)</span></label>
   </div>
@@ -242,7 +243,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v3.5 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v3.6 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -255,7 +256,7 @@ var M0="\u0000", M1="\u0001";
 function loadPrefs(){
   try{
     var p = JSON.parse(localStorage.getItem("maskPrefs")||"{}");
-    ["Rrn","Card","Phone","Acct","Biz","Addr","AutoName"].forEach(function(k){
+    ["Rrn","Card","Phone","Acct","Biz","Addr","Email","AutoName"].forEach(function(k){
       if (typeof p[k]==="boolean") $("opt"+k).checked = p[k];
     });
   }catch(e){}
@@ -263,12 +264,12 @@ function loadPrefs(){
 function savePrefs(){
   try{
     var p={};
-    ["Rrn","Card","Phone","Acct","Biz","Addr","AutoName"].forEach(function(k){ p[k]=$("opt"+k).checked; });
+    ["Rrn","Card","Phone","Acct","Biz","Addr","Email","AutoName"].forEach(function(k){ p[k]=$("opt"+k).checked; });
     localStorage.setItem("maskPrefs", JSON.stringify(p));
   }catch(e){}
 }
 loadPrefs();
-["Rrn","Card","Phone","Acct","Biz","Addr","AutoName"].forEach(function(k){
+["Rrn","Card","Phone","Acct","Biz","Addr","Email","AutoName"].forEach(function(k){
   $("opt"+k).addEventListener("change", savePrefs);
 });
 
@@ -279,7 +280,7 @@ function getOpts(){
   return {
     rrn:$("optRrn").checked, card:$("optCard").checked, phone:$("optPhone").checked,
     acct:$("optAcct").checked, biz:$("optBiz").checked,
-    addr:$("optAddr").checked, autoName:$("optAutoName").checked, names:names
+    addr:$("optAddr").checked, email:$("optEmail").checked, autoName:$("optAutoName").checked, names:names
   };
 }
 function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
@@ -320,6 +321,12 @@ function maskText(input, opts, counts){
   if (opts.rrn){
     s = s.replace(/(\d{6})\s*[-–—]?\s*([1-8]\d{6})(?!\d)/g, function(m,a){
       counts.rrn++; return wrap(a+"-*******");
+    });
+  }
+  if (opts.email){
+    /* 이메일: 아이디 첫 글자·최상위 도메인만 남김 (OCR이 @ 주변에 공백을 넣어도 인식) */
+    s = s.replace(/([A-Za-z0-9._%+\-]+)\s*[@＠]\s*([A-Za-z0-9\-]+(?:\s*\.\s*[A-Za-z0-9\-]+)*)\s*\.\s*([A-Za-z]{2,})(?![A-Za-z])/g, function(m, user, dom, tld){
+      counts.email++; return wrap(user.charAt(0) + "***@***." + tld.toLowerCase());
     });
   }
   if (opts.card){
@@ -365,11 +372,11 @@ function maskText(input, opts, counts){
   }
   return s;
 }
-function newCounts(){ return {rrn:0,card:0,phone:0,acct:0,biz:0,addr:0,name:0}; }
+function newCounts(){ return {rrn:0,card:0,phone:0,acct:0,biz:0,addr:0,email:0,name:0}; }
 function stripMarks(s){ return s.replace(/[\u0000\u0001]/g,""); }
 function escHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function toHighlighted(s){ return escHtml(s).replace(/\u0000/g,"<mark>").replace(/\u0001/g,"</mark>"); }
-var LABELS = {rrn:"주민번호",card:"카드",phone:"전화",acct:"계좌",biz:"사업자",addr:"주소",name:"이름"};
+var LABELS = {rrn:"주민번호",card:"카드",phone:"전화",acct:"계좌",biz:"사업자",addr:"주소",email:"전자우편",name:"이름"};
 function renderCounts(el,c){
   var html = "";
   Object.keys(LABELS).forEach(function(k){
