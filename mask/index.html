@@ -257,7 +257,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v4.5 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v4.6 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -310,7 +310,7 @@ function isStopName(w){
    주소·금액·서식 용어로 끝나는 단어와 머리글 단어는 제외. 사람 이름을 일일이 입력하지 않아도 되게 하는 대신 가끔 일반 단어가 같이 가려질 수 있음 */
 var SURNAMES = "김이박최정강조윤장임한오서신권황안송류전홍고문양손배백허유남심노하곽성차주우구나민진지엄채원천방공현함변염여추도소석선설마길연위표명기반왕금옥육인맹제모탁국어은편용예경봉부";
 /* 이름에 거의 안 쓰이는 끝글자만 제외 (수·일·호·원·명·구·동·자 등은 이름에 흔해서 남겨 둠) */
-var BAD_END = "시군읍면리로길액서세료비금율표란항목번처부과팀실국청업계건개매입출산차점층칙법령류형별용";
+var BAD_END = "시군읍면리로길액서세료비금율표란항목번처부과팀실국청업계건개매입출산차점층칙법령류별";   /* 용·형·수·일·호·원 등은 이름 끝에 흔해서 제외하지 않음 */
 function surnameNames(s){
   var found = {}, m, re = /(?<![가-힣])([가-힣]{3})(?![가-힣])/g;
   while ((m = re.exec(s))){
@@ -583,15 +583,20 @@ $("btnMaskFile").addEventListener("click", function(){
   var ws = wb.Sheets[$("sheetSel").value];
   var rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:false, defval:""});
   var opts = getOpts(), c = newCounts();
+  /* 머리글이 성명·이름·예금주 등인 열은 그 아래 값 전체를 이름으로 처리 — 머리글이 첫 행이 아니어도(제목·빈 행 뒤) 찾음 */
   var nameCols = {};
   if (opts.autoName && rows.length){
-    var hdrRe = /(성\s*명|이\s*름|성함|예금주|대표자|고객명|수취인|명의자|근로자|사원명|직원명|상속인|피상속인)/;
-    (rows[0]||[]).forEach(function(h,i){ if (hdrRe.test(String(h))) nameCols[i] = true; });
+    var hdrRe = /^(성\s*명|이\s*름|성함|예금주|대표자|고객명|수취인|명의자|근로자|근로자명|사원명|직원명|상속인|피상속인|수증자|신고인)$/;
+    for (var hr = 0; hr < Math.min(rows.length, 30); hr++){
+      (rows[hr]||[]).forEach(function(h,i){
+        if (nameCols[i] === undefined && hdrRe.test(String(h).replace(/\s/g,""))) nameCols[i] = hr;
+      });
+    }
   }
   var masked = rows.map(function(row, r){
     return row.map(function(cell, ci){
       var v = cell==null ? "" : String(cell);
-      if (r > 0 && nameCols[ci] && /^[가-힣]{2,5}$/.test(v.trim())){
+      if (nameCols[ci] !== undefined && r > nameCols[ci] && /^[가-힣]{2,5}$/.test(v.trim()) && !isStopName(v.trim())){
         c.name++; return M0 + maskName(v.trim()) + M1;
       }
       return maskText(v, opts, c);
