@@ -249,7 +249,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v4.3 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v4.4 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -416,6 +416,25 @@ function maskText(input, opts, counts){
     });
   }
   if (opts.acct){
+    /* 금융기관 이름이 있는 줄(은행·생명·증권·보험 등)은 계좌·증권번호 형식이 제각각이라 더 넓게:
+       - 7자리 이상 숫자(공백으로 끊겨 있어도) → 끝 4자리만
+       - 영문+숫자 섞인 8자 이상 증권·계좌번호(2907A07497 등) → 끝 4자리만
+       금액(쉼표·소수점 포함)과 날짜는 건드리지 않음 */
+    if (/(은행|생명|증권|보험|저축|신협|새마을|농협|수협|축협|우체국|캐피탈|카드|금고|투자|자산운용|화재|손해)/.test(s)){
+      s = s.replace(/(^|[^\d,.*\u0000\u0001A-Za-z])(\d{3,}(?: \d{3,})*)(?![\d,.*])/g, function(m,pre,num){
+        var digits = num.replace(/ /g,"");
+        if (digits.length < 7 || digits.length > 20) return m;
+        if (/^(19|20)\d{6}$/.test(digits)) return m;            /* 20260101 같은 날짜 */
+        counts.acct++;
+        return pre+wrap("*".repeat(digits.length-4)+digits.slice(-4));
+      });
+      s = s.replace(/(^|[^\w\u0000\u0001])([A-Za-z0-9]{8,24})(?![\w*])/g, function(m,pre,tok){
+        var d = (tok.match(/\d/g)||[]).length, a = (tok.match(/[A-Za-z]/g)||[]).length;
+        if (d < 5 || a < 1 || a > 4) return m;
+        counts.acct++;
+        return pre+wrap("*".repeat(tok.length-4)+tok.slice(-4));
+      });
+    }
     s = s.replace(/(^|[^\d*\u0000-\u0001])(\d[\d-]{7,18}\d)(?![\d*])/g, function(m,pre,num){
       var digits = num.replace(/-/g,"");
       if (!/^\d+$/.test(digits) || digits.length<10 || digits.length>16) return m;
