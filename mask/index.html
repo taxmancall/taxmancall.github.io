@@ -99,7 +99,9 @@ button:disabled{opacity:.45;cursor:default}
 .filedrop strong{color:var(--fg);font-weight:500}
 #fileInput,#pdfInput{display:none}
 .pdfpages{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--bg)}
-.pdfpages canvas{width:100%;height:auto;display:block;border:1px solid var(--line);background:#fff}
+.pdfpages canvas{width:100%;height:auto;display:block;border:1px solid var(--line);background:#fff;cursor:crosshair;touch-action:none}
+.manualbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px;color:var(--muted);margin-top:8px}
+.manualbar b{color:var(--fg);font-weight:500}
 .pagelabel{font-size:12px;color:var(--muted);margin:2px 0 -6px}
 .radios{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px;margin-top:6px}
 .radios label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
@@ -236,6 +238,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
       <label><input type="radio" name="pdfView" value="img" checked> 가려진 PDF 미리보기 (검은 박스)</label>
       <label><input type="radio" name="pdfView" value="text"> 추출 텍스트 (노란 표시)</label>
     </div>
+    <div class="manualbar" id="manualBar">
+      <span>✏️ <b>미리보기 위에서 드래그</b>하면 그 자리에 검은 박스가 추가됩니다 (빠진 곳 직접 마무리)</span>
+      <button class="ghost" id="btnUndoBox" style="padding:5px 12px;font-size:13px">마지막 박스 지우기</button>
+      <button class="ghost" id="btnClearBoxes" style="padding:5px 12px;font-size:13px">직접 그린 박스 모두 지우기</button>
+      <span id="manualCount"></span>
+    </div>
     <div class="pdfpages" id="pdfPages" style="margin-top:8px"></div>
     <div class="result-pre" id="pdfText" hidden style="margin-top:8px"></div>
     <div class="btnrow">
@@ -249,7 +257,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v4.4 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v4.5 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -847,10 +855,19 @@ function drawLineBoxes(ctx, vp, line, pOpts){
     var tx = t.it.transform, fs = Math.hypot(tx[2], tx[3]) || t.it.height || 10;
     var w = t.it.width || (len * fs * 0.6);
     if (covered / len >= 0.5) sub = [[0, len]];
+    /* 가릴 구간을 단어(공백) 경계까지 넓힘 — 폭 추정 오차로 앞뒤 글자가 새는 것 방지 (이미지에선 단어 일부만 가릴 이유가 없음) */
+    sub = sub.map(function(sp){
+      var a = sp[0], b = sp[1];
+      while (a > 0 && !/\s/.test(t.str.charAt(a-1))) a--;
+      while (b < len && !/\s/.test(t.str.charAt(b))) b++;
+      if (a > 0) a--;           /* 앞 공백까지 포함 — 폭 추정이 오른쪽으로 밀려도 첫 글자가 새지 않게 */
+      if (b < len) b++;
+      return [a, b];
+    });
     var cw = cumWidths(t.str), total = cw[len] || 1;
     sub.forEach(function(sp){
       var x0 = tx[4] + w * (cw[sp[0]]/total), x1 = tx[4] + w * (cw[sp[1]]/total);
-      var pad = fs * 0.35;
+      var pad = fs * 0.6;
       var r = vp.convertToViewportRectangle([x0 - pad, tx[5] - fs*0.3, x1 + pad, tx[5] + fs*1.0]);
       ctx.fillRect(Math.min(r[0],r[2]), Math.min(r[1],r[3]), Math.abs(r[2]-r[0]), Math.abs(r[3]-r[1]));
     });
@@ -864,6 +881,7 @@ $("btnMaskPdf").addEventListener("click", function(){
   var SCALE = useOcr ? 2.5 : 2;
   var pagesEl = $("pdfPages");
   pagesEl.innerHTML = ""; pdfCanvases = [];
+  manualHistory = []; if ($("manualCount")) $("manualCount").textContent = "";
   var markedPages = [], textChars = 0;
   $("btnMaskPdf").disabled = true;
   $("pdfErr").hidden = true;
@@ -933,7 +951,12 @@ $("btnMaskPdf").addEventListener("click", function(){
       p.lines.forEach(function(l){ if (l.ocr) drawOcrBoxes(p.ctx, l, pOpts); else drawLineBoxes(p.ctx, p.vp, l, pOpts); });
       var lab = document.createElement("div"); lab.className="pagelabel"; lab.textContent = p.no+" 페이지";
       pagesEl.appendChild(lab); pagesEl.appendChild(p.canvas);
-      pdfCanvases.push({canvas:p.canvas, w:p.vp.width/SCALE, h:p.vp.height/SCALE});
+      /* 자동 마스킹 결과를 기준 이미지로 보관 → 직접 그린 박스는 그 위에 다시 그림 (되돌리기용) */
+      var base = document.createElement("canvas"); base.width = p.canvas.width; base.height = p.canvas.height;
+      base.getContext("2d").drawImage(p.canvas, 0, 0);
+      var rec = {canvas:p.canvas, base:base, rects:[], w:p.vp.width/SCALE, h:p.vp.height/SCALE};
+      pdfCanvases.push(rec);
+      attachDraw(rec);
     });
     lastAutoNames = pOpts.names.slice();
     $("btnMaskPdf").disabled = false;
@@ -956,6 +979,63 @@ $("btnMaskPdf").addEventListener("click", function(){
     $("pdfProg").textContent = "";
     showPdfErr("처리 중 오류가 났습니다: " + (err && err.message ? err.message : err));
   });
+});
+
+/* ---------- 직접 드래그로 박스 추가 ---------- */
+var manualHistory = []; /* [{rec, rect}] 순서대로 — 되돌리기용 */
+function redrawRec(rec){
+  var ctx = rec.canvas.getContext("2d");
+  ctx.drawImage(rec.base, 0, 0);
+  ctx.fillStyle = "#000";
+  rec.rects.forEach(function(r){ ctx.fillRect(r[0], r[1], r[2], r[3]); });
+}
+function updateManualCount(){
+  var n = manualHistory.length;
+  $("manualCount").textContent = n ? "직접 그린 박스 " + n + "개 (저장 PDF에 반영)" : "";
+}
+function attachDraw(rec){
+  var cv = rec.canvas, start = null;
+  function pos(e){
+    var r = cv.getBoundingClientRect();
+    var sx = cv.width / r.width, sy = cv.height / r.height;
+    return [(e.clientX - r.left) * sx, (e.clientY - r.top) * sy];
+  }
+  cv.addEventListener("pointerdown", function(e){
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    start = pos(e); cv.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  cv.addEventListener("pointermove", function(e){
+    if (!start) return;
+    var cur = pos(e);
+    redrawRec(rec);
+    var ctx = cv.getContext("2d");
+    ctx.fillStyle = "rgba(0,0,0,.55)";
+    ctx.fillRect(Math.min(start[0],cur[0]), Math.min(start[1],cur[1]), Math.abs(cur[0]-start[0]), Math.abs(cur[1]-start[1]));
+  });
+  function finish(e){
+    if (!start) return;
+    var cur = pos(e);
+    var x = Math.min(start[0],cur[0]), y = Math.min(start[1],cur[1]), w = Math.abs(cur[0]-start[0]), h = Math.abs(cur[1]-start[1]);
+    start = null;
+    if (w < 4 || h < 4){ redrawRec(rec); return; } /* 그냥 클릭은 무시 */
+    var rect = [x, y, w, h];
+    rec.rects.push(rect); manualHistory.push({rec:rec, rect:rect});
+    redrawRec(rec); updateManualCount();
+  }
+  cv.addEventListener("pointerup", finish);
+  cv.addEventListener("pointercancel", function(){ if (start){ start = null; redrawRec(rec); } });
+}
+$("btnUndoBox").addEventListener("click", function(){
+  var last = manualHistory.pop();
+  if (!last) return;
+  last.rec.rects = last.rec.rects.filter(function(r){ return r !== last.rect; });
+  redrawRec(last.rec); updateManualCount();
+});
+$("btnClearBoxes").addEventListener("click", function(){
+  manualHistory.forEach(function(h){ h.rec.rects = []; });
+  var seen = [];
+  pdfCanvases.forEach(function(rec){ redrawRec(rec); });
+  manualHistory = []; updateManualCount();
 });
 
 function applyPdfView(){
