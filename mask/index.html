@@ -248,7 +248,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v4.0 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v4.1 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -691,28 +691,32 @@ function normalizeSpacedDigits(s){
    항목(글자 덩어리)의 가로 중심이 머리글 '성명' 칸과 겹치고, 2~4자 한글이면 이름으로 봄 */
 function collectColumnNames(pages){
   var found = {};
-  var hdrRe = /^(성\s*명|이\s*름|성함|예금주|근로자명|사원명|직원명|수취인|상속인|피상속인|수증자|신고인|대표자)$/;
+  var hdrRe = /^(성\s*명|이\s*름|성함|예금주|근로자명|사원명|직원명|수취인|상속인|피상속인|수증자|신고인|대표자|근로자)$/;
   pages.forEach(function(pg){
     var cells = [];
     pg.lines.forEach(function(l){
       l.items.forEach(function(t){
-        var str = t.str.replace(/[ \u00a0]/g,"");
-        var cx, w;
-        if (t.px){ cx = (t.px.x0 + t.px.x1)/2; w = t.px.x1 - t.px.x0; }
-        else { var tx = t.it.transform; w = t.it.width || 0; cx = tx[4] + w/2; }
-        cells.push({str:str, cx:cx, w:w});
+        var raw = t.str.replace(/\u00a0/g," ").trim();
+        var x0, x1, fs;
+        if (t.px){ x0 = t.px.x0; x1 = t.px.x1; fs = t.px.y1 - t.px.y0; }
+        else { var tx = t.it.transform; x0 = tx[4]; x1 = tx[4] + (t.it.width || 0); fs = Math.hypot(tx[2], tx[3]) || t.it.height || 10; }
+        cells.push({raw:raw, compact:raw.replace(/ /g,""), x0:x0, x1:x1, cx:(x0+x1)/2, fs:fs});
       });
     });
-    var heads = cells.filter(function(c){ return hdrRe.test(c.str); });
+    var heads = cells.filter(function(c){ return hdrRe.test(c.compact); });
     if (!heads.length) return;
     heads.forEach(function(h){
-      var tol = Math.max(h.w, 1) * 1.2;
+      var tol = Math.max((h.x1 - h.x0) * 1.2, h.fs * 2.5);
       cells.forEach(function(c){
         if (c === h) return;
-        if (Math.abs(c.cx - h.cx) > tol) return;
-        if (!/^[가-힣]{2,4}$/.test(c.str)) return;
-        if (isStopName(c.str) || hdrRe.test(c.str)) return;
-        found[c.str] = 1;
+        /* 칸이 세로로 같은 열에 있는지: 중심 또는 왼쪽 끝이 머리글과 맞으면 같은 열로 봄 (가운데/왼쪽 정렬 모두 대응) */
+        if (Math.abs(c.cx - h.cx) > tol && Math.abs(c.x0 - h.x0) > h.fs * 1.5) return;
+        /* 칸 내용이 이름 하나이거나, 이름으로 시작하고 뒤에 다른 내용이 붙은 경우(한 항목에 여러 칸이 묶인 PDF) */
+        var m = c.raw.match(/^([가-힣]{2,4})(?:\s{2,}|\s*$)/) || (/^[가-힣]{2,4}$/.test(c.compact) ? [0, c.compact] : null);
+        if (!m) return;
+        var nm = m[1];
+        if (isStopName(nm) || hdrRe.test(nm)) return;
+        found[nm] = 1;
       });
     });
   });
