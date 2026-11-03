@@ -310,6 +310,11 @@ function surnameNames(s){
     if (SURNAMES.indexOf(w.charAt(0)) < 0) continue;
     if (BAD_END.indexOf(w.charAt(2)) >= 0) continue;
     if (isStopName(w)) continue;
+    /* 구·동으로 끝나는 단어는 주소 문맥(앞에 시·도·구, 뒤에 번지·동명·숫자)이면 지명으로 보고 제외 — 이동구 같은 이름은 그 외 자리에서만 */
+    if (/[구동]$/.test(w)){
+      var before = s.slice(Math.max(0, m.index - 4), m.index), after = s.slice(m.index + 3, m.index + 16);
+      if (/(시|도|구|군)\s*$/.test(before) || /^\s*(\d|산\d|[가-힣]{1,8}(동|읍|면|리|로|길|번지|아파트|빌딩|타워))/.test(after)) continue;
+    }
     found[w] = 1;
   }
   return Object.keys(found);
