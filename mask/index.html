@@ -175,6 +175,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <div class="btnrow">
     <button class="act" id="btnMaskText">마스킹 실행</button>
     <button class="ghost" id="btnCopyText" disabled>결과 복사</button>
+    <button class="ghost" id="btnMdText" disabled>.md 저장</button>
     <span id="toastText" class="toast" role="status"></span>
   </div>
   <div id="textResultWrap" hidden style="margin-top:14px">
@@ -202,6 +203,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
     <div class="tablewrap"><table id="previewTable"></table></div>
     <div class="btnrow">
       <button class="ghost" id="btnCopyTsv">마스킹 결과 전체 복사 (엑셀 붙여넣기용)</button>
+      <button class="ghost" id="btnMdFile">마크다운 표(.md) 저장</button>
       <span id="toastFile" class="toast" role="status"></span>
     </div>
     <ol class="steps">
@@ -238,6 +240,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
     <div class="btnrow">
       <button class="act" id="btnSavePdf">가려진 PDF 저장</button>
       <button class="ghost" id="btnCopyPdfText">마스킹 텍스트 복사</button>
+      <button class="ghost" id="btnMdPdf">마스킹 텍스트 .md 저장</button>
       <span id="toastPdf" class="toast" role="status"></span>
     </div>
     <p class="note">저장되는 PDF는 페이지를 이미지로 바꾼 뒤 가린 자리에 검은 박스를 덧씌운 것이라, 원래 글자가 파일 안에 남지 않습니다. 박스 위치는 글자 폭을 추정한 것이니 저장 전 미리보기로 확인하세요. 텍스트만 올리면 되는 경우에는 「마스킹 텍스트 복사」가 더 가볍습니다.</p>
@@ -245,7 +248,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v3.9 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v4.0 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -432,6 +435,7 @@ $("btnMaskText").addEventListener("click", function(){
   renderCounts($("textCounts"), c);
   $("textResultWrap").hidden = false;
   $("btnCopyText").disabled = !lastTextResult;
+  $("btnMdText").disabled = !lastTextResult;
   $("toastText").textContent = "";
 });
 $("btnCopyText").addEventListener("click", function(){ copyText(lastTextResult, $("toastText")); });
@@ -449,8 +453,36 @@ function copyText(text, toastEl){
   } else fallback();
 }
 
+/* ---------- 마크다운 저장 ---------- */
+function downloadText(name, text){
+  var blob = new Blob(["\ufeff" + text], {type:"text/markdown;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 1000);
+}
+function mdStamp(title){
+  var d = new Date(), z = function(n){ return (n<10?"0":"")+n; };
+  return "# " + title + "\n\n> 식별정보 마스킹본 · " + d.getFullYear()+"-"+z(d.getMonth()+1)+"-"+z(d.getDate()) + " · 원제우세무사사무소 마스킹 도구\n\n";
+}
+function mdEsc(v){ return String(v).replace(/\|/g, "\\|").replace(/\r?\n/g, " "); }
+function rowsToMd(rows){
+  if (!rows.length) return "";
+  var width = rows.reduce(function(m,r){ return Math.max(m, r.length); }, 0);
+  var pad = function(r){ var o = r.slice(); while (o.length < width) o.push(""); return o; };
+  var out = "| " + pad(rows[0]).map(mdEsc).join(" | ") + " |\n";
+  out += "|" + pad(rows[0]).map(function(){ return " --- |"; }).join("") + "\n";
+  for (var i=1;i<rows.length;i++) out += "| " + pad(rows[i]).map(mdEsc).join(" | ") + " |\n";
+  return out;
+}
+function baseName(n){ return String(n||"마스킹").replace(/\.[^.]+$/, ""); }
+$("btnMdText").addEventListener("click", function(){
+  if (!lastTextResult) return;
+  downloadText("마스킹_텍스트.md", mdStamp("마스킹 텍스트") + lastTextResult + "\n");
+});
+
 /* ---------- 파일 모드 ---------- */
-var wb = null, lastTsv = "";
+var wb = null, lastTsv = "", lastRows = null, lastFileName = "";
 var drop = $("dropZone");
 drop.addEventListener("click", function(){ $("fileInput").click(); });
 drop.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("fileInput").click(); } });
@@ -480,6 +512,7 @@ function handleFile(file){
       wb.SheetNames.forEach(function(nm){
         var o = document.createElement("option"); o.value=nm; o.textContent=nm; sel.appendChild(o);
       });
+      lastFileName = file.name;
       $("fileInfo").innerHTML = "<b>"+escHtml(file.name)+"</b> · 시트 "+wb.SheetNames.length+"개";
       $("fileInfo").hidden = false;
       $("sheetRow").hidden = false;
@@ -510,8 +543,9 @@ $("btnMaskFile").addEventListener("click", function(){
       return maskText(v, opts, c);
     });
   });
-  lastTsv = masked.map(function(row){
-    return row.map(function(cell){ return stripMarks(cell).replace(/\t/g," ").replace(/\r?\n/g," "); }).join("\t");
+  lastRows = masked.map(function(row){ return row.map(stripMarks); });
+  lastTsv = lastRows.map(function(row){
+    return row.map(function(cell){ return cell.replace(/\t/g," ").replace(/\r?\n/g," "); }).join("\t");
   }).join("\n");
   var tbl = $("previewTable"), html = "";
   var maxR = Math.min(masked.length, 60);
@@ -527,6 +561,11 @@ $("btnMaskFile").addEventListener("click", function(){
   $("toastFile").textContent = masked.length>60 ? "미리보기는 60행까지 — 복사에는 전체 "+masked.length+"행이 포함됩니다" : "";
 });
 $("btnCopyTsv").addEventListener("click", function(){ copyText(lastTsv, $("toastFile")); });
+$("btnMdFile").addEventListener("click", function(){
+  if (!lastRows) return;
+  var sheet = $("sheetSel").value;
+  downloadText(baseName(lastFileName) + "_" + sheet + "_마스킹.md", mdStamp(baseName(lastFileName) + " — " + sheet) + rowsToMd(lastRows));
+});
 
 /* ---------- PDF 모드 ---------- */
 var pdfDoc = null, pdfName = "", pdfCanvases = [], lastPdfText = "", lastAutoNames = [];
@@ -875,6 +914,16 @@ function applyPdfView(){
 Array.prototype.forEach.call(document.querySelectorAll('input[name="pdfView"]'), function(r){ r.addEventListener("change", applyPdfView); });
 $("optOcr").addEventListener("change", function(){ $("ocrHint").hidden = !this.checked; });
 $("btnCopyPdfText").addEventListener("click", function(){ copyText(lastPdfText, $("toastPdf")); });
+$("btnMdPdf").addEventListener("click", function(){
+  if (!lastPdfText) return;
+  /* 페이지 구분선(── n 페이지 ──)을 마크다운 제목으로 */
+  var body = lastPdfText.split("\n").map(function(ln){
+    var m = ln.match(/^── (\d+) 페이지 ──$/);
+    if (m) return "\n## " + m[1] + " 페이지\n";
+    return ln.trim() ? ln + "  " : "";   /* 줄 끝 공백 2칸 = 마크다운 줄바꿈 (표 행이 한 문단으로 뭉치지 않게) */
+  }).join("\n");
+  downloadText(baseName(pdfName) + "_마스킹.md", mdStamp(baseName(pdfName)) + body + "\n");
+});
 
 $("btnSavePdf").addEventListener("click", function(){
   if (!pdfCanvases.length) return;
