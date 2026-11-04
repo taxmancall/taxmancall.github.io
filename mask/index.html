@@ -148,7 +148,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
 <div class="tabs" role="tablist">
   <button id="tabText" role="tab" aria-selected="true" aria-controls="paneText">텍스트 마스킹</button>
   <button id="tabFile" role="tab" aria-selected="false" aria-controls="paneFile">엑셀 · CSV 파일</button>
-  <button id="tabPdf" role="tab" aria-selected="false" aria-controls="panePdf">PDF 파일</button>
+  <button id="tabPdf" role="tab" aria-selected="false" aria-controls="panePdf">PDF · 사진</button>
 </div>
 
 <section class="panel">
@@ -218,12 +218,12 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
 </section>
 
 <section class="panel" id="panePdf" role="tabpanel" hidden>
-  <h2>PDF 파일</h2>
-  <div class="filedrop" id="pdfDrop" tabindex="0" role="button" aria-label="PDF 선택">
-    <strong>클릭해서 PDF 선택</strong> 또는 여기로 끌어다 놓기<br>
-    <span style="font-size:12.5px">.pdf — 홈택스 출력물·명세서·계약서 등, 파일은 PC 밖으로 나가지 않습니다</span>
+  <h2>PDF · 사진(캡처·스캔 이미지)</h2>
+  <div class="filedrop" id="pdfDrop" tabindex="0" role="button" aria-label="PDF 또는 이미지 선택">
+    <strong>클릭해서 PDF 또는 사진 선택</strong> 또는 여기로 끌어다 놓기 (캡처 이미지는 Ctrl+V 붙여넣기도 됨)<br>
+    <span style="font-size:12.5px">.pdf · .png · .jpg — 홈택스 출력물·명세서·화면 캡처 등, 파일은 PC 밖으로 나가지 않습니다</span>
   </div>
-  <input type="file" id="pdfInput" accept=".pdf,application/pdf">
+  <input type="file" id="pdfInput" accept=".pdf,application/pdf,image/*">
   <div class="fileinfo" id="pdfInfo" hidden></div>
   <div class="btnrow" id="pdfRow" hidden>
     <button class="act" id="btnMaskPdf">마스킹 실행</button>
@@ -248,6 +248,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
     <div class="result-pre" id="pdfText" hidden style="margin-top:8px"></div>
     <div class="btnrow">
       <button class="act" id="btnSavePdf">가려진 PDF 저장</button>
+      <button class="act" id="btnSaveImg" hidden>가려진 이미지(PNG) 저장</button>
       <button class="ghost" id="btnCopyPdfText">마스킹 텍스트 복사</button>
       <button class="ghost" id="btnMdPdf">마스킹 텍스트 .md 저장</button>
       <span id="toastPdf" class="toast" role="status"></span>
@@ -257,7 +258,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v4.6 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v4.7 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -345,6 +346,9 @@ function collectAutoNames(s, ocr){
     var LBL = "(?:성명|이름|성함|예금주|대표자|고객명|수취인|신청인|신고인|납세자|납세의무자|피상속인|상속인|수증자|증여자|양도인|양수인|임대인|임차인|근로자|명의자|계약자|피보험자|수익자|배우자|대리인)";
     var re4 = new RegExp(LBL + "[:：|｜()\\s]*([가-힣]{3})(?![가-힣])", "g");
     while ((m = re4.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
+    /* 이름 바로 뒤에 다음 라벨이 붙어 읽힌 경우("성명정수민주민등록번호") */
+    var re4b = new RegExp(LBL + "[:：|｜()\\s]*([가-힣]{3})(?=(?:주민|생년|연락|전화|주소|사업|등록|소득|직위|직급|부서|입사|성별|관계|비고|금액))", "g");
+    while ((m = re4b.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
     var re5 = new RegExp(LBL + "[:：|｜()\\s]*([가-힣]{2})(?![가-힣])", "g");
     while ((m = re5.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
     var re6 = /([가-힣]{2,3})\s*[\(（:：|]?\s*(?=\d{6}\s*[-–—]?\s*[1-8]\d{6})/g;
@@ -641,10 +645,49 @@ pdrop.addEventListener("drop", function(e){ if (e.dataTransfer.files && e.dataTr
 $("pdfInput").addEventListener("change", function(){ if (this.files && this.files[0]) handlePdf(this.files[0]); });
 function showPdfErr(msg){ var el=$("pdfErr"); el.textContent=msg; el.hidden=false; }
 
+/* 이미지를 1페이지짜리 PDF처럼 다루는 어댑터 — 글자 정보가 없으므로 항상 OCR로 처리 */
+function imageDoc(img){
+  return {
+    numPages: 1, isImage: true, img: img,
+    getPage: function(){
+      return Promise.resolve({
+        getViewport: function(o){ return {width: img.naturalWidth * o.scale, height: img.naturalHeight * o.scale}; },
+        render: function(o){ o.canvasContext.drawImage(img, 0, 0, o.viewport.width, o.viewport.height); return {promise: Promise.resolve()}; },
+        getTextContent: function(){ return Promise.resolve({items: []}); }
+      });
+    }
+  };
+}
+function handleImage(file){
+  var url = URL.createObjectURL(file), img = new Image();
+  img.onload = function(){
+    pdfDoc = imageDoc(img);
+    pdfName = file.name || "캡처.png";
+    $("pdfInfo").innerHTML = "<b>"+escHtml(pdfName)+"</b> · 이미지 "+img.naturalWidth+"×"+img.naturalHeight+" — 글자 인식(OCR)으로 처리됩니다";
+    $("pdfInfo").hidden = false;
+    $("pdfRow").hidden = false;
+    $("optOcr").checked = true; $("ocrHint").hidden = false;
+  };
+  img.onerror = function(){ showPdfErr("이미지를 열 수 없습니다."); };
+  img.src = url;
+}
+/* 클립보드 붙여넣기(화면 캡처) */
+document.addEventListener("paste", function(e){
+  if ($("panePdf").hidden) return;
+  var items = (e.clipboardData && e.clipboardData.items) || [];
+  for (var i=0;i<items.length;i++){
+    if (items[i].type.indexOf("image/") === 0){
+      var f = items[i].getAsFile();
+      if (f){ e.preventDefault(); $("pdfErr").hidden = true; $("pdfResultWrap").hidden = true; handleImage(f); return; }
+    }
+  }
+});
+
 function handlePdf(file){
   $("pdfErr").hidden = true;
   $("pdfResultWrap").hidden = true;
   $("pdfRow").hidden = true;
+  if (/^image\//.test(file.type) || /\.(png|jpe?g|gif|bmp|webp)$/i.test(file.name)){ handleImage(file); return; }
   if (!window.pdfjsLib){ showPdfErr("PDF 처리 모듈을 불러오지 못했습니다. 새로고침해 주세요."); return; }
   pdfName = file.name;
   var reader = new FileReader();
@@ -736,6 +779,7 @@ function ocrNormalize(s){
     return tok.replace(/[OoD]/g,"0").replace(/[Il|!]/g,"1").replace(/S/g,"5").replace(/Z/g,"2").replace(/B/g,"8");
   });
   s = s.replace(/(\d)[ \u00a0]*([-–—])[ \u00a0]*(?=\d)/g, "$1$2");
+  s = s.replace(/(\d)[\/.,](\d{5})(?=\s*-\s*\d{7})/g, "$1$2");   /* 주민번호 앞자리에 끼어든 / . , 제거 (7/00312-… ) */
   var prev;
   do { prev = s; s = s.replace(/(^|[^가-힣])([가-힣])[ \u00a0]+(?=[가-힣])/g, "$1$2").replace(/([가-힣])[ \u00a0]+([가-힣])(?=$|[^가-힣])/g, "$1$2"); } while (s !== prev);
   return s;
@@ -882,8 +926,13 @@ function drawLineBoxes(ctx, vp, line, pOpts){
 $("btnMaskPdf").addEventListener("click", function(){
   if (!pdfDoc) return;
   var opts = getOpts(), c = newCounts();
-  var useOcr = $("optOcr").checked;
+  var useOcr = $("optOcr").checked || !!pdfDoc.isImage;
   var SCALE = useOcr ? 2.5 : 2;
+  if (pdfDoc.isImage){
+    /* 사진은 원본 픽셀 기준 — 인식이 잘 되도록 너비 약 2000px로 맞춤 (작은 캡처는 키우고, 큰 사진은 그대로) */
+    SCALE = Math.min(3, Math.max(1, 2000 / pdfDoc.img.naturalWidth));
+  }
+  $("btnSaveImg").hidden = !pdfDoc.isImage;
   var pagesEl = $("pdfPages");
   pagesEl.innerHTML = ""; pdfCanvases = [];
   manualHistory = []; if ($("manualCount")) $("manualCount").textContent = "";
@@ -1062,6 +1111,15 @@ $("btnMdPdf").addEventListener("click", function(){
   downloadText(baseName(pdfName) + "_마스킹.md", mdStamp(baseName(pdfName)) + body + "\n");
 });
 
+$("btnSaveImg").addEventListener("click", function(){
+  if (!pdfCanvases.length) return;
+  var rec = pdfCanvases[0];
+  var a = document.createElement("a");
+  a.href = rec.canvas.toDataURL("image/png");
+  a.download = baseName(pdfName) + "_마스킹.png";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  $("toastPdf").textContent = "저장됨 ✓"; setTimeout(function(){ $("toastPdf").textContent=""; }, 2500);
+});
 $("btnSavePdf").addEventListener("click", function(){
   if (!pdfCanvases.length) return;
   if (!window.jspdf || !window.jspdf.jsPDF){ $("toastPdf").textContent = "PDF 저장 모듈을 불러오지 못했습니다."; return; }
