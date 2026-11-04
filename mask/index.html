@@ -239,9 +239,9 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
       <label><input type="radio" name="pdfView" value="text"> 추출 텍스트 (노란 표시)</label>
     </div>
     <div class="manualbar" id="manualBar">
-      <span>✏️ <b>미리보기 위에서 드래그</b>하면 그 자리에 검은 박스가 추가됩니다 (빠진 곳 직접 마무리)</span>
-      <button class="ghost" id="btnUndoBox" style="padding:5px 12px;font-size:13px">마지막 박스 지우기</button>
-      <button class="ghost" id="btnClearBoxes" style="padding:5px 12px;font-size:13px">직접 그린 박스 모두 지우기</button>
+      <span>✏️ <b>드래그</b> = 그 자리에 박스 추가 · <b>박스 클릭</b> = 그 박스 삭제 (잘못 가려진 곳 풀기)</span>
+      <button class="ghost" id="btnUndoBox" style="padding:5px 12px;font-size:13px">되돌리기</button>
+      <button class="ghost" id="btnClearBoxes" style="padding:5px 12px;font-size:13px">직접 수정 모두 취소</button>
       <span id="manualCount"></span>
     </div>
     <div class="pdfpages" id="pdfPages" style="margin-top:8px"></div>
@@ -258,7 +258,7 @@ footer{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
   <p class="err" id="pdfErr" role="alert" hidden></p>
 </section>
 
-<footer>원제우세무사사무소 내부용 v4.7 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
+<footer>원제우세무사사무소 내부용 v4.8 · 마스킹 후에도 업로드 전 한 번 더 확인하세요</footer>
 </div>
 
 <script>
@@ -349,8 +349,7 @@ function collectAutoNames(s, ocr){
     /* 이름 바로 뒤에 다음 라벨이 붙어 읽힌 경우("성명정수민주민등록번호") */
     var re4b = new RegExp(LBL + "[:：|｜()\\s]*([가-힣]{3})(?=(?:주민|생년|연락|전화|주소|사업|등록|소득|직위|직급|부서|입사|성별|관계|비고|금액))", "g");
     while ((m = re4b.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
-    var re5 = new RegExp(LBL + "[:：|｜()\\s]*([가-힣]{2})(?![가-힣])", "g");
-    while ((m = re5.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
+    /* 2글자 이름은 붙여 쓴 텍스트에서는 찾지 않음 (OCR 오인식 글자가 이름으로 잡히는 것 방지) — 원문에서 라벨 바로 뒤에 있을 때(re1)만 */
     var re6 = /([가-힣]{2,3})\s*[\(（:：|]?\s*(?=\d{6}\s*[-–—]?\s*[1-8]\d{6})/g;
     while ((m = re6.exec(compact))) if (!isStopName(m[1])) found[m[1]] = 1;
   }
@@ -862,7 +861,7 @@ function ocrLines(data){
   });
   return lines;
 }
-function drawOcrBoxes(ctx, line, pOpts){
+function drawOcrBoxes(boxes, line, pOpts){
   var dummy = newCounts();
   var out = maskText(line.text, pOpts, dummy);
   if (out.indexOf(M0) < 0) return;
@@ -882,12 +881,12 @@ function drawOcrBoxes(ctx, line, pOpts){
     sub.forEach(function(sp){
       var x0 = bx.x0 + w * (cw[sp[0]]/total), x1 = bx.x0 + w * (cw[sp[1]]/total);
       var pad = h * 0.3;
-      ctx.fillRect(x0 - pad, bx.y0 - h*0.2, (x1 - x0) + pad*2, h*1.4);
+      boxes.push([x0 - pad, bx.y0 - h*0.2, (x1 - x0) + pad*2, h*1.4]);
     });
   });
 }
 
-function drawLineBoxes(ctx, vp, line, pOpts){
+function drawLineBoxes(boxes, vp, line, pOpts){
   var dummy = newCounts();
   var out = maskText(line.text, pOpts, dummy);
   if (out.indexOf(M0) < 0) return;
@@ -918,7 +917,7 @@ function drawLineBoxes(ctx, vp, line, pOpts){
       var x0 = tx[4] + w * (cw[sp[0]]/total), x1 = tx[4] + w * (cw[sp[1]]/total);
       var pad = fs * 0.6;
       var r = vp.convertToViewportRectangle([x0 - pad, tx[5] - fs*0.3, x1 + pad, tx[5] + fs*1.0]);
-      ctx.fillRect(Math.min(r[0],r[2]), Math.min(r[1],r[3]), Math.abs(r[2]-r[0]), Math.abs(r[3]-r[1]));
+      boxes.push([Math.min(r[0],r[2]), Math.min(r[1],r[3]), Math.abs(r[2]-r[0]), Math.abs(r[3]-r[1])]);
     });
   });
 }
@@ -1001,15 +1000,17 @@ $("btnMaskPdf").addEventListener("click", function(){
     pages.forEach(function(p){
       var markedText = maskText(p.text, pOpts, c);
       markedPages.push(markedText);
-      p.ctx.fillStyle = "#000";
-      p.lines.forEach(function(l){ if (l.ocr) drawOcrBoxes(p.ctx, l, pOpts); else drawLineBoxes(p.ctx, p.vp, l, pOpts); });
+      var autoRects = [];
+      p.lines.forEach(function(l){ if (l.ocr) drawOcrBoxes(autoRects, l, pOpts); else drawLineBoxes(autoRects, p.vp, l, pOpts); });
+      autoRects = mergeRects(autoRects);
       var lab = document.createElement("div"); lab.className="pagelabel"; lab.textContent = p.no+" 페이지";
       pagesEl.appendChild(lab); pagesEl.appendChild(p.canvas);
-      /* 자동 마스킹 결과를 기준 이미지로 보관 → 직접 그린 박스는 그 위에 다시 그림 (되돌리기용) */
+      /* 원본 렌더를 기준 이미지로 보관하고, 자동 박스·직접 그린 박스를 그 위에 그림 — 박스 하나씩 지우기/되돌리기 가능 */
       var base = document.createElement("canvas"); base.width = p.canvas.width; base.height = p.canvas.height;
       base.getContext("2d").drawImage(p.canvas, 0, 0);
-      var rec = {canvas:p.canvas, base:base, rects:[], w:p.vp.width/SCALE, h:p.vp.height/SCALE};
+      var rec = {canvas:p.canvas, base:base, autoRects:autoRects, rects:[], w:p.vp.width/SCALE, h:p.vp.height/SCALE};
       pdfCanvases.push(rec);
+      redrawRec(rec);
       attachDraw(rec);
     });
     lastAutoNames = pOpts.names.slice();
@@ -1035,17 +1036,47 @@ $("btnMaskPdf").addEventListener("click", function(){
   });
 });
 
+/* 겹치거나 바로 붙어 있는 박스들을 하나로 합침 — OCR이 한 이름을 글자별로 쪼개 읽어도 박스 하나로 다뤄 클릭 한 번에 지울 수 있게 */
+function mergeRects(rects){
+  var out = rects.map(function(r){ return r.slice(); }), changed = true;
+  while (changed){
+    changed = false;
+    outer: for (var i=0;i<out.length;i++){
+      for (var j=i+1;j<out.length;j++){
+        var a = out[i], b = out[j];
+        var gapTol = Math.min(a[3], b[3]) * 0.6;
+        var hOverlap = a[0] <= b[0]+b[2]+gapTol && b[0] <= a[0]+a[2]+gapTol;
+        var vOverlap = Math.min(a[1]+a[3], b[1]+b[3]) - Math.max(a[1], b[1]) > Math.min(a[3], b[3]) * 0.4;
+        if (hOverlap && vOverlap){
+          var x0 = Math.min(a[0], b[0]), y0 = Math.min(a[1], b[1]);
+          var x1 = Math.max(a[0]+a[2], b[0]+b[2]), y1 = Math.max(a[1]+a[3], b[1]+b[3]);
+          out[i] = [x0, y0, x1-x0, y1-y0]; out.splice(j, 1); changed = true; break outer;
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /* ---------- 직접 드래그로 박스 추가 ---------- */
 var manualHistory = []; /* [{rec, rect}] 순서대로 — 되돌리기용 */
 function redrawRec(rec){
   var ctx = rec.canvas.getContext("2d");
   ctx.drawImage(rec.base, 0, 0);
   ctx.fillStyle = "#000";
+  (rec.autoRects || []).forEach(function(r){ ctx.fillRect(r[0], r[1], r[2], r[3]); });
   rec.rects.forEach(function(r){ ctx.fillRect(r[0], r[1], r[2], r[3]); });
 }
 function updateManualCount(){
-  var n = manualHistory.length;
-  $("manualCount").textContent = n ? "직접 그린 박스 " + n + "개 (저장 PDF에 반영)" : "";
+  var add = 0, del = 0;
+  manualHistory.forEach(function(h){ if (h.type === "remove") del++; else add++; });
+  $("manualCount").textContent = (add||del) ? "직접 수정: 박스 추가 " + add + "개 · 삭제 " + del + "개 (저장 파일에 반영)" : "";
+}
+function rectAt(rec, x, y){
+  /* 클릭 지점을 덮는 박스 — 직접 그린 것부터, 없으면 자동 박스 */
+  for (var i = rec.rects.length-1; i >= 0; i--){ var r = rec.rects[i]; if (x>=r[0] && x<=r[0]+r[2] && y>=r[1] && y<=r[1]+r[3]) return {list:"rects", rect:r}; }
+  for (var j = rec.autoRects.length-1; j >= 0; j--){ var a = rec.autoRects[j]; if (x>=a[0] && x<=a[0]+a[2] && y>=a[1] && y<=a[1]+a[3]) return {list:"autoRects", rect:a}; }
+  return null;
 }
 function attachDraw(rec){
   var cv = rec.canvas, start = null;
@@ -1071,9 +1102,18 @@ function attachDraw(rec){
     var cur = pos(e);
     var x = Math.min(start[0],cur[0]), y = Math.min(start[1],cur[1]), w = Math.abs(cur[0]-start[0]), h = Math.abs(cur[1]-start[1]);
     start = null;
-    if (w < 4 || h < 4){ redrawRec(rec); return; } /* 그냥 클릭은 무시 */
+    if (w < 4 || h < 4){
+      /* 드래그가 아닌 클릭: 그 자리 박스를 지움 (잘못 가려진 곳 풀기) */
+      var hit = rectAt(rec, cur[0], cur[1]);
+      if (hit){
+        rec[hit.list] = rec[hit.list].filter(function(r){ return r !== hit.rect; });
+        manualHistory.push({type:"remove", rec:rec, rect:hit.rect, list:hit.list});
+        updateManualCount();
+      }
+      redrawRec(rec); return;
+    }
     var rect = [x, y, w, h];
-    rec.rects.push(rect); manualHistory.push({rec:rec, rect:rect});
+    rec.rects.push(rect); manualHistory.push({type:"add", rec:rec, rect:rect, list:"rects"});
     redrawRec(rec); updateManualCount();
   }
   cv.addEventListener("pointerup", finish);
@@ -1082,14 +1122,19 @@ function attachDraw(rec){
 $("btnUndoBox").addEventListener("click", function(){
   var last = manualHistory.pop();
   if (!last) return;
-  last.rec.rects = last.rec.rects.filter(function(r){ return r !== last.rect; });
+  if (last.type === "remove") last.rec[last.list].push(last.rect);          /* 지운 박스 복구 */
+  else last.rec.rects = last.rec.rects.filter(function(r){ return r !== last.rect; });
   redrawRec(last.rec); updateManualCount();
 });
 $("btnClearBoxes").addEventListener("click", function(){
-  manualHistory.forEach(function(h){ h.rec.rects = []; });
-  var seen = [];
+  /* 직접 수정 전부 취소: 추가한 박스 제거 + 지운 자동 박스 복구 */
+  while (manualHistory.length){
+    var h = manualHistory.pop();
+    if (h.type === "remove") h.rec[h.list].push(h.rect);
+    else h.rec.rects = h.rec.rects.filter(function(r){ return r !== h.rect; });
+  }
   pdfCanvases.forEach(function(rec){ redrawRec(rec); });
-  manualHistory = []; updateManualCount();
+  updateManualCount();
 });
 
 function applyPdfView(){
