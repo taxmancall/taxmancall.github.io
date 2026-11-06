@@ -160,6 +160,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .vspeak.playing{background:var(--accent);border-color:var(--accent)}
 .vtext{flex:1;min-width:0;font-size:17px;line-height:1.85;word-break:keep-all}
 
+/* 그림 암송 모드 */
+.vcard.withpic{flex-direction:column;gap:10px}
+.vpic{width:100%;border-radius:12px;overflow:hidden;background:var(--accent-soft)}
+.vpic svg{display:block;width:100%;height:auto}
+.vrow{display:flex;gap:10px;width:100%}
+
 /* hide mode word chips */
 .vtext .w{border-radius:6px;cursor:pointer;transition:background .15s,color .15s;padding:0 1px}
 .vtext .w.hid{background:var(--accent-soft);color:transparent;border-bottom:2px solid var(--accent);user-select:none}
@@ -243,6 +249,7 @@ footer b{font-family:var(--font-display);color:var(--accent)}
   <div class="modes-sticky">
     <div class="modes" id="modes">
       <button data-mode="full" class="on">전체 보기</button>
+      <button data-mode="pic">그림</button>
       <button data-mode="first">첫 글자만</button>
       <button data-mode="hide">가리기</button>
     </div>
@@ -418,7 +425,7 @@ function renderHome(){
 let cur=null, mode="full";
 const home=document.getElementById("home"), prac=document.getElementById("practice");
 const vbox=document.getElementById("verse-box"), hint=document.getElementById("p-hint");
-const HINTS={full:"말씀을 소리내어 읽어 보세요",first:"첫 글자를 보고 말씀을 외워 보세요 (단어를 누르면 보여요)",hide:"가려진 단어를 떠올려 보세요 (누르면 보여요)"};
+const HINTS={full:"말씀을 소리내어 읽어 보세요",pic:"그림 장면을 보고 말씀을 외워 보세요 (단어를 누르면 보여요)",first:"첫 글자를 보고 말씀을 외워 보세요 (단어를 누르면 보여요)",hide:"가려진 단어를 떠올려 보세요 (누르면 보여요)"};
 
 function openPractice(id){
   cur=ALL[id]; mode="full";
@@ -441,6 +448,7 @@ function setModeBtns(){
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.mode===mode));
   hint.textContent=HINTS[mode];
   document.getElementById("btn-random").style.display=(mode==="hide")?"":"none";
+  document.querySelector('#modes button[data-mode="pic"]').hidden=!(cur&&PICS[cur.id]);
 }
 
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;")}
@@ -532,6 +540,16 @@ function verseSegments(n,text,last){
   ];
 }
 
+/* ---- 그림 암송: 절별 장면 그림 (요한복음 1:1-6) ---- */
+const PICS={w3:{
+ 1:`<svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="150" fill="#2b3450"/><circle cx="42" cy="28" r="2" fill="#fff" opacity=".9"/><circle cx="92" cy="64" r="1.6" fill="#fff" opacity=".7"/><circle cx="340" cy="34" r="2" fill="#fff" opacity=".9"/><circle cx="310" cy="92" r="1.6" fill="#fff" opacity=".6"/><circle cx="140" cy="22" r="1.4" fill="#fff" opacity=".6"/><circle cx="265" cy="18" r="1.6" fill="#fff" opacity=".7"/><circle cx="200" cy="68" r="54" fill="#ffd98a" opacity=".16"/><circle cx="200" cy="68" r="38" fill="#ffd98a" opacity=".3"/><rect x="172" y="42" width="56" height="52" rx="9" fill="#fffdf5"/><line x1="185" y1="58" x2="215" y2="58" stroke="#d4ba8c" stroke-width="4" stroke-linecap="round"/><line x1="185" y1="68" x2="215" y2="68" stroke="#d4ba8c" stroke-width="4" stroke-linecap="round"/><line x1="185" y1="78" x2="207" y2="78" stroke="#d4ba8c" stroke-width="4" stroke-linecap="round"/><text x="200" y="136" text-anchor="middle" fill="#ffd98a" font-size="16" font-family="Jua,sans-serif">📜 태초에 말씀 = 하나님</text></svg>`,
+ 2:`<svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="150" fill="#2b3450"/><circle cx="60" cy="40" r="2" fill="#fff" opacity=".8"/><circle cx="330" cy="30" r="2" fill="#fff" opacity=".8"/><circle cx="300" cy="100" r="1.6" fill="#fff" opacity=".6"/><circle cx="90" cy="100" r="1.6" fill="#fff" opacity=".6"/><circle cx="200" cy="66" r="58" fill="#ffd98a" opacity=".12"/><circle cx="172" cy="66" r="34" fill="#ffd98a" opacity=".9"/><circle cx="228" cy="66" r="34" fill="#fffdf5" opacity=".9"/><text x="163" y="72" text-anchor="middle" fill="#5a4320" font-size="15" font-family="Jua,sans-serif">말씀</text><text x="238" y="72" text-anchor="middle" fill="#5a4320" font-size="14" font-family="Jua,sans-serif">하나님</text><text x="200" y="136" text-anchor="middle" fill="#ffd98a" font-size="16" font-family="Jua,sans-serif">🤝 태초에 함께 계셨고</text></svg>`,
+ 3:`<svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="150" fill="#35517a"/><circle cx="200" cy="18" r="9" fill="#ffd98a"/><line x1="200" y1="30" x2="110" y2="60" stroke="#ffd98a" stroke-width="2" opacity=".6"/><line x1="200" y1="30" x2="200" y2="58" stroke="#ffd98a" stroke-width="2" opacity=".6"/><line x1="200" y1="30" x2="290" y2="60" stroke="#ffd98a" stroke-width="2" opacity=".6"/><circle cx="72" cy="58" r="16" fill="#ffcf5c"/><polygon points="245,104 296,52 348,104" fill="#7ca982"/><rect x="128" y="76" width="9" height="26" fill="#8a6240"/><circle cx="132" cy="68" r="17" fill="#6fb076"/><path d="M196 52 q7 -8 14 0 q7 -8 14 0" stroke="#e8f1fb" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="0" y="104" width="400" height="46" fill="#4f7fae"/><ellipse cx="150" cy="124" rx="16" ry="8" fill="#ffcf5c"/><polygon points="166,124 178,116 178,132" fill="#ffcf5c"/><circle cx="144" cy="122" r="1.8" fill="#35517a"/><text x="200" y="145" text-anchor="middle" fill="#fffdf5" font-size="16" font-family="Jua,sans-serif">🌍 만물을 다 지으셨어요</text></svg>`,
+ 4:`<svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="150" fill="#3c3450"/><g stroke="#ffd98a" stroke-width="2.5" opacity=".7" stroke-linecap="round"><line x1="200" y1="14" x2="200" y2="2"/><line x1="160" y1="24" x2="150" y2="14"/><line x1="240" y1="24" x2="250" y2="14"/><line x1="140" y1="52" x2="126" y2="48"/><line x1="260" y1="52" x2="274" y2="48"/></g><path d="M200 92 C 174 72, 156 50, 176 34 C 190 24, 200 36, 200 44 C 200 36, 210 24, 224 34 C 244 50, 226 72, 200 92 Z" fill="#ff8f9f"/><circle cx="200" cy="58" r="44" fill="#ffd98a" opacity=".15"/><g fill="#d9cde8"><circle cx="140" cy="108" r="8"/><rect x="133" y="118" width="14" height="16" rx="6"/><circle cx="200" cy="106" r="9"/><rect x="192" y="117" width="16" height="18" rx="7"/><circle cx="260" cy="108" r="8"/><rect x="253" y="118" width="14" height="16" rx="6"/></g><text x="200" y="147" text-anchor="middle" fill="#ffd98a" font-size="15" font-family="Jua,sans-serif">💗 생명 = 사람들의 빛</text></svg>`,
+ 5:`<svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="150" fill="#1d2335"/><polygon points="400,0 400,54 120,122 86,86" fill="#ffd98a" opacity=".3"/><polygon points="400,8 400,40 150,108 128,86" fill="#ffd98a" opacity=".5"/><circle cx="356" cy="26" r="16" fill="#ffd98a"/><g stroke="#ffd98a" stroke-width="2.5" stroke-linecap="round"><line x1="356" y1="0" x2="356" y2="6"/><line x1="332" y1="12" x2="326" y2="8"/><line x1="380" y1="12" x2="386" y2="8"/></g><ellipse cx="86" cy="106" rx="34" ry="20" fill="#3a4258"/><circle cx="74" cy="102" r="3" fill="#1d2335"/><circle cx="96" cy="102" r="3" fill="#1d2335"/><path d="M74 114 q11 -7 22 0" stroke="#1d2335" stroke-width="3" fill="none" stroke-linecap="round"/><text x="86" y="78" text-anchor="middle" fill="#8b93ab" font-size="20" font-family="Jua,sans-serif">?</text><text x="200" y="145" text-anchor="middle" fill="#ffd98a" font-size="15" font-family="Jua,sans-serif">🌑 빛이 비치되, 어둠은 몰라요</text></svg>`,
+ 6:`<svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="150" fill="#bfe0ef"/><rect x="0" y="112" width="400" height="38" fill="#9cc89a"/><circle cx="348" cy="30" r="15" fill="#ffd98a"/><path d="M196 10 l0 34 m0 0 l-8 -10 m8 10 l8 -10" stroke="#f59e2d" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="196" cy="74" r="13" fill="#f3c89d"/><path d="M186 70 a13 13 0 0 1 20 0" fill="#6b4a2f"/><rect x="186" y="89" width="20" height="26" rx="8" fill="#e08f52"/><polygon points="212,92 244,78 244,104" fill="#8a6240"/><ellipse cx="196" cy="120" rx="30" ry="5" fill="#86b183" opacity=".7"/><rect x="160" y="52" width="34" height="15" rx="7" fill="#fffdf5"/><text x="177" y="64" text-anchor="middle" fill="#5a4320" font-size="11" font-family="Jua,sans-serif">요한</text><g stroke="#f59e2d" stroke-width="2.5" stroke-linecap="round"><line x1="252" y1="80" x2="262" y2="74"/><line x1="252" y1="91" x2="264" y2="91"/><line x1="252" y1="102" x2="262" y2="108"/></g><text x="200" y="145" text-anchor="middle" fill="#3f5a3d" font-size="15" font-family="Jua,sans-serif">📣 하나님이 보내신 사람, 요한!</text></svg>`
+}};
+
 function renderVerses(){
   stopSpeak();
   vbox.innerHTML="";
@@ -542,7 +560,7 @@ function renderVerses(){
     const words=text.split(" ");
     words.forEach((w,i)=>{
       const span=document.createElement("span");span.className="w";
-      if(mode==="first"&&w.length>1){
+      if((mode==="first"||mode==="pic")&&w.length>1){
         span.classList.add("first");
         span.innerHTML=esc(w[0])+'<span class="rest">'+esc(w.slice(1))+'</span>';
         span.addEventListener("click",()=>span.classList.toggle("first"));
@@ -563,7 +581,17 @@ function renderVerses(){
       {text:verseTitle(cur.ref,n),pauseAfter:PAUSE_AFTER_NUM},
       {text:slowText(text),pauseAfter:0}
     ],sp,"⏸"));
-    card.appendChild(num);card.appendChild(t);card.appendChild(sp);vbox.appendChild(card);
+    const picset=PICS[cur.id];
+    if(mode==="pic"&&picset&&picset[n]){
+      card.classList.add("withpic");
+      const pv=document.createElement("div");pv.className="vpic";pv.innerHTML=picset[n];
+      const row=document.createElement("div");row.className="vrow";
+      row.appendChild(num);row.appendChild(t);row.appendChild(sp);
+      card.appendChild(pv);card.appendChild(row);
+    }else{
+      card.appendChild(num);card.appendChild(t);card.appendChild(sp);
+    }
+    vbox.appendChild(card);
   });
 }
 document.getElementById("btn-random").addEventListener("click",renderVerses);
