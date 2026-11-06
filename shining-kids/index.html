@@ -578,7 +578,6 @@ function renderVerses(){
     const sp=document.createElement("button");sp.className="vspeak";sp.textContent="🔊";
     sp.setAttribute("aria-label",n+"절 읽어주기");
     sp.addEventListener("click",()=>speakSeq([
-      {text:verseTitle(cur.ref,n),pauseAfter:PAUSE_AFTER_NUM},
       {text:slowText(text),pauseAfter:0}
     ],sp,"⏸"));
     const picset=PICS[cur.id];
