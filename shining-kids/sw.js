@@ -1,5 +1,5 @@
 /* 샤이닝키즈 암송 — 오프라인 캐시 */
-const CACHE = "shining-kids-v2";
+const CACHE = "shining-kids-v3";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
