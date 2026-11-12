@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.36</title>
+<title>노무 통합 대시보드 v2.37</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -80,7 +80,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.36</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.37</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -97,10 +97,12 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
       <div><label>안내 범위</label><select id="g_scope"><option value="all">입사 · 근무 · 퇴사 전체</option><option value="in">입사만</option><option value="out">퇴사만</option></select></div>
     </div>
     <pre id="g_msg" class="msg" style="white-space:pre-wrap"></pre>
+    <div id="g_doc" style="display:none"></div>
     <button class="btn" data-copy="g_msg">안내문 복사</button>
-    <button class="btn" onclick="printDoc('g_msg')">인쇄 / PDF</button>
+    <button class="btn" onclick="printDoc('g_doc')">PDF 저장 (보내기용)</button>
+    <div class="hint">누르면 인쇄 창이 열립니다. 대상(프린터)을 <b>PDF로 저장</b>으로 바꾸고 저장하면 카카오톡·메일로 보낼 수 있습니다.</div>
     <div class="basis">
-      <span class="b ok">확인</span>근로기준법 제17조(근로조건 서면 명시), 제26조(해고예고), 제36조(퇴직 시 14일 이내 금품 청산), 제48조(임금대장·임금명세서), 제60조(연차유급휴가), 근로자퇴직급여 보장법 제9조(퇴직금 14일·IRP 이전), 고용보험법 시행규칙 제82조의2(이직확인서).<br>
+      <span class="b ok">확인</span>근로기준법 제17조(근로조건 서면 명시), 제26조(해고예고), 제36조(퇴직 시 14일 이내 금품 청산), 제48조(임금대장·임금명세서), 제60조(연차유급휴가), 근로자퇴직급여 보장법 제9조(퇴직금 14일·IRP 이전), 고용보험법 시행규칙 제82조의2(이직확인서), 최저임금법·고용노동부 고시 제2026-60호(2027년 최저임금 시간급 10,700원), 근로기준법 제43조(임금 지급)·제55조(휴일)·제56조(가산임금), 소득세법 제128조(원천세 신고·납부).<br>
       <span class="b chk">참고</span>4대보험 신고기한(건강보험 14일 이내, 국민연금·고용·산재 다음 달 15일까지)은 국민건강보험법·국민연금법 시행규칙·고용보험법 시행령 해설 자료 여러 건에서 일치하는 내용으로 반영했습니다. 업체 발송 전 공단 안내(4대사회보험 정보연계센터)와 한 번 더 대조하세요. 단시간·일용·외국인 등은 개별 확인이 필요합니다.
     </div>
   </div>
@@ -1393,12 +1395,15 @@ function guideText(p){
     L.push('③ 근로계약서를 사무소로 보내 주세요');
     L.push('   작성한 근로계약서(사본)를 입사일과 함께 보내 주시면 급여와 4대보험을 그 내용 기준으로 맞춥니다.');
     L.push('');
-    L.push('④ 4대보험 취득신고 (사무소 처리)');
+    L.push('④ 급여는 최저임금 이상으로 정해 주세요');
+    L.push('   2026년 최저시급은 10,320원이며, 2027.1.1.부터는 10,700원입니다. (월 환산 주 40시간 기준 2027년 2,236,300원) 최저임금보다 적게 정하면 그 부분은 무효이고 사업주는 처벌받을 수 있습니다. (최저임금법)');
+    L.push('');
+    L.push('⑤ 4대보험 취득신고 (사무소 처리)');
     L.push('   - 건강보험: 입사일부터 14일 이내');
     L.push('   - 국민연금·고용보험·산재보험: 입사한 달의 다음 달 15일까지');
     L.push('   입사가 정해지면 입사일 전에 알려 주세요.');
     L.push('');
-    L.push('⑤ 사무소에 알려 주실 내용');
+    L.push('⑥ 사무소에 알려 주실 내용');
     L.push('   입사일, 월 급여(기본급·수당·식대), 주 소정근로시간, 부양가족 유무');
   }
   if(p.scope==='all'){
@@ -1420,7 +1425,13 @@ function guideText(p){
       L.push('   쓰지 못한 연차는 수당으로 정산해야 합니다. 주 소정근로시간 15시간 미만 근로자는 제외됩니다.');
     }
     L.push('');
-    L.push('④ 급여·근로조건이 바뀔 때');
+    L.push('④ 급여 지급 시 꼭 챙길 것');
+    L.push('   - 주휴수당: 주 15시간 이상 일하고 그 주 소정근로일을 모두 채우면 1일분 유급 주휴일이 생깁니다. (근로기준법 제55조)');
+    if(!small)L.push('   - 연장·야간·휴일근로: 5명 이상 사업장은 통상임금의 50%를 가산해 지급합니다. (근로기준법 제56조)');
+    L.push('   - 지급일: 매월 1회 이상 일정한 날짜에 통화로 직접 근로자에게 전액 지급합니다. (근로기준법 제43조)');
+    L.push('   - 원천세: 급여를 지급한 달의 다음 달 10일까지 신고·납부합니다. (소득세법 제128조)');
+    L.push('');
+    L.push('⑤ 급여·근로조건이 바뀔 때');
     L.push('   인상, 직급 변경, 휴직, 근로시간 변경은 바뀐 날을 사무소로 알려 주세요. 4대보험 보수월액 변경 신고가 필요할 수 있습니다.');
   }
   if(p.scope!=='in'){
@@ -1452,7 +1463,12 @@ function guideText(p){
   return L.join('\n');
 }
 function renderGuide(){
-  $('g_msg').textContent=guideText({name:val('g_name'),small:val('g_small'),scope:val('g_scope')});
+  const t=guideText({name:val('g_name'),small:val('g_small'),scope:val('g_scope')});
+  $('g_msg').textContent=t;
+  const nm=(val('g_name')||'').trim();
+  const dt=new Date();const ds=dt.getFullYear()+'.'+(dt.getMonth()+1)+'.'+dt.getDate()+'.';
+  const dv=document.createElement('div');dv.textContent=t;
+  $('g_doc').innerHTML='<div style="font-family:inherit;color:#111"><div style="border-bottom:2px solid #1b3a5c;padding-bottom:8px;margin-bottom:14px"><div style="font-size:11px;color:#555">원제우세무사사무소 · 노무 업무 안내</div><div style="font-size:20px;font-weight:700;margin-top:4px">직원 입사 · 근무 · 퇴사 업무 안내</div><div style="font-size:11px;color:#555;margin-top:4px">'+(nm?esc(nm)+' · ':'')+'작성일 '+ds+'</div></div><div style="white-space:pre-wrap;font-size:12px;line-height:1.85">'+esc(t)+'</div><div style="border-top:1px solid #999;margin-top:18px;padding-top:8px;font-size:10.5px;color:#444;line-height:1.6">원제우세무사사무소 · 세무사 · 경기도 부천시 소향로 135, 3층 · 032-321-4521 · taxmancall.com<br>본 안내는 일반적인 법령 요약이며, 업종·근로형태에 따라 달라질 수 있습니다.</div></div>';
 }
 function renderFin(){
   const can=val('f_can')==='y',bank=val('f_bank')||'금융기관';
