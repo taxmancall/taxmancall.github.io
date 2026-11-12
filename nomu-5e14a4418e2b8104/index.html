@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.29</title>
+<title>노무 통합 대시보드 v2.30</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.29</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.30</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -1425,6 +1425,7 @@ document.addEventListener('change',()=>{formatAll();});
 
 // 복사용 텍스트: '항목 : 금액' 한 줄씩, 요약(h_sum)은 긴 주석 제외
 function copyText(el){
+  if(!el.children.length)return (el.innerText||el.textContent||'').trim();
   const out=[];
   const rowTxt=d=>{const sp=d.children[0],b=d.children[1];return (sp?sp.textContent.trim():'')+(b?' : '+b.textContent.trim():'');};
   (function walk(n){
@@ -1445,7 +1446,8 @@ function copyText(el){
   if(el.id==='h_sum'){for(let i=out.length-1;i>=1;i--){if(/^(①|②|③|④)/.test(out[i]))out.splice(i,0,'');}}
   if(el.id==='h_sum')out.push('');
   if(el.id==='h_sum')out.push('※ 퇴직금은 월 지급총액 기준 근사치(연차수당·상여·임금인상 미반영), 월 조건 12개월 동일 가정');
-  return out.join('\n').replace(/^\n+/,'').replace(/\n{3,}/g,'\n\n');
+  const res=out.join('\n').replace(/^\n+/,'').replace(/\n{3,}/g,'\n\n');
+  return res.trim()?res:(el.innerText||el.textContent||'').trim();
 }
 (function init(){
   const nav=$('tabs');
