@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.16</title>
+<title>노무 통합 대시보드 v2.17</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.16</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.17</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -824,6 +824,17 @@ function renderHire(){
   if(r.fm)h+='<div class="res"><b>입사 첫달 일할</b>'+row('근무일수',r.fm.worked+'일 / '+(p.method==='d30'?'30일':r.fm.dim+'일'))+row('일할 지급 고정급',W(r.fm.pay))+'</div>'+warn('월 중 입사자의 취득월 국민연금·건강보험료 부과 방식은 법령별로 다르므로 공단 고지 기준으로 확인하세요(원문 재확인).');
   if(p.weekH<15)h+=warn('주 15시간 미만(월 60시간 미만)은 주휴·퇴직금·고용보험 대상에서 제외됩니다. 국민연금·건강보험은 3개월 이상 계속 근로 시 가입 대상이 될 수 있어 별도 확인이 필요합니다(원문 재확인).');
   h+=warn(RATE_NOTE);
+  {const yr=r.gross*12,yer=r.er*12,sev=(p.weekH>=15)?Math.round(r.gross):0;
+  h+='<div class="res" id="h_sum"><b>1인 입사 시 1년간 지출 요약 (월 조건 12개월 동일 가정)</b>'+
+   row('1년간 연봉(총 지급액)',W(yr))+
+   row('　월 지급총액 × 12',W(r.gross)+' × 12')+
+   row('1년간 회사 부담 4대보험료',W(yer))+
+   row('　국민연금 / 건강 / 장기요양',W(r.erPen*12)+' / '+W(r.erHea*12)+' / '+W(r.erCare*12))+
+   row('　고용(실업급여+고용안정·직능) / 산재',W(r.erEmp*12)+' / '+W(r.erInd*12))+
+   row('1년 근속 시 퇴직금 예상액',W(sev))+
+   row('<b>1년간 회사 총 부담 합계</b>',W(yr+yer+sev))+
+   '<div class="sm">퇴직금은 1년 계속근로 후 퇴직 시, 월 지급총액을 월 평균임금으로 본 근사치입니다(평균임금 30일분 × 근속연수 ÷ 연 환산). 연차수당·상여금 가산, 연차 미사용수당, 임금 인상은 반영하지 않았고, 퇴직연금(DC/DB) 부담금이나 퇴직급여 충당과는 별개의 참고 금액입니다. 주 15시간 미만은 퇴직금 0원으로 표시합니다. 근거: 근로자퇴직급여 보장법 제8조(평균임금 30일분 이상 × 계속근로연수), 근로기준법 제2조 제1항 제6호(평균임금).</div></div>'+
+   '<button class="btn" data-copy="h_sum">1년 지출 요약 복사(전달용)</button>';}
   $('h_out').innerHTML=h;
 }
 
