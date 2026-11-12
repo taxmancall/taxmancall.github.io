@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.24</title>
+<title>노무 통합 대시보드 v2.25</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.24</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.25</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -927,7 +927,7 @@ function buildDocs(){
 const CT={'general':'표준근로계약서(기간의 정함이 없는 경우)','fixed':'표준근로계약서(기간의 정함이 있는 경우)','part':'단시간근로자 표준근로계약서','daily':'건설일용근로자 표준근로계약서','minor':'연소근로자(18세 미만) 표준근로계약서'};
 const DAYN=['월','화','수','목','금','토','일'];
 function buildContract(){
-  let dayRows='';DAYN.forEach((d,i)=>{dayRows+='<tr><td>'+d+'</td><td><input type="checkbox" id="k_on'+i+'"'+(i<3?' checked':'')+'></td><td><input type="time" id="k_s'+i+'" value="09:00"></td><td><input type="time" id="k_e'+i+'" value="13:00"></td><td><input type="number" id="k_r'+i+'" value="0" style="width:70px"></td></tr>';});
+  let dayRows='';DAYN.forEach((d,i)=>{dayRows+='<tr><td>'+d+'</td><td><input type="checkbox" id="k_on'+i+'"'+(i<5?' checked':'')+'></td><td><input type="time" id="k_s'+i+'" value="09:00"></td><td><input type="time" id="k_e'+i+'" value="18:00"></td><td><input type="number" id="k_r'+i+'" value="60" style="width:70px"></td></tr>';});
   $('contract').innerHTML='<div class="card"><h2>근로계약서 작성 · PDF 저장</h2><div class="grid">'+
   F('k_ver','계약서 버전',{opts:[['moel','① 고용노동부 표준근로계약서 구조'],['detail','② 노무사 상세판(특약·근거 조문 포함)']],value:'moel'})+
   F('k_type','양식',{opts:Object.keys(CT).map(k=>[k,CT[k]]),value:'general'})+
