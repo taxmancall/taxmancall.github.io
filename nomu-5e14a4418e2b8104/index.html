@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.15</title>
+<title>노무 통합 대시보드 v2.16</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.15</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.16</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -455,6 +455,22 @@ function calcSev(p){
 }
 function floor10(x){return Math.floor(x/10)*10;}
 function dimOf(d){return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();}
+
+// 근로소득 간이세액표(소득세법 시행령 별표 2) 산식 재현 — 월급여(비과세 제외)·공제대상가족 수 기준
+function ganWsd(t){let d;if(t<=5e6)d=t*0.7;else if(t<=15e6)d=3.5e6+(t-5e6)*0.4;else if(t<=45e6)d=7.5e6+(t-15e6)*0.15;else if(t<=1e8)d=12e6+(t-45e6)*0.05;else d=14.75e6+(t-1e8)*0.02;return Math.min(d,2e7);}
+function ganRate(b){if(b<=0)return 0;const T=[[14e6,.06],[50e6,.15],[88e6,.24],[150e6,.35],[300e6,.38],[500e6,.40],[1000e6,.42],[Infinity,.45]];let p=0,r=0;for(const x of T){if(b>x[0]){r+=(x[0]-p)*x[1];p=x[0];}else{r+=(b-p)*x[1];break;}}return r;}
+function ganSpecial(t,n){const a=n===1?3.1e6:n===2?3.6e6:5e6;let ra,rc,rd;if(n===1){ra=.04;rc=.015;rd=.005;}else if(n===2){ra=.04;rc=.02;rd=.01;}else{ra=.07;rc=.05;rd=.03;}
+  if(t<=30e6)return a+t*ra;if(t<=45e6)return a+t*ra-(t-30e6)*.05+(n>=3?Math.max(0,t-40e6)*.04:0);if(t<=70e6)return a+t*rc;return a+t*rd;}
+function ganCredit(t,ts){const c=ts<=1.3e6?ts*.55:715000+(ts-1.3e6)*.3;let lim;if(t<=33e6)lim=740000;else if(t<=70e6)lim=Math.max(740000-(t-33e6)*.008,660000);else if(t<=120e6)lim=Math.max(660000-(t-70e6)*.5,500000);else lim=Math.max(500000-(t-120e6)*.5,200000);return Math.min(c,lim);}
+function ganTax(M,n,pbase){ // 반환: {tax, verified} 또는 null(범위 밖)
+  if(!(M>0)||n<1||n>11||M>1e7)return null;
+  const t=M*12,pen=Math.min(Math.max(pbase>0?pbase:M,0),6590000)*0.045*12;
+  const base=t-ganWsd(t)-1.5e6*n-pen-ganSpecial(t,n);
+  const ts=ganRate(base),ds=Math.max(0,ts-ganCredit(t,ts));
+  const tax=Math.floor(ds/12/10)*10;
+  const verified=(t<=21.3e6)||(n>=5&&M<=2.9e6);
+  return {tax:tax,verified:verified};
+}
 function calcHire(p){
   if(!(p.amount>0))return{err:'급여(시급 또는 월급)를 입력하세요.'};
   if(!(p.weekH>0))return{err:'주 소정근로시간을 입력하세요.'};
@@ -488,6 +504,17 @@ function calcHire(p){
   r.erInd=Math.floor(r.insBase*R.ind/100);
   r.er=r.erPen+r.erHea+r.erCare+r.erEmp+r.erInd;
   r.pbase=pb;
+  r.taxable=r.gross-r.meal;
+  const nEff=Math.max(1,Math.round(nz(p.fam)||1))+Math.max(0,Math.round(nz(p.kid)));
+  const gt=ganTax(r.taxable,nEff,pb);
+  r.nEff=nEff;
+  if(nz(p.wtax)>0){r.taxBase=Math.floor(nz(p.wtax)/10)*10;r.taxSrc='manual';}
+  else if(gt){r.taxBase=gt.tax;r.taxSrc=gt.verified?'calc_ok':'calc_est';}
+  else{r.taxBase=0;r.taxSrc='none';}
+  r.wrate=nz(p.wrate)||100;
+  r.tax=r.taxSrc==='manual'?r.taxBase:floor10(r.taxBase*r.wrate/100);
+  r.ltax=floor10(r.tax*0.1);
+  r.net=r.gross-r.ded-r.tax-r.ltax;
   if(p.hire){
     const dim=dimOf(p.hire),worked=dim-p.hire.getUTCDate()+1;
     const ratio=p.method==='d30'?Math.min(1,worked/30):worked/dim;
@@ -766,6 +793,12 @@ function buildHire(){
   F('h_hea','건강보험(전체)',{type:'number',step:0.001})+F('h_care','장기요양(건보료 대비)',{type:'number',step:0.01})+
   F('h_emp','고용보험 실업급여(근로자)',{type:'number',step:0.01})+
   F('h_stab','사업주 고용안정·직능',{opts:[['0.25','150인 미만 0.25'],['0.45','150인 이상 우선지원 0.45'],['0.65','150인 이상 1,000인 미만 0.65'],['0.85','1,000인 이상 0.85']],value:'0.25',hint:'규모별 구분은 원문 재확인'})+
+  '</div><h3>소득세 원천징수(근로소득 간이세액표)</h3><div class="grid">'+
+  F('h_fam','공제대상가족 수(본인 포함)',{type:'number',value:1,hint:'본인·배우자 각 1명 포함, 기본공제 대상 부양가족'})+
+  F('h_kid','8세 이상 20세 이하 자녀 수',{type:'number',value:0,hint:'가족 수에 이미 포함된 자녀 중 해당 인원. 표 조회 시 가족 수에 자녀 수를 더해 적용'})+
+  F('h_wrate','원천징수 비율',{opts:[['80','80%'],['100','100%'],['120','120%']],value:'100',hint:'근로자가 선택(시행령 제194조)'})+
+  F('h_wtax','간이세액표 조회 세액(직접 입력, 선택)',{type:'number',hint:'홈택스 간이세액표 조회값을 넣으면 추정 대신 이 값을 사용(80·100·120% 적용 후 금액 입력)'})+
+  '</div><div class="grid">'+
   F('h_ind','산재 요율(업종별)',{type:'number',step:0.01,value:0,hint:'업종별 요율 입력'})+
   '</div><div id="h_out"></div><button class="btn" data-copy="h_out">결과 복사</button>'+
   BS('근로기준법 제56조(연장·야간·휴일 가산 50%, 휴일 8시간 초과 100%), 제55조(주휴일), 최저임금법 시행령(고시 최저임금 2026 10,320원).','4대보험 요율·기준소득월액 상·하한(2026.7~2027.6: 410,000~6,590,000), 고용안정·직능 요율 구분, 월 중 입사 시 취득월 보험료 처리(국민연금·건강보험·고용보험 각 법령). 원단위는 공단 고지금액이 우선합니다. 소득세·지방소득세는 간이세액표(홈택스·급여 계산기)로 별도 산출하세요.')+'</div>';
@@ -774,7 +807,7 @@ function setRates(){const y=RATES[val('h_year')];$('h_pen').value=y.pen;$('h_hea
 function renderHire(){
   const hd=pd(val('h_hire'));
   const p={mode:val('h_mode'),amount:num('h_amt'),weekH:num('h_week'),size5:val('h_size')==='1',allow:num('h_allow'),meal:num('h_meal'),otH:num('h_ot'),nightH:num('h_night'),hol8:num('h_hol8'),holOver:num('h_holo'),hire:hd,method:val('h_method'),minWage:minWageFor(hd),
-    rates:{pen:num('h_pen'),penMin:num('h_penmin'),penMax:num('h_penmax'),hea:num('h_hea'),care:num('h_care'),emp:num('h_emp'),stab:parseFloat(String(val('h_stab')).replace(/,/g,'')),ind:num('h_ind')}};
+    fam:num('h_fam'),kid:num('h_kid'),wrate:num('h_wrate'),wtax:num('h_wtax'),rates:{pen:num('h_pen'),penMin:num('h_penmin'),penMax:num('h_penmax'),hea:num('h_hea'),care:num('h_care'),emp:num('h_emp'),stab:parseFloat(String(val('h_stab')).replace(/,/g,'')),ind:num('h_ind')}};
   const r=calcHire(p);
   if(r.err){$('h_out').innerHTML=na(r.err);return;}
   let h='<div class="res"><div class="big">통상시급 '+W(r.hourly)+'</div>'+
@@ -784,6 +817,9 @@ function renderHire(){
   h+='<div class="res"><b>최저임금 확인 ('+p.minWage.toLocaleString()+'원)</b>'+row('통상시급',W(r.hourly))+row('최저임금 충족 월 통상임금',W(r.mwNeed))+'</div>';
   if(!r.mwOk)h+=err('통상시급이 최저임금에 미달합니다. 최저임금 비교 대상 임금 범위(산입범위)는 별도 확인하세요.');
   h+='<div class="res"><b>근로자 공제 예상 (보수월액 '+W(r.insBase)+')</b>'+row('국민연금(기준소득월액 '+W(r.pbase)+')',W(r.pen))+row('건강보험',W(r.hea))+row('장기요양',W(r.care))+row('고용보험',W(r.emp))+row('<b>4대보험 공제 합계</b>',W(r.ded))+'</div>';
+  {const src={manual:'직접 입력값 사용',calc_ok:'간이세액표 산식 재현(공시 행과 일치 확인 구간)',calc_est:'간이세액표 산식 재현 추정 — 공식 표와 차이 가능',none:'산식 범위(월 1,000만원 이하, 11명 이하) 밖 — 직접 입력 필요'}[r.taxSrc];
+  h+='<div class="res"><b>원천세 공제 예상 (공제대상가족 '+r.nEff+'명 기준, '+(r.taxSrc==='manual'?'':r.wrate+'% ')+'원천징수)</b>'+row('과세 월급여(비과세 식대 제외)',W(r.taxable))+row('근로소득세(간이세액표)',W(r.tax))+row('지방소득세(소득세의 10%)',W(r.ltax))+row('<b>공제 합계(4대보험+세금)</b>',W(r.ded+r.tax+r.ltax))+row('<b>예상 실수령액</b>',W(r.net))+'<div class="sm">'+src+'</div></div>';
+  if(r.taxSrc==='calc_est'||r.taxSrc==='none')h+=warn('근로소득 간이세액표(소득세법 시행령 별표 2)를 산식으로 재현한 추정값입니다. 총급여 약 3천만원 초과·가족 4명 이하 구간에서 공식 표보다 낮게 나오는 것을 확인했습니다(비교한 행에서 최대 약 1.3만원). 원천징수 시에는 홈택스 간이세액표 조회값을 위 입력란에 넣어 사용하세요.');}
   h+='<div class="res"><b>사업주 부담 예상</b>'+row('국민연금',W(r.erPen))+row('건강보험',W(r.erHea))+row('장기요양',W(r.erCare))+row('고용(실업급여+고용안정·직능)',W(r.erEmp))+row('산재',W(r.erInd))+row('<b>합계</b>',W(r.er))+'</div>';
   if(r.fm)h+='<div class="res"><b>입사 첫달 일할</b>'+row('근무일수',r.fm.worked+'일 / '+(p.method==='d30'?'30일':r.fm.dim+'일'))+row('일할 지급 고정급',W(r.fm.pay))+'</div>'+warn('월 중 입사자의 취득월 국민연금·건강보험료 부과 방식은 법령별로 다르므로 공단 고지 기준으로 확인하세요(원문 재확인).');
   if(p.weekH<15)h+=warn('주 15시간 미만(월 60시간 미만)은 주휴·퇴직금·고용보험 대상에서 제외됩니다. 국민연금·건강보험은 3개월 이상 계속 근로 시 가입 대상이 될 수 있어 별도 확인이 필요합니다(원문 재확인).');
