@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.10</title>
+<title>노무 통합 대시보드 v2.12</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.10</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.12</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -572,6 +572,54 @@ function calcBasis(p){
   r.ui=r.avg*0.6;
   return r;
 }
+
+function calcRelJ(p){
+  // p: rel(1~10), cohab(bool), single(bool, 미혼·이혼·사별 포함), fam(0 없음,1 있으나 소득없음,2 있고 보수·소득 있음), sibQual(bool),
+  //    income,bizAmt,bizReg,special,prop
+  const r={reasons:[]};
+  const blocked=p.fam===2;
+  let ok=false,why='';
+  switch(p.rel){
+    case 1: ok=true;why='배우자는 동거 여부와 관계없이 부양 인정';break;
+    case 2: case 4: case 8:
+      if(p.cohab){ok=true;why='동거 시 부양 인정';}
+      else{ok=!blocked;why=ok?'비동거: 관련 가족(동거 형제·자매/직계비속)이 없거나 보수·소득이 없어 인정':'비동거: 관련 가족에게 보수·소득이 있어 불인정';}
+      break;
+    case 3:
+      if(p.cohab){ok=true;why='동거 시 부양 인정';}
+      else{ok=p.single;why=ok?'비동거: 미혼(이혼·사별 포함)이라 인정':'비동거: 기혼 자녀는 불인정';}
+      break;
+    case 5:
+      if(p.cohab){ok=p.fam!==2;why=ok?'동거: 부모가 없거나 보수·소득이 없어 인정':'동거: 부모에게 보수·소득이 있어 불인정';}
+      else{ok=p.single&&p.fam===0;why=ok?'비동거: 미혼이고 부모가 없어 인정':'비동거: 미혼이면서 부모가 없어야 인정';}
+      break;
+    case 6:
+      ok=!!p.cohab;why=ok?'동거 시 부양 인정':'비동거 시 불인정';break;
+    case 7:
+      if(p.cohab){ok=true;why='동거 시 부양 인정';}
+      else{ok=!blocked;why=ok?'비동거: 배우자의 동거 형제·자매가 없거나 보수·소득이 없어 인정':'비동거: 동거하는 배우자의 형제·자매에게 보수·소득이 있어 불인정';}
+      break;
+    case 9:
+      if(p.cohab){ok=p.single;why=ok?'동거: 미혼(이혼·사별 포함)이라 인정':'동거: 미혼이어야 인정';}
+      else{ok=false;why='비동거 시 불인정';}
+      break;
+    case 10:
+      ok=p.sibQual&&p.single&&!blocked;
+      why=ok?'30세 미만·65세 이상·장애·보훈 중 하나에 해당하고 미혼이며 부모에게 보수·소득이 없어 인정':
+        (!p.sibQual?'30세 미만, 65세 이상, 등록 장애인, 국가유공자 등 상이등급, 보훈보상대상자 중 어느 것도 아니라 불인정':(!p.single?'기혼이라 불인정':'부모에게 보수·소득이 있어 불인정'));
+      break;
+  }
+  r.supportOk=ok;r.supportWhy=why;
+  r.incomeOk=p.income<=20000000;
+  r.hasBiz=p.bizAmt>0;
+  r.bizOk=!r.hasBiz?true:((!p.bizReg||p.special)&&p.bizAmt<=5000000);
+  if(p.rel===10){r.propOk=p.prop<=180000000;r.propBand='형제·자매: 과세표준 1억 8천만원 이하 필요';}
+  else if(p.prop<=540000000){r.propOk=true;r.propBand='5억 4천만원 이하';}
+  else if(p.prop<=900000000){r.propOk=p.income<=10000000;r.propBand='5억 4천만원 초과 9억원 이하(소득 연 1천만원 이하 필요)';}
+  else{r.propOk=false;r.propBand='9억원 초과';}
+  r.ok=r.supportOk&&r.incomeOk&&r.bizOk&&r.propOk;
+  return r;
+}
 // </PURE>
 
 // ---------- UI ----------
@@ -1008,6 +1056,19 @@ function renderBasis(){
 
 
 
+
+const DBY=[
+ ['1','배우자','인정','인정',''],
+ ['2','부모(아버지·어머니와 재혼한 배우자 포함)','인정','부모와 동거하는 형제·자매가 없거나, 있어도 보수·소득이 없으면 인정','가목. 나목(친생부모의 배우자 등) 세부는 원문 재확인'],
+ ['3','자녀(법률상 자녀가 아닌 친생자녀 포함)','인정','미혼(이혼·사별 포함)이면 인정','이혼·사별 단서는 원문 재확인'],
+ ['4','조부모·외조부모 이상 직계존속','인정','동거하는 직계비속이 없거나, 있어도 보수·소득이 없으면 인정',''],
+ ['5','손자녀·외손자녀 이하 직계비속','부모가 없거나, 아버지·어머니가 있어도 보수·소득이 없으면 인정','미혼(이혼·사별 포함)으로 부모가 없으면 인정','이혼·사별 단서는 자녀와 같음'],
+ ['6','직계비속의 배우자(사위·며느리)','인정','불인정',''],
+ ['7','배우자의 부모(재혼한 배우자 포함)','인정','배우자의 부모와 동거하는 배우자의 형제·자매가 없거나, 있어도 보수·소득이 없으면 인정',''],
+ ['8','배우자의 조부모·외조부모 이상','인정','동거하는 직계비속이 없거나, 있어도 보수·소득이 없으면 인정',''],
+ ['9','배우자의 직계비속','미혼(이혼·사별 포함)이면 인정','불인정','이혼·사별 단서는 자녀와 같음'],
+ ['10','형제·자매','30세 미만, 65세 이상, 등록 장애인, 국가유공자 등 상이등급 판정자, 보훈보상대상자 중 하나에 해당하고 미혼(이혼·사별 포함)으로 부모가 없거나 부모에게 보수·소득이 없어야 인정','동거 시와 같음(동거 여부와 별도로 위 연령·장애·보훈 요건 필요)','재산요건이 더 엄격(과세표준 1.8억 이하). 비동거 세부는 원문 재확인']
+];
 const DREL=[
  {n:'① 배우자',c:['혼인신고를 했으면 법률혼, 아니면 사실혼으로 서류가 달라짐'],x:['배우자가 사업자등록이 되어 있으면 등재 불가'],d:['법률혼: 주민등록표등본, 호적등본(가족관계증명)','사실혼: 주민등록표등본, 사실혼관계 증명서류(예: 통·반장 인우보증서)']},
  {n:'② 부모',c:['부모 모두 사업자등록이 없어야 함','가입자와 동거하면 서류만 제출','비동거이면 부모와 동거하는 형제·자매의 사업자등록도 확인'],x:['부모 중 한 분이라도 사업자등록이 있으면 불가','비동거이고 부모와 동거하는 형제·자매가 사업자등록이 있으면 불가'],d:['주민등록표등본','호적등본'],note:['공통: 관계 확인이 안 되면 호적등본 반드시 첨부, 건강보험(추가)증 지참, 주민등록표등본은 발행일부터 3개월 이내']},
@@ -1029,6 +1090,29 @@ function renderRel(){
   const L=a=>a&&a.length?'<ul style="margin:0 0 0 16px;padding:0">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'-';
   const rows=(v==='all'?DREL:[DREL[+v]]).map(x=>'<tr><td><b>'+x.n+'</b></td><td>'+L(x.c)+'</td><td>'+L(x.x)+'</td><td>'+L(x.d)+'</td><td class="sm">'+L(x.note)+'</td></tr>').join('');
   $('d_rel_out').innerHTML='<table><tr><th>관계</th><th>인정 조건</th><th>등재 불가</th><th>제출서류</th><th>비고</th></tr>'+rows+'</table>';
+}
+
+
+const RELJ_NAMES=[[1,'1. 배우자'],[2,'2. 부모(재혼한 배우자 포함)'],[3,'3. 자녀'],[4,'4. 조부모·외조부모 이상'],[5,'5. 손자녀·외손자녀 이하'],[6,'6. 사위·며느리'],[7,'7. 배우자의 부모'],[8,'8. 배우자의 조부모·외조부모'],[9,'9. 배우자의 직계비속'],[10,'10. 형제·자매']];
+const RELJ_FAM={1:'',2:'부모와 동거하는 형제·자매',3:'',4:'동거하는 직계비속',5:'손자녀의 부모',6:'',7:'배우자의 부모와 동거하는 배우자의 형제·자매',8:'동거하는 직계비속',9:'',10:'부모'};
+function renderRelJ(){
+  if(!$('j_out'))return;
+  const rel=+val('j_rel');
+  const p={rel:rel,cohab:val('j_co')==='1',single:val('j_sg')==='1',fam:+val('j_fam'),sibQual:val('j_sib')==='1',income:num('j_inc'),bizAmt:num('j_biz'),bizReg:val('j_reg')==='1',special:val('j_sp')==='1',prop:num('j_prop')};
+  const r=calcRelJ(p);
+  const fl=RELJ_FAM[rel];
+  $('j_famw').style.display=fl?'':'none';
+  $('j_sibw').style.display=rel===10?'':'none';
+  if(fl)$('j_fam').previousElementSibling.textContent='('+fl+') 보수·소득 여부';
+  const b=(ok)=>ok?'<b style="color:#1a7f37">충족</b>':'<b style="color:#b3261e">미충족</b>';
+  let h='<div class="res" style="border-left:4px solid '+(r.ok?'#1a7f37':'#b3261e')+'"><b>종합: '+(r.ok?'피부양자 요건 충족 가능':'피부양자 요건 미충족')+'</b>'+
+   row('① 부양요건(별표 1)',b(r.supportOk))+'<div class="sm">'+r.supportWhy+'</div>'+
+   row('② 소득요건(연 2,000만원 이하)',b(r.incomeOk))+
+   row('③ 사업소득',b(r.bizOk))+(r.hasBiz&&!r.bizOk?'<div class="sm">사업자등록이 있으면(예외 제외) 사업소득이 있으면 불가, 그 외에는 연 500만원 이하여야 합니다.</div>':'')+
+   row('④ 재산요건',b(r.propOk))+'<div class="sm">'+r.propBand+'</div></div>';
+  if(val('j_mar')==='1')h+=warn('피부양자가 되려는 사람이 기혼자이면 부부 모두 소득요건(별표 1의2 제1호 가~다목)을 충족해야 합니다. 배우자 소득도 같은 기준으로 판정하세요.');
+  h+='<div class="sm">근거: 국민건강보험법 시행규칙 제2조 제1항, 별표 1(부양요건), 별표 1의2(소득·재산요건). 이혼·사별 단서와 비동거 세부는 원문 재확인.</div>';
+  $('j_out').innerHTML=h;
 }
 
 // ----- 피부양자 빠른 판정 (질문 흐름) -----
@@ -1115,7 +1199,26 @@ function buildDep(){
   '</div><div id="d_out"></div><button class="btn" data-copy="d_out">결과 복사</button>'+
   BS('국민건강보험법 제5조 제2항(피부양자는 직장가입자의 배우자, 직계존속(배우자의 직계존속 포함), 직계비속(배우자의 직계비속 포함)과 그 배우자, 형제·자매 중 직장가입자에게 주로 생계를 의존하고 소득·재산이 기준 이하인 사람), 같은 법 시행규칙 제2조 제1항(부양요건 별표 1과 소득·재산요건 별표 1의2를 모두 충족), 별표 1의2(소득 연 2천만원 이하, 사업소득 없을 것(예외 연 500만원 이하), 재산세 과세표준 5억 4천만원 이하 또는 5억 4천만원 초과 9억원 이하이면서 소득 연 1천만원 이하, 기혼자는 부부 모두 충족).','시행규칙 별표 1 부양요건 세부(동거·비동거, 형제·자매, 직계비속의 소득 유무), 형제·자매의 재산요건, 사업소득 예외 중 주택임대소득 처리, 소득 산정 자료(영 제41조), 시행규칙 2026.9.28. 개정 반영 여부. 별표는 공단 자격 판단이 우선하므로 최종은 공단 확인이 필요합니다.')+'</div>'+
   '<div class="card"><h2>피부양자 빠른 판정 (질문 순서대로 누르세요)</h2><div id="d_flow"></div></div>'+
-  '<div class="card"><h2>관계별 등재 조건·제출서류 (한국납세자연맹 자료)</h2><div class="grid">'+F('d_rel','관계 선택',{opts:[['all','전체 보기']].concat(DREL.map((x,i)=>[String(i),x.n])),value:'all'})+'</div><div id="d_rel_out"></div>'+
+  '<div class="card"><h2>피부양자 종합 판정기 (부양요건 + 소득 + 재산)</h2><div class="grid">'+
+  F('j_rel','가입자와의 관계',{opts:RELJ_NAMES.map(x=>[String(x[0]),x[1]]),value:'3'})+
+  F('j_co','가입자와 동거',{opts:[['1','동거'],['0','비동거']],value:'1'})+
+  F('j_sg','미혼(이혼·사별 포함)',{opts:[['1','예'],['0','아니오(기혼)']],value:'1'})+
+  '<div id="j_famw">'+F('j_fam','(관련 가족) 여부',{opts:[['0','없음'],['1','있으나 보수·소득 없음'],['2','있고 보수·소득 있음']],value:'0'})+'</div>'+
+  '<div id="j_sibw" style="display:none">'+F('j_sib','형제·자매 요건(30세 미만, 65세 이상, 장애, 국가유공·보훈 상이)',{opts:[['1','해당'],['0','해당 없음']],value:'1'})+'</div>'+
+  F('j_inc','연 합산소득(원)',{type:'number',value:0})+F('j_biz','연 사업소득(원)',{type:'number',value:0})+
+  F('j_reg','사업자등록',{opts:[['0','없음'],['1','있음']],value:'0'})+F('j_sp','장애인·유공자 등 예외 대상',{opts:[['0','아니오'],['1','예']],value:'0'})+
+  F('j_prop','재산세 과세표준 합계(원)',{type:'number',value:0})+F('j_mar','피부양자 본인 기혼',{opts:[['0','아니오'],['1','예']],value:'0'})+
+  '</div><div id="j_out"></div></div>'+
+  '<div class="card"><h2>부양요건 도표 (국민건강보험법 시행규칙 별표 1)</h2><table><tr><th>호</th><th>가입자와의 관계</th><th>동거 시</th><th>비동거 시</th><th>비고</th></tr>'+DBY.map(r=>'<tr><td>'+r[0]+'</td><td><b>'+r[1]+'</b></td><td>'+r[2]+'</td><td>'+r[3]+'</td><td class="sm">'+r[4]+'</td></tr>').join('')+'</table>'+
+  '<h3>소득·재산요건 (별표 1의2)</h3><table><tr><th>구분</th><th>기준</th></tr>'+
+  '<tr><td>소득(제1호 가목)</td><td>영 제41조 제1항의 소득 합계 연 2,000만원 이하 (소득세법상 비과세소득 제외)</td></tr>'+
+  '<tr><td>사업소득(나목)</td><td>없을 것. 사업자등록이 없고 사업소득 연 500만원 이하이면 없는 것으로 봄(주택임대소득이 있으면 이 예외 적용 안 됨). 장애인 등 별도 예외도 연 500만원 이하 요건</td></tr>'+
+  '<tr><td>재건축 특례(다목)</td><td>주택재건축사업으로 생긴 사업소득을 빼고 가목·나목을 충족하면 공단이 인정</td></tr>'+
+  '<tr><td>기혼자(라목)</td><td>부부 모두 가목~다목 충족</td></tr>'+
+  '<tr><td>재산(제2호 가목) 제1~9호 관계</td><td>재산세 과세표준 합 5억 4천만원 이하, 또는 5억 4천만원 초과 9억원 이하이면서 소득 합계 연 1천만원 이하</td></tr>'+
+  '<tr><td>재산(제2호 나목) 제10호 형제·자매</td><td>재산세 과세표준 합 1억 8천만원 이하</td></tr></table>'+
+  '<div class="basis"><span class="b chk">원문 재확인</span>별표 1 표는 시행규칙 별표 1 <개정 2018. 3. 6.> 본문을 옮긴 것으로, law.go.kr 현행 조문과 대조 전입니다(인권위 권고 등 이후 개정 가능성). 별표 1의2는 2023. 9. 11. 개정 본문 기준입니다. 외국인·재외국민(2024. 4. 3. 이후 입국)은 거주요건이 추가되며 배우자·미성년 자녀는 제외입니다.</div></div>'+
+  '<div class="card"><h2>관계별 등재 조건·제출서류 (한국납세자연맹 자료, 참고)</h2><div class="grid">'+F('d_rel','관계 선택',{opts:[['all','전체 보기']].concat(DREL.map((x,i)=>[String(i),x.n])),value:'all'})+'</div><div id="d_rel_out"></div>'+
   '<div class="basis"><span class="b chk">원문 재확인</span>출처는 한국납세자연맹(koreatax.org) 안내 도표이며 법령이 아닙니다. 도표의 "호적등본"은 현행 가족관계증명서 등으로 읽어야 하고, 사업자등록 기준은 소득요건(별표 1의2)과 부양요건(별표 1)을 함께 봐야 합니다. 공단·시행규칙 원문과 대조 후 사용하세요. 14개 관계까지 반영했으며 도표 아래쪽에 더 있으면 추가하겠습니다.<br><a href="https://www.koreatax.org/medical/program/r_8_4.html" target="_blank" rel="noopener">출처: 한국납세자연맹 피부양자 등재 안내</a></div></div>'+
   '<div class="card"><h2>피부양자 자격 요건 도표</h2><table><tr><th>구분</th><th>기준</th><th>비고</th></tr>'+
   '<tr><td rowspan="3">소득요건</td><td>연간 합산소득 2,000만원 이하</td><td>이자·배당·사업·근로·연금·기타소득 합산 <span class="b ok">확인</span></td></tr>'+
@@ -1124,11 +1227,7 @@ function buildDep(){
   '<tr><td rowspan="3">재산요건</td><td>재산세 과세표준 합계 5.4억원 이하</td><td>통과 <span class="b ok">확인</span></td></tr>'+
   '<tr><td>5.4억원 초과 ~ 9억원 이하</td><td>연 소득 1,000만원 이하여야 인정</td></tr>'+
   '<tr><td>9억원 초과</td><td>상실 (소득과 무관)</td></tr>'+
-  '<tr><td rowspan="5">부양관계</td><td>배우자</td><td>혼인신고 필수. 기혼자는 부부 모두 소득·재산 기준 충족 <span class="b chk">재확인</span></td></tr>'+
-  '<tr><td>직계존속(부모·배우자의 부모 포함)</td><td>등재 가능 <span class="b chk">재확인</span></td></tr>'+
-  '<tr><td>직계비속(자녀)</td><td>미혼 등 부양요건 충족 시 <span class="b chk">재확인</span></td></tr>'+
-  '<tr><td>형제·자매</td><td>재산 요건 강화(과세표준 1.8억원 이하 등), 연령·장애 요건 있음 <span class="b chk">재확인</span></td></tr>'+
-  '<tr><td>사위·며느리 등</td><td>직장가입자와의 관계에 따라 별도 확인 <span class="b chk">재확인</span></td></tr></table>'+
+  '<tr><td>부양관계</td><td>관계·동거 여부별 부양요건(별표 1)</td><td>위 "부양요건 도표" 참조. 형제·자매는 재산요건 1.8억 이하</td></tr></table>'+
   '<div class="basis"><span class="b ok">확인</span>소득 2,000만원·사업소득·재산 5.4억/9억 구조는 국민건강보험법 시행규칙 별표 1의2와 2026년 정리 자료를 대조한 값입니다. <span class="b chk">원문 재확인</span>부양요건(별표 1), 형제·자매의 연령·재산 세부, 공단 게시 도표와의 일치 여부는 위 공단 요건 안내 링크로 확인하세요.</div></div>'+
   '<div class="card"><h2>피부양자 등재 시 제출 서류</h2><ul class="chk">'+
   '<li><input type="checkbox"><div>피부양자자격(취득·상실) 신고서(시행규칙 별지 제1호서식) <span class="b ok">확인</span></div></li>'+
@@ -1178,6 +1277,7 @@ function show(id){
     else if(t.id==='d_flow_back'){DFLOW.pop();renderDflow();}
     else if(t.id==='d_flow_reset'){DFLOW=[];renderDflow();}});
   renderDflow();
+  document.querySelectorAll('#dep input,#dep select').forEach(e=>e.addEventListener('input',renderRelJ));renderRelJ();
   $('d_rel').addEventListener('input',renderRel);renderRel();
   document.querySelectorAll('#exit input,#exit select').forEach(e=>e.addEventListener('input',renderExit));
   document.querySelectorAll('#mid input,#mid select').forEach(e=>e.addEventListener('input',renderMid));
