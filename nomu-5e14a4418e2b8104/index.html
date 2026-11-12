@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.17</title>
+<title>노무 통합 대시보드 v2.18</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.17</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.18</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -1410,11 +1410,14 @@ document.addEventListener('change',()=>{formatAll();});
   $('u_min').addEventListener('input',()=>{$('u_min').dataset.touched='1';});
   document.querySelectorAll('#wage input,#wage select').forEach(e=>e.addEventListener('input',renderWage));
   document.querySelectorAll('#sev input,#sev select').forEach(e=>e.addEventListener('input',renderSev));
-  document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',()=>{
-    const t=$(b.dataset.copy).innerText;
-    const done=()=>{const o=b.textContent;b.textContent='복사됨';setTimeout(()=>{b.textContent=o;},1200);};
-    try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){}
-  }));
+  document.addEventListener('click',ev=>{
+    const b=ev.target.closest&&ev.target.closest('[data-copy]');if(!b)return;
+    const src=$(b.dataset.copy);if(!src)return;
+    const t=src.innerText;
+    const done=()=>{const o=b.dataset.orig||b.textContent;b.dataset.orig=o;b.textContent='복사됨';setTimeout(()=>{b.textContent=o;},1200);};
+    const fb=()=>{try{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');document.body.removeChild(ta);if(ok)done();else alert('복사하지 못했습니다. 내용을 길게 눌러 직접 복사하세요.');}catch(e){alert('복사하지 못했습니다. 내용을 길게 눌러 직접 복사하세요.');}};
+    try{navigator.clipboard.writeText(t).then(done,fb);}catch(e){fb();}
+  });
   $('u_min').value=minWageFor(null);
   renderLeave();renderUI();renderWage();renderSev();renderHire();renderDep();renderExit();renderMid();renderBasis();renderScale();renderContract();renderOffice();
   formatAll();
