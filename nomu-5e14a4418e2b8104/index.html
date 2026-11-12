@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.34</title>
+<title>노무 통합 대시보드 v2.35</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -80,13 +80,32 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.34</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.35</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
 <main>
 
 <!-- 홈 -->
+<!-- 업체 안내문 -->
+<section id="guide">
+  <div class="card">
+    <h2>업체 안내문 · 입사부터 퇴사까지</h2>
+    <div class="grid">
+      <div><label>업체명(대표님 호칭)</label><input type="text" id="g_name" placeholder="예: 가나다상사"></div>
+      <div><label>상시근로자 수</label><select id="g_small"><option value="n">5명 이상</option><option value="y">5명 미만</option></select></div>
+      <div><label>안내 범위</label><select id="g_scope"><option value="all">입사 · 근무 · 퇴사 전체</option><option value="in">입사만</option><option value="out">퇴사만</option></select></div>
+    </div>
+    <pre id="g_msg" class="msg" style="white-space:pre-wrap"></pre>
+    <button class="btn" data-copy="g_msg">안내문 복사</button>
+    <button class="btn" onclick="printDoc('g_msg')">인쇄 / PDF</button>
+    <div class="basis">
+      <span class="b ok">확인</span>근로기준법 제17조(근로조건 서면 명시), 제26조(해고예고), 제36조(퇴직 시 14일 이내 금품 청산), 제48조(임금대장·임금명세서), 제60조(연차유급휴가), 근로자퇴직급여 보장법 제9조(퇴직금 14일·IRP 이전), 고용보험법 시행규칙 제82조의2(이직확인서).<br>
+      <span class="b chk">참고</span>4대보험 신고기한(건강보험 14일 이내, 국민연금·고용·산재 다음 달 15일까지)은 국민건강보험법·국민연금법 시행규칙·고용보험법 시행령 해설 자료 여러 건에서 일치하는 내용으로 반영했습니다. 업체 발송 전 공단 안내(4대사회보험 정보연계센터)와 한 번 더 대조하세요. 단시간·일용·외국인 등은 개별 확인이 필요합니다.
+    </div>
+  </div>
+</section>
+
 <section id="home">
   <div class="card"><h2>업무 흐름</h2><div class="flow">
     <div class="st"><h3>① 입사</h3><a href="#hire">임금·수당·일할·4대보험 공제 예상</a><a href="#contract">근로계약서 작성(PDF)</a><a href="#dep">건강보험 피부양자 요건</a><a href="#scale">상시근로자 판단</a><a href="#docs">입사 시 받을 서류</a><a href="#office">신규 사업장·EDI 위임</a></div>
@@ -1355,6 +1374,75 @@ function buildFin(){
   document.querySelectorAll('#fin input,#fin select').forEach(e=>{e.addEventListener('input',renderFin);e.addEventListener('change',renderFin);});
   renderFin();
 }
+
+function guideText(p){
+  const nm=(p.name||'').trim();
+  const small=p.small==='y';
+  const L=[];
+  L.push((nm?nm+' ':'')+'대표님께');
+  L.push('');
+  L.push('직원 입사부터 퇴사까지 사업주께서 챙기실 내용을 요약해 드립니다. (기준일 2026.11.12.)');
+  if(p.scope!=='out'){
+    L.push('');L.push('■ 1. 입사할 때');L.push('');
+    L.push('① 근로계약서 작성·교부');
+    L.push('   채용할 때 임금, 소정근로시간, 휴일, 연차휴가 등을 서면으로 적어 근로자에게 1부 드립니다. 근로조건을 바꿀 때도 같습니다. (근로기준법 제17조)');
+    L.push('');
+    L.push('② 4대보험 취득신고');
+    L.push('   - 건강보험: 입사일부터 14일 이내');
+    L.push('   - 국민연금·고용보험·산재보험: 입사한 달의 다음 달 15일까지');
+    L.push('   입사가 정해지면 입사일 전에 사무소로 알려 주세요.');
+    L.push('');
+    L.push('③ 받아 두실 서류');
+    L.push('   신분증 사본, 통장 사본(급여 입금용), 개인정보 수집·이용 동의서, 소득공제 신고서·부양가족 서류, 연중 입사자는 종전 근무지 근로소득원천징수영수증');
+    L.push('');
+    L.push('④ 사무소에 알려 주실 내용');
+    L.push('   입사일, 월 급여(기본급·수당·식대), 주 소정근로시간, 부양가족 유무');
+  }
+  if(p.scope==='all'){
+    L.push('');L.push('■ 2. 근무하는 동안');L.push('');
+    L.push('① 임금명세서 교부');
+    L.push('   급여를 지급할 때마다 임금 항목과 공제 내역이 적힌 명세서를 근로자에게 줍니다. (근로기준법 제48조)');
+    L.push('');
+    L.push('② 4대보험료·원천세 공제');
+    L.push('   근로자 부담분 보험료와 소득세·지방소득세를 급여에서 공제하고 신고·납부합니다. 회사 부담분은 별도입니다.');
+    L.push('');
+    L.push(small?'③ 연차휴가':'③ 연차유급휴가');
+    L.push(small?'   상시근로자 5명 미만 사업장은 근로기준법상 연차유급휴가 규정이 적용되지 않습니다. 회사가 따로 정한 휴가가 있으면 그대로 운영해 주세요.':'   - 입사 1년 미만: 1개월 개근할 때마다 1일\n   - 1년간 80% 이상 출근: 15일\n   안 쓴 연차는 수당으로 정산해야 할 수 있습니다. (근로기준법 제60조)');
+    L.push('');
+    L.push('④ 급여·근로조건이 바뀔 때');
+    L.push('   인상, 직급 변경, 휴직, 근로시간 변경은 바뀐 날을 사무소로 알려 주세요. 4대보험 보수월액 변경 신고가 필요할 수 있습니다.');
+  }
+  if(p.scope!=='in'){
+    L.push('');L.push('■ '+(p.scope==='out'?'1':'3')+'. 퇴사할 때');L.push('');
+    L.push('① 퇴사 사실과 사유를 바로 알려 주세요');
+    L.push('   퇴사일, 퇴사 사유(자진퇴사·권고사직·계약만료 등)가 4대보험 상실신고와 근로자의 실업급여 신청에 쓰입니다. 사직서 또는 합의서를 받아 두세요.');
+    L.push('');
+    L.push('② 4대보험 상실신고');
+    L.push('   - 건강보험: 상실일(퇴사일 다음 날)부터 14일 이내');
+    L.push('   - 국민연금·고용보험·산재보험: 상실일이 속한 달의 다음 달 15일까지');
+    L.push('');
+    L.push('③ 임금·퇴직금 14일 이내 지급');
+    L.push('   퇴사일부터 14일 이내에 남은 임금과 퇴직금을 정산합니다. 당사자 합의가 있으면 연장할 수 있습니다. (근로기준법 제36조, 근로자퇴직급여 보장법 제9조)');
+    L.push('   퇴직금은 1년 이상 근무하고 주 소정근로시간이 15시간 이상인 근로자에게 지급합니다.');
+    L.push('');
+    L.push('④ 퇴직금은 IRP 계좌로 이전');
+    L.push('   퇴직금은 근로자가 지정한 IRP 계정으로 이전해 지급하는 것이 원칙입니다. 만 55세 이후 퇴직이거나 퇴직급여가 300만원 이하이면 예외입니다. (근로자퇴직급여 보장법 제9조, 시행령 제3조의2)');
+    L.push('');
+    L.push('⑤ 이직확인서·서류');
+    L.push('   근로자가 요청하면 이직확인서를 발급합니다(요청 후 10일 이내). 이직사유가 실업급여 수급에 직접 영향을 주니 사유를 정확히 알려 주세요. 퇴직소득원천징수영수증, 퇴직월 급여 정산 서류도 함께 준비합니다.');
+    L.push('');
+    L.push('⑥ 사업주가 해고하는 경우');
+    L.push(small?'   30일 전에 예고하거나 30일분 통상임금을 지급합니다. (근로기준법 제26조) 해고를 결정하기 전에 먼저 사무소와 상의해 주세요.':'   정당한 이유가 있어야 하고, 30일 전에 예고하거나 30일분 통상임금을 지급합니다. 해고 사유는 서면으로 통지합니다. (근로기준법 제26조·제27조) 해고를 결정하기 전에 먼저 사무소와 상의해 주세요.');
+  }
+  L.push('');
+  L.push('※ 업종, 근로시간(단시간·일용 등), 외국인 여부에 따라 달라질 수 있습니다. 개별 사안은 문의해 주세요.');
+  L.push('');
+  L.push('원제우세무사사무소 (032-321-4521)');
+  return L.join('\n');
+}
+function renderGuide(){
+  $('g_msg').textContent=guideText({name:val('g_name'),small:val('g_small'),scope:val('g_scope')});
+}
 function renderFin(){
   const can=val('f_can')==='y',bank=val('f_bank')||'금융기관';
   const sel=FDOCS.filter(d=>chk(d.id));
@@ -1439,7 +1527,7 @@ function renderDep(){
   $('d_out').innerHTML=h;
 }
 
-const TABS=[['home','홈',''],['hire','임금·4대보험','입사'],['contract','근로계약서','입사'],['dep','피부양자','입사'],['scale','상시근로자','입사'],['leave','연차','근무'],['basis','통상·평균임금','근무'],['work','휴가·근로시간','근무'],['exit','퇴사 정산','퇴사'],['ui','실업급여','퇴사'],['wage','주휴·해고예고','퇴사'],['sev','퇴직금','퇴사'],['mid','중간정산','퇴사'],['docs','서류','사무소'],['office','EDI·사업장','사무소'],['fin','금융기관 제출서류','사무소'],['check','체크리스트','사무소']];
+const TABS=[['guide','업체 안내문','안내'],['home','홈',''],['hire','임금·4대보험','입사'],['contract','근로계약서','입사'],['dep','피부양자','입사'],['scale','상시근로자','입사'],['leave','연차','근무'],['basis','통상·평균임금','근무'],['work','휴가·근로시간','근무'],['exit','퇴사 정산','퇴사'],['ui','실업급여','퇴사'],['wage','주휴·해고예고','퇴사'],['sev','퇴직금','퇴사'],['mid','중간정산','퇴사'],['docs','서류','사무소'],['office','EDI·사업장','사무소'],['fin','금융기관 제출서류','사무소'],['check','체크리스트','사무소']];
 function show(id){
   if(!TABS.some(t=>t[0]===id))id='home';
   TABS.forEach(t=>{$(t[0]).classList.toggle('on',t[0]===id);});
@@ -1507,7 +1595,7 @@ function copyText(el){
   let lg='';TABS.forEach(t=>{if(t[2]&&t[2]!==lg){lg=t[2];const g=document.createElement('span');g.className='grp';g.textContent=lg;nav.appendChild(g);}const b=document.createElement('button');b.textContent=t[1];b.dataset.id=t[0];b.onclick=()=>show(t[0]);nav.appendChild(b);});
   window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
   const today=fd(new Date());
-  buildHire();buildDep();buildWork();buildExit();buildMid();buildBasis();buildScale();buildDocs();buildContract();buildOffice();buildFin();
+  buildHire();buildDep();buildWork();buildExit();buildMid();buildBasis();buildScale();buildDocs();buildContract();buildOffice();buildFin();document.querySelectorAll('#guide input,#guide select').forEach(e=>{e.addEventListener('input',renderGuide);e.addEventListener('change',renderGuide);});renderGuide();
   numPrep();
   setRates();
   document.querySelectorAll('#hire input,#hire select').forEach(e=>e.addEventListener('input',renderHire));
