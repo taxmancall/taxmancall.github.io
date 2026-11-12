@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.44</title>
+<title>노무 통합 대시보드 v2.45</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -90,7 +90,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.44</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.45</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -355,6 +355,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 <section id="scale"></section>
 <section id="docs"></section>
 <section id="office"></section>
+<section id="sub"></section>
 <section id="fin"></section>
 <section id="dep"></section>
 </main>
@@ -1410,6 +1411,85 @@ const FDOCS=[
  {id:'fd7',g:'b',n:'고용·산재보험 취득자 명부',p:'근로복지공단 토탈서비스에서 사업장 로그인 → 증명원 신청/발급'},
  {id:'fd8',g:'b',n:'사회보험료 완납증명서',p:'국민건강보험공단 홈페이지(사업장 발급)에서 발급, 정부24·정보연계센터에서도 가능'}
 ];
+// ----- 노무 지원금 (2026년 기준, 검색 대조) -----
+const SUBS=[
+ {id:'duru',n:'두루누리 사회보험료 지원',c:'#2e7d5b',ev:'hire',
+  who:'근로자 수 10명 미만 사업장 / 월평균보수 270만원 미만 신규가입 근로자 (근로자 재산세 과세표준 6억원 미만, 종합소득 4,300만원 미만)',
+  amt:'국민연금·고용보험료의 80% (사업주분·근로자분 각각), 1인당 최대 36개월(2018.1.1. 이후 지원기간 합산)',
+  how:'4대보험 취득신고 때 함께 신청 → 다음 달 고지 보험료에서 차감. 연말 지원 중이고 10명 미만이면 다음 해 자동 연장',
+  note:'건강·장기요양·산재보험은 지원 대상 아님',
+  ok:p=>p.n<10&&p.pay>0&&p.pay<2700000&&p.ev==='hire'},
+ {id:'youth',n:'청년일자리도약장려금',c:'#1f6fa8',ev:'hire',
+  who:'5인 이상 우선지원대상기업(지식서비스·문화콘텐츠·청년창업 등은 5인 미만 가능) / 만 15~34세 청년을 정규직 채용, 주 28시간 이상·최저임금 이상·월평균 450만원 이하, 6개월 이상 고용유지',
+  amt:'수도권 유형(취업애로청년): 기업에 월 60만원 × 12개월 = 최대 720만원 / 비수도권 유형: 일반 청년도 가능, 기업 최대 720만원 + 청년 근속 인센티브 별도',
+  how:'고용24에서 운영기관에 참여 신청 → 승인 → 채용(참여 신청일 기준 3개월 전 채용까지 소급 가능) → 6개월 유지 후 신청',
+  note:'부천은 수도권 → 수도권 유형(취업애로청년 요건). 예산 소진 시 조기 마감',
+  ok:p=>(p.n>=5||p.kn)&&p.age>=15&&p.age<=34&&p.ev==='hire'},
+ {id:'promo',n:'고용촉진장려금',c:'#6a4fa3',ev:'hire',
+  who:'취업지원프로그램 이수자, 중증장애인, 여성가장 등 취업취약계층을 기간의 정함이 없는 근로자로 채용',
+  amt:'우선지원대상기업 1인당 월 60만원 수준, 최대 1년 (출처마다 월 60만·80만원으로 달라 2026년 고시 확인 필요)',
+  how:'채용 전 구직등록·취업지원프로그램 이수 선행 필수 → 채용 후 고용24/고용센터 신청',
+  note:'순서가 바뀌면(채용 후 프로그램 이수) 지원 불가',
+  ok:p=>p.ev==='hire'&&p.vul},
+ {id:'leave',n:'육아휴직·육아기 근로시간 단축 지원금',c:'#b5651d',ev:'baby',
+  who:'우선지원대상기업이 근로자에게 30일 이상 육아휴직 또는 육아기 근로시간 단축을 허용',
+  amt:'1인당 월 30만원 / 만 12개월 이내 자녀 대상 3개월 이상 연속 육아휴직: 첫 3개월 월 100만원(2025년까지 200만원) / 남성 육아휴직 1~3번째 사례 월 10만원 추가',
+  how:'고용24 또는 고용센터 신청',
+  note:'특례(첫 3개월 100만원) 적용 시 그 육아휴직 전체 기간에 대체인력 지원금 중복 불가',
+  ok:p=>p.ev==='baby'},
+ {id:'sub',n:'대체인력 지원금',c:'#9b2c3c',ev:'baby',
+  who:'우선지원대상기업이 출산전후휴가·육아휴직·육아기 근로시간 단축 30일 이상 부여 + 시작 2개월 전부터 대체인력 신규 채용(30일 이상)',
+  amt:'대체인력 1인당 30인 미만 사업장 월 최대 140만원, 30인 이상 월 최대 130만원 (인수인계기간 최대 2개월 포함)',
+  how:'2026.1.1.부터 대체인력 사용 기간 중 전액 선지급. 종료일로부터 12개월 이내 최초 신청',
+  note:'',
+  ok:p=>p.ev==='baby'},
+ {id:'share',n:'업무분담 지원금',c:'#7a6a1c',ev:'baby',
+  who:'우선지원대상기업이 육아휴직·육아기 근로시간 단축(2026.7.1.부터 배우자 출산휴가 포함) 근로자의 업무를 동료가 분담하고 금전 지원',
+  amt:'사업주가 분담자에게 지급한 금액의 100%, 30인 미만 월 최대 60만원 / 30인 이상 월 최대 40만원',
+  how:'고용24 또는 고용센터 신청',
+  note:'대체인력을 새로 뽑지 않고 기존 직원이 나눠 맡는 경우',
+  ok:p=>p.ev==='baby'},
+ {id:'senior',n:'고령자 계속고용장려금',c:'#3d6b6b',ev:'senior',
+  who:'정년제도 1년 이상 운영 + 정년 연장·폐지·정년 후 재고용 도입, 60세 이상 피보험자 비율 30% 이하',
+  amt:'계속고용 근로자 1인당 수도권 월 30만원, 비수도권 월 40만원 (2026년부터 비수도권 우대). 지원 기간은 출처마다 2년·3년으로 달라 공고 확인',
+  how:'고용24 분기별 신청',
+  note:'취업규칙에 정년 규정 없이 급하게 만들면 부지급 사례 있음',
+  ok:p=>p.ev==='senior'},
+ {id:'wlb',n:'워라밸+4.5 프로젝트 (근로시간 단축)',c:'#555',ev:'hours',
+  who:'노사 합의로 임금 감소 없이 주 4.5일제 등 실근로시간 단축',
+  amt:'규모·유형별 근로자 1인당 월 20~60만원, 신규 채용 시 1인당 월 60~80만원 추가',
+  how:'노사발전재단에 참여 신청, 장려금은 고용24/고용센터',
+  note:'기존 워라밸일자리 장려금(실근로시간단축제)은 2026년부터 신규 지원 종료',
+  ok:p=>p.ev==='hours'}
+];
+function buildSub(){
+  $('sub').innerHTML='<div class="card"><h2>노무 지원금 (2026년 기준)</h2>'+
+  '<div class="sm" style="margin-bottom:8px">상황을 고르면 해당 가능성이 있는 지원금이 위로 올라오고 표시됩니다. 지원금은 매년 예산·공고로 바뀌므로 신청 전 고용24 공고를 확인하세요.</div><div class="grid">'+
+  F('sb_ev','상황',{opts:[['hire','직원 신규 채용'],['baby','출산·육아휴직 발생'],['senior','정년 도래 직원 계속 고용'],['hours','근로시간 단축(주 4.5일 등)']],value:'hire'})+
+  F('sb_n','상시근로자 수(명)',{type:'number',value:3})+
+  F('sb_age','채용 근로자 만 나이',{type:'number',value:28})+
+  F('sb_pay','채용 근로자 월평균보수(원)',{type:'number',value:2500000})+
+  F('sb_kn','5인 미만 특례 업종(지식서비스·청년창업 등)',{opts:[['n','아니오'],['y','예']],value:'n'})+
+  F('sb_vul','취업취약계층(취업지원프로그램 이수 등)',{opts:[['n','아니오'],['y','예']],value:'n'})+
+  '</div><div id="sb_out"></div><button class="btn" data-copy="sb_msg">대표님 안내문 복사</button><pre id="sb_msg" class="msg" style="white-space:pre-wrap"></pre></div>'+
+  '<div class="card"><h2>참고: 통합고용세액공제 (세액공제, 지원금 아님)</h2><div class="sm" style="line-height:1.7">조세특례제한법 제29조의8. 2026.1.1. 시행 개정(법률 제21223호)으로 고용 유지 기간이 길수록 공제액이 커지는 구조로 바뀌었고, 최소 고용증가 인원 기준이 생겼습니다. 예) 중소기업 청년등·수도권: 1년차 700만원, 2년차 1,600만원, 3년차 1,700만원. 2026.8.3. 발표된 2026년 세제개편안에 추가 개편이 담겨 있으나 국회 의결 전입니다. 지원금과 별도로 종합소득세·법인세 신고 때 사무소에서 검토합니다.</div></div>'+
+  '<div class="basis"><span class="b chk">참고</span>지원금은 법령이 아니라 고용노동부 고시 「고용창출장려금·고용안정장려금의 신청 및 지급에 관한 규정」과 연도별 사업공고(2026년: 고용노동부 공고 제2025-510호), 고용보험법·보험료징수법 제21조(두루누리)로 운영됩니다. 금액은 2026년 공고 해설 자료 여러 건을 대조했으며, 고용촉진장려금 금액과 고령자 계속고용장려금 지원기간은 출처마다 달라 표시해 두었습니다. 2027년 사업은 2026년 12월 말 공고 예정이니 그때 다시 대조하세요.</div>';
+  document.querySelectorAll('#sub input,#sub select').forEach(e=>{e.addEventListener('input',renderSub);e.addEventListener('change',renderSub);});
+  renderSub();
+}
+function renderSub(){
+  const p={ev:val('sb_ev'),n:num('sb_n'),age:num('sb_age'),pay:num('sb_pay'),kn:val('sb_kn')==='y',vul:val('sb_vul')==='y'};
+  const hit=SUBS.filter(x=>x.ok(p)),rest=SUBS.filter(x=>!x.ok(p));
+  const card=(x,on)=>'<div style="border-left:6px solid '+x.c+';background:'+(on?'#f4faf6':'#f6f6f6')+';border-radius:10px;padding:10px 12px;margin:8px 0;'+(on?'':'opacity:.6')+'"><b style="font-size:15px">'+(on?'✅ ':'')+x.n+'</b>'+
+    '<div style="font-size:13px;line-height:1.65;margin-top:4px"><b>대상</b> '+esc(x.who)+'<br><b>금액</b> '+esc(x.amt)+'<br><b>신청</b> '+esc(x.how)+(x.note?'<br><span style="color:#9b2c3c">※ '+esc(x.note)+'</span>':'')+'</div></div>';
+  $('sb_out').innerHTML='<h3 style="margin:10px 0 0">해당 가능 ('+hit.length+')</h3>'+(hit.length?hit.map(x=>card(x,true)).join(''):'<div class="sm">입력 조건으로는 해당 항목이 없습니다.</div>')+'<h3 style="margin:14px 0 0">다른 지원금</h3>'+rest.map(x=>card(x,false)).join('');
+  const L=['대표님, 이번 건으로 검토할 수 있는 정부 지원금입니다.',''];
+  hit.forEach((x,i)=>{L.push(['①','②','③','④','⑤','⑥'][i]+' '+x.n);L.push('   - 대상: '+x.who);L.push('   - 금액: '+x.amt);L.push('   - 신청: '+x.how);if(x.note)L.push('   ※ '+x.note);L.push('');});
+  if(!hit.length)L.push('현재 조건으로는 해당되는 지원금이 없습니다.','');
+  L.push('※ 지원금은 예산 소진 시 조기 마감되며, 채용 전에 신청해야 하는 사업이 있습니다. 채용 전에 사무소로 먼저 알려 주세요.');
+  $('sb_msg').textContent=L.join('\n');
+}
+
 function buildFin(){
   const T=(rows)=>'<table class="tb"><tr><th>서류</th><th>누가·어디서</th><th>비고</th></tr>'+rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>').join('')+'</table>';
   $('fin').innerHTML='<div class="card"><h2>은행 등 금융기관 4대보험 서류 — 대표자·근로자 직접 발급 안내</h2>'+
@@ -1488,7 +1568,10 @@ function guideText(p){
     L.push('   (국민건강보험법 제8조, 국민연금법 시행규칙 제6조, 고용보험법 시행령 제7조, 고용산재보험료징수법 제16조의10)');
     L.push('   입사가 정해지면 입사일 전에 알려 주세요.');
     L.push('');
-    L.push('⑥ 사무소에 알려 주실 내용');
+    L.push('⑥ 정부 지원금은 채용 전에 확인해 주세요');
+    L.push('   10명 미만 사업장은 월 보수 270만원 미만 신규 직원의 국민연금·고용보험료 80%를 최대 36개월 지원받을 수 있습니다(두루누리). 청년(만 15~34세) 정규직 채용, 육아휴직 대체인력 등은 채용 전 신청이 필요한 경우가 있어 채용 전에 사무소로 먼저 알려 주세요.');
+    L.push('');
+    L.push('⑦ 사무소에 알려 주실 내용');
     L.push('   입사일, 월 급여(기본급·수당·식대), 주 소정근로시간, 부양가족 유무');
   }
   if(p.scope==='all'){
@@ -1658,7 +1741,7 @@ function renderDep(){
   $('d_out').innerHTML=h;
 }
 
-const TABS=[['guide','업체 안내문','안내'],['home','홈',''],['hire','임금·4대보험','입사'],['contract','근로계약서','입사'],['dep','피부양자','입사'],['scale','상시근로자','입사'],['leave','연차','근무'],['basis','통상·평균임금','근무'],['work','휴가·근로시간','근무'],['exit','퇴사 정산','퇴사'],['ui','실업급여','퇴사'],['wage','주휴·해고예고','퇴사'],['sev','퇴직금','퇴사'],['mid','중간정산','퇴사'],['docs','서류','사무소'],['office','EDI·사업장','사무소'],['fin','금융기관 제출서류','사무소'],['check','체크리스트','사무소']];
+const TABS=[['guide','업체 안내문','안내'],['home','홈',''],['hire','임금·4대보험','입사'],['contract','근로계약서','입사'],['dep','피부양자','입사'],['scale','상시근로자','입사'],['leave','연차','근무'],['basis','통상·평균임금','근무'],['work','휴가·근로시간','근무'],['exit','퇴사 정산','퇴사'],['ui','실업급여','퇴사'],['wage','주휴·해고예고','퇴사'],['sev','퇴직금','퇴사'],['mid','중간정산','퇴사'],['docs','서류','사무소'],['office','EDI·사업장','사무소'],['sub','노무 지원금','입사'],['fin','금융기관 제출서류','사무소'],['check','체크리스트','사무소']];
 function show(id){
   if(!TABS.some(t=>t[0]===id))id='home';
   TABS.forEach(t=>{$(t[0]).classList.toggle('on',t[0]===id);});
@@ -1726,7 +1809,7 @@ function copyText(el){
   let lg='';TABS.forEach(t=>{if(t[2]&&t[2]!==lg){lg=t[2];const g=document.createElement('span');g.className='grp';g.textContent=lg;nav.appendChild(g);}const b=document.createElement('button');b.textContent=t[1];b.dataset.id=t[0];b.onclick=()=>show(t[0]);nav.appendChild(b);});
   window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
   const today=fd(new Date());
-  buildHire();buildDep();buildWork();buildExit();buildMid();buildBasis();buildScale();buildDocs();buildContract();buildOffice();buildFin();document.querySelectorAll('#guide input,#guide select').forEach(e=>{e.addEventListener('input',renderGuide);e.addEventListener('change',renderGuide);});renderGuide();
+  buildHire();buildDep();buildWork();buildExit();buildMid();buildBasis();buildScale();buildDocs();buildContract();buildOffice();buildSub();buildFin();document.querySelectorAll('#guide input,#guide select').forEach(e=>{e.addEventListener('input',renderGuide);e.addEventListener('change',renderGuide);});renderGuide();
   numPrep();
   setRates();
   document.querySelectorAll('#hire input,#hire select').forEach(e=>e.addEventListener('input',renderHire));
