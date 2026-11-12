@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.39</title>
+<title>노무 통합 대시보드 v2.40</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -80,7 +80,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.39</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.40</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -1464,7 +1464,8 @@ function guideText(p){
   L.push('');
   L.push('[규모와 관계없이 적용]');
   L.push('· 근로계약서 작성·교부, 임금명세서 교부, 주휴일, 최저임금, 퇴직급여제도(4명 이하도 2010.12.1.부터 적용, 1년·주 15시간 이상), 해고예고(30일 전 또는 30일분 수당), 출산휴가·육아휴직, 4대보험 신고');
-  L.push('· 성희롱 예방교육, 개인정보 보호교육, 장애인 인식개선교육');
+  L.push('· 성희롱 예방교육, 개인정보 보호교육(개인정보 취급자), 장애인 인식개선교육, 퇴직연금 가입 사업장의 퇴직연금교육');
+  L.push('· 수습기간: 근로계약 1년 이상, 단순노무직 제외 시 최대 3개월 설정 가능. 수습 3개월 이내 해고는 해고예고수당 대상이 아니고, 3개월이 지난 뒤 해고하면 해고일을 적어 30일 전에 서면 통지(미통지 시 30일분 수당)');
   L.push('');
   L.push('[5명 이상 사업장부터 적용 (5명 미만은 적용 안 됨)]');
   L.push('· 법정근로시간(주 40시간) 및 연장근로 한도');
@@ -1475,7 +1476,7 @@ function guideText(p){
   L.push('· 중대재해처벌법(5명 미만 사업장의 사업주는 제외)');
   L.push('');
   L.push('[10명 이상] 취업규칙 작성·고용노동부 신고');
-  L.push('[30명 이상] 노사협의회 설치(근로자참여 및 협력증진에 관한 법률 제4조)');
+  L.push('[30명 이상] 노사협의회·고충처리위원회 설치(근로자참여 및 협력증진에 관한 법률 제4조)');
   L.push('[50명 이상] 장애인 의무고용(2026년 민간 3.1%), 연 1회 장애인 인식개선교육 결과 보고');
   L.push('');
   L.push('※ 위 구분은 대표님 이해를 돕기 위한 요약이며, 실제 적용은 개별 조항과 업종에 따라 다릅니다.');
