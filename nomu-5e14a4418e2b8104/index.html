@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.26</title>
+<title>노무 통합 대시보드 v2.27</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.26</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.27</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -1220,7 +1220,7 @@ function buildOffice(){
   F('o_office','대행기관(세무사사무소)',{value:'원제우세무사사무소'})+F('o_oname','대행기관 대표',{})+F('o_prev','종전 대행기관(이관 시)',{})+F('o_date','작성일',{type:'date'})+
   '</div>'+
   '<h3>작성할 기관별 양식 (기관마다 서식·절차가 달라 각각 따로 출력)</h3><div class="chips"><label><input type="checkbox" id="o_i1" checked>건강보험</label><label><input type="checkbox" id="o_i2" checked>국민연금</label><label><input type="checkbox" id="o_i3" checked>고용·산재보험(근로복지공단·4대사회보험 정보연계센터)</label></div>'+
-  '<div class="warn">EDI 위임(대행기관 등록·해지)은 건강보험(EDI 전자 신청), 국민연금(공단 서식 작성 후 지사 방문·팩스), 고용·산재(신고서의 보험사무대행기관 란)가 각각 다른 방식입니다. 아래 출력물은 기관별로 나눈 사무소 내부·거래처 확인용 양식이며 공단 공식 서식이 아닙니다. 실제 효력은 각 기관 EDI의 대행기관 등록·해지 절차에서 발생하므로 기관별 현행 서식·구비서류는 각 사이트에서 확인해야 합니다(이번 조회에서 서식 원문은 열람하지 못함).</div>'+
+  '<div class="warn">EDI 위임은 기관별 서식을 각각 작성해 서명(인) 후 해당 EDI에 첨부 접수하는 방식입니다. 아래 출력물은 기관별로 나눈 사무소 내부·거래처 확인용 양식이며 공단 공식 서식이 아닙니다. 실제 효력은 각 기관 EDI의 대행기관 등록·해지 절차에서 발생하므로 기관별 현행 서식·구비서류는 각 사이트에서 확인해야 합니다(이번 조회에서 서식 원문은 열람하지 못함).</div>'+
   '<button class="btn" id="o_pdf">전체 PDF로 저장(기관별 페이지 분리)</button> <span class="sm">기관별 PDF는 미리보기의 각 버튼 사용 · 인쇄 창에서 “PDF로 저장” 후 해당 기관 팩스번호로 전송</span></div><div class="card"><h2>미리보기</h2><div id="o_out"></div></div>';
 }
 function renderOffice(){
@@ -1229,23 +1229,23 @@ function renderOffice(){
   const del=k==='out';
   const G=[
    {on:'o_i1',name:'건강보험',sys:'건강보험 EDI(edi.nhis.or.kr)',no:'건강보험 사업장관리번호',nv:'o_nh',
-    form:del?'업무대행 지정/해지 신청서(해지)':'업무대행 지정/해지 신청서(지정)',
+    form:'이 서식(건강보험용) 작성 후 건강보험 EDI에 첨부 접수',
     sc:['웹 EDI로 신고할 수 있는 서식 관련 업무(자격 취득·상실, 내용변경, 보수월액 변경, 사업장 신고 등)','신고서 처리결과 조회'],
-    route:['건강보험 EDI 접속 → 대리인증 → 지정신청 → “업무대행 지정/해지 신청서”를 전자로 작성하고 신고(전송)','별도 종이 서식 제출이 아니라 EDI 전자 신청 방식입니다'],
-    docs:['사업장 EDI 회원가입·공동인증서 등록(또는 허용되는 인증서)','대행기관(사무소) 업무대행기관 지정 상태 확인'],
-    note:'업무대행 수임사업장에는 납부확인서 등 일부 증명 메뉴가 제공되지 않을 수 있어, 증명서는 사업주 본인 계정으로 발급해야 할 수 있습니다.'},
+    route:['이 서식을 작성하고 대표자·대행기관 서명(인) 후 PDF/스캔 파일로 저장','건강보험 EDI에서 첨부 접수(위임·해지 신청 건으로 파일 첨부 후 전송)'],
+    docs:['서명(인) 완료된 이 서식 PDF/스캔','대행기관(사무소) 건강보험 EDI 이용 가능 상태(인증서 등록)'],
+    note:'업무대행 수임사업장에는 납부확인서 등 일부 증명 메뉴가 제공되지 않을 수 있어, 증명서는 사업주 본인 계정으로 발급해야 할 수 있습니다. EDI 첨부 접수 메뉴 이름은 시스템 화면 기준으로 확인하세요.'},
    {on:'o_i2',name:'국민연금',sys:'국민연금 EDI(edi.nps.or.kr)',no:'국민연금 사업장관리번호',nv:'o_np',
-    form:del?'사업장업무대행서비스 해지 신청서':'웹 EDI 업무대행기관 지정 신청서',
+    form:'이 서식(국민연금용) 작성 후 국민연금 EDI에 첨부 접수',
     sc:['사업장가입자 자격 취득·상실 신고','내용변경 신고','기준소득월액 변경 등 신고','신고서 처리결과 안내·보험료 결정내역 확인'],
-    route:['국민연금 EDI → 고객센터 → 신고서식자료 → “사업장업무대행서비스 신청(해지) 서식(5종)”을 내려받아 작성','관할 국민연금공단 지사 방문 접수(권장) 또는 팩스 접수'],
-    docs:['업무대행기관 지정(해지) 신청서','보안서약서','(보건복지분야 인증서를 쓰는 경우) 인증서비스 신청서 함께 제출'],
+    route:['이 서식을 작성하고 대표자·대행기관 서명(인) 후 PDF/스캔 파일로 저장','국민연금 EDI에서 첨부 접수'],
+    docs:['서명(인) 완료된 이 서식 PDF/스캔','대행기관(사무소) 국민연금 EDI 이용 가능 상태(인증서 등록)'],
     note:'국민연금 업무대행 범위에는 증명서 신청이 포함되지 않습니다. 증명서는 사업주 또는 근로자 본인이 발급합니다.'},
    {on:'o_i3',name:'고용·산재보험',sys:'고용·산재보험 토탈서비스(total.comwel.or.kr)',no:'고용·산재 사업장관리번호',nv:'o_ei',
-    form:'보험사무대행기관 위임 — 해당 신고서의 “보험사무대행기관” 란 기재·서명',
+    form:'이 서식(고용·산재용) 작성 후 고용·산재보험 토탈서비스에 첨부 접수',
     sc:['보험관계 성립·변경·소멸 신고','고용보험 피보험자격 취득·상실(이직) 신고','근로내용 확인 신고','보수총액 신고·보험료 신고','(실업급여 신청 등 별도 위임이 필요한 업무는 위임 범위 확인)'],
-    route:['토탈서비스 사업장 회원 로그인 → 민원접수/신고 → 사무대행업무','신고서의 “보험사무대행기관” 란에 대행기관 번호·명칭을 적고 사업주와 대행기관이 서명 또는 인','사무소(대행기관) 측은 별도로 보험사무대행기관 인가를 받은 상태여야 합니다'],
-    docs:['대행기관 인가 상태(정관·보험사무위임처리규약·보안서약서는 대행기관 인가 때 제출)','사업장 토탈서비스 회원 및 인증서'],
-    note:'고용·산재보험은 신고서 서식에 보험사무대행기관 란이 있어 위임이 신고와 함께 이뤄집니다. 해지·변경 절차는 토탈서비스 사무대행업무 메뉴와 관할 지사에 확인하세요.'}
+    route:['이 서식을 작성하고 대표자·대행기관 서명(인) 후 PDF/스캔 파일로 저장','고용·산재보험 토탈서비스에서 첨부 접수'],
+    docs:['서명(인) 완료된 이 서식 PDF/스캔','대행기관(사무소)이 보험사무대행기관으로 인가·등록된 상태, 토탈서비스 인증서'],
+    note:'EDI 첨부 접수 메뉴 이름과 반려 시 보완 방법은 해당 시스템 화면 기준으로 확인하세요.'}
   ].filter(g=>chk(g.on));
   const verb=del?'해임(해지)':'위임';
   let h='';
@@ -1255,7 +1255,7 @@ function renderOffice(){
     h+='<div class="noprint" style="margin:10px 0 4px"><button class="btn" data-opdf="o_doc'+i+'">'+g.name+' 양식만 PDF 저장 (팩스 전송용)</button></div><div id="o_doc'+i+'"><div class="doc"'+(i<G.length-1?' style="page-break-after:always"':'')+'><h1>'+T+'</h1><table>'+R('사업장명',val('o_co'))+R('사업자등록번호',val('o_biz'))+R('대표자',val('o_ceo'))+R('소재지',val('o_addr'))+R('연락처',val('o_tel'))+R(g.no,val(g.nv))+R('신고 시스템',g.sys)+
      (del?R('해임 대상 대행기관',val('o_office')):R('위임받는 대행기관',val('o_office')+(val('o_oname')?' / 대표 '+val('o_oname'):'')))+
      (k==='in'?R('종전 대행기관(해임 대상)',val('o_prev')):'')+
-     R('해당 기관 서식·방식',g.form)+
+     R('제출 방식',g.form)+
      '<tr><th>'+verb+' 범위</th><td>'+ul(g.sc)+'</td></tr>'+
      '<tr><th>등록·제출 방법</th><td>'+ul(g.route)+'</td></tr>'+
      '<tr><th>준비 서류·조건</th><td>'+ul(g.docs.map(x=>'□ '+x))+'</td></tr></table>';
