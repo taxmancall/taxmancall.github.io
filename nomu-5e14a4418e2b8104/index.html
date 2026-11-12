@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.40</title>
+<title>노무 통합 대시보드 v2.42</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -80,7 +80,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.40</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.42</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -1001,7 +1001,7 @@ const DAYN=['월','화','수','목','금','토','일'];
 function buildContract(){
   let dayRows='';DAYN.forEach((d,i)=>{dayRows+='<tr><td>'+d+'</td><td><input type="checkbox" id="k_on'+i+'"'+(i<5?' checked':'')+'></td><td><input type="time" id="k_s'+i+'" value="09:00"></td><td><input type="time" id="k_e'+i+'" value="18:00"></td><td><input type="number" id="k_r'+i+'" value="60" style="width:70px"></td></tr>';});
   $('contract').innerHTML='<div class="card"><h2>근로계약서 작성 · PDF 저장</h2><div class="grid">'+
-  F('k_ver','계약서 버전',{opts:[['moel','① 고용노동부 표준근로계약서 구조'],['detail','② 노무사 상세판(특약·근거 조문 포함)']],value:'moel'})+
+  F('k_ver','계약서 버전',{opts:[['moel','① 고용노동부 표준근로계약서 구조'],['detail','② 노무사 상세판(특약·근거 조문 포함)'],['office','③ 사무소 표준(가이드북 근로계약서·15개 조)']],value:'moel'})+
   F('k_type','양식',{opts:Object.keys(CT).map(k=>[k,CT[k]]),value:'general'})+
   F('k_co','사업체명',{})+F('k_ceo','대표자',{})+F('k_addr','사업장 주소',{})+F('k_tel','사업장 전화',{})+
   F('k_wn','근로자 성명',{})+F('k_wb','근로자 생년월일',{type:'date'})+F('k_wa','근로자 주소',{})+F('k_wt','근로자 연락처',{})+
@@ -1044,6 +1044,16 @@ function renderContract(){
   }
   $('k_calc').innerHTML=calc;
   const wtxt={monthly:'월급',hourly:'시급',daily:'일급'}[val('k_wt2')];
+  if(val('k_ver')==='office'){
+    const cp=[];
+    if(num('k_prob')>3)cp.push('수습 3개월 초과 시 최저임금 감액·해고예고 예외는 3개월 이내에만 적용됩니다.');
+    if(wk>40)cp.push('주 소정근로시간 '+wk+'시간: 법정 1주 40시간을 초과합니다.');
+    cp.push('제7조 ④ 연차 대체는 근로자대표와의 서면합의가 있어야 효력이 있습니다. 합의서를 함께 보관하세요.');
+    cp.push('제9조 ①(퇴직 승인) 문구는 근로자의 사직 자유를 지나치게 제한하는 것으로 해석될 수 있어, 실제 운영은 30일 전 통보 요청 수준으로 하세요.');
+    $('k_calc').innerHTML+='<div class="res"><b>검토 참고</b><ul style="margin:6px 0 0 18px">'+cp.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+    $('c_out').innerHTML=renderOfficeContract({t,wk,amt,wtxt});
+    return;
+  }
   if(val('k_ver')==='detail'){
     const mh2=autoMonthH(wk);
     const cp=[];
@@ -1090,6 +1100,51 @@ function renderContract(){
   $('c_out').innerHTML=h;
 }
 
+
+function renderOfficeContract(ctx){
+  const {t,wk,amt,wtxt}=ctx;
+  const co=esc(val('k_co')||'__________'),wn=esc(val('k_wn')||'__________');
+  const B=(x,d)=>x?esc(x):(d||'__________');
+  const prob=num('k_prob');
+  const fixed=(t==='fixed'||t==='daily');
+  const art=(no,ti,body)=>'<div class="art"><b>제'+no+'조 〔'+ti+'〕</b><div style="white-space:pre-wrap">'+body+'</div></div>';
+  let h='<div class="doc"><h1>근로계약서</h1>';
+  h+='<p>사용자(고용주)와 근로자는 다음과 같이 근로계약을 체결하고, 이를 증명하기 위해 2부를 작성하여 각각 1부씩 보관한다.</p>';
+  h+='<table><tr><th rowspan="3">사용자(갑)</th><th>회사명</th><td>'+co+'</td></tr><tr><th>대표자</th><td>'+B(val('k_ceo'))+'</td></tr><tr><th>회사 주소</th><td>'+B(val('k_addr'))+'</td></tr>'+
+    '<tr><th rowspan="3">근로자(을)</th><th>성명 / 주민번호</th><td>'+wn+' / ______________________</td></tr><tr><th>주소</th><td>'+B(val('k_wa'))+'</td></tr><tr><th>핸드폰 / 이메일</th><td>'+B(val('k_wt'))+' / ______________________</td></tr></table>';
+  const st=dstr(val('k_start')), en=dstr(val('k_end'));
+  h+=art(1,'근로계약 기간',
+    '① 근로계약기간은 '+(fixed?st+'부터 '+en+'까지로 하며, 계약기간의 만료로 근로관계는 별도의 조치 없이 당연 종료된다. 다만, 근로계약기간 만료 전 양 당사자의 합의에 의하여 계약기간을 연장할 수 있다.':st+'부터이며 기간의 정함이 없다.')+
+    '\n② 위 ① 근로계약기간이 1년 이상이면 수습기간을 3개월 내에서 정할 수 있다. '+(prob>0?'수습기간은 근로개시일부터 '+prob+'개월로 한다.':'수습기간은 두지 않는다.')+
+    '\n③ 수습기간 중 최저임금의 90%로 급여를 지급할 수 있다. 다만, 고용노동부 고시 제2018-23호에 해당하는 단순노무종사자 등의 경우에는 수습기간이라도 최저임금의 100% 이상을 지급하여야 한다.');
+  h+=art(2,'근로장소 및 업무내용',
+    '① 근무 장소: '+B(val('k_place'),'갑의 본사, 지사, 사무실 등 갑이 지정한 장소로 한다.')+'\n② 업무내용: '+B(val('k_job'))+
+    '\n③ 제①항 및 제②항은 “을”의 귀책사유와 “갑”의 경영사정 또는 인사발령 등의 명령·지시에 의해 변경될 수 있으며, 이때 “을”은 “갑”의 지시에 성실히 따라야 한다.');
+  h+=art(3,'근무시간 및 휴게시간',
+    '① “을”의 근무시간과 휴게시간은 다음과 같이 한다.\n   - 근무요일: '+B(val('k_wd'))+'\n   - 근무시간: '+tstr(val('k_st'))+' ~ '+tstr(val('k_en'))+' (1주 소정근로시간 '+wk+'시간)\n   - 휴게시간: '+tstr(val('k_rs'))+' ~ '+tstr(val('k_re'))+
+    '\n② 전 항의 근무시간 및 휴게시간은 업무 사정에 따라 변경할 수 있다.'+
+    '\n③ “갑”은 “을”에게 업무상 필요한 경우 연장·야간·휴일근로를 명할 수 있으며, “을”은 이에 포괄적으로 동의한다.'+
+    '\n④ “을”이 연장 및 휴일 근로 등 시간외 근로를 실시하고자 할 경우에는 “갑”에게 「연장 및 휴일 근로 신청서」를 제출하고 이에 대한 승인을 받은 후 실시하여야 하며, 이와 같은 절차 없이 “을”의 임의대로 실시한 시간외근로는 인정되지 않는다.');
+  h+=art(4,'급여계산의 방법',
+    '① 중도에 입사, 퇴사, 복직한 경우에는 당월에 한하여 근무일에 의한 일할계산(日割計算)을 한다.\n② “을”이 지각·조퇴 등으로 소정근로시간을 근무하지 못할 경우 해당시간만큼 월급여액에서 공제한다.\n③ “을”이 결근한 때에는 해당일과 그 주의 주휴일에 대한 임금을 공제하고 지급한다.\n④ 착오로 인하여 월 임금액이 과지급 된 경우, “갑”은 “을”의 동의를 얻어 익월 임금액에서 과지급 된 액수만큼을 공제하고 지급한다.');
+  h+=art(5,'급여지급기일 및 지급방법','① “갑”은 “을”에 대하여 '+B(val('k_pay'))+'에 “을”의 은행예금계좌로 지급한다. 다만, 지급일이 휴일인 경우에는 그 전일로 할 수 있다.');
+  h+=art(6,'급 여',
+    '① “을”의 급여는 '+wtxt+' '+(amt?amt.toLocaleString()+'원':'__________원')+'으로 지급한다.'+(num('k_allow')>0?' (이 중 고정수당 '+num('k_allow').toLocaleString()+'원 포함)':'')+(num('k_meal')>0?' 비과세 식대 '+num('k_meal').toLocaleString()+'원 별도 구분.':'')+(prob>0?' 수습기간 동안 급여는 월 __________원으로 한다.':'')+
+    '\n② 연장근로수당 등은 노동법 및 근로기준법에 의거하여 실 근무시간(휴게시간 제외)에 대해서 지급한다.');
+  h+=art(7,'연차유급휴가 및 휴가의 대체',
+    '① 상시근로자수 5인 이상이 되는 시점부터 적용한다.\n② “을”이 1년간 80% 이상을 출근하였을 경우 근로기준법이 정하는 바에 따라 연차유급휴가를 부여한다.\n③ “을”의 연차휴가의 청구권은 1년간 행사하지 아니하면 소멸한다.\n④ “갑”은 근로자대표와의 서면합의에 따라 아래와 같이 “을”을 특정 근로일에 휴무케 함으로써 연차유급휴가에 갈음하며, “을”은 이에 동의한다.\n   - 신정, 구정(3), 삼일절, 어린이날, 석가탄신일, 현충일, 광복절, 추석(3), 개천절, 한글날, 성탄절');
+  h+=art(8,'주휴일','1주간의 소정근로일수를 개근한 “을”에게 매주 '+B(val('k_hol'),'일요일')+'을 주휴일로 부여하되, 직무형편에 따라 “을”의 동의를 얻어 다른 요일에 부여할 수 있다. 주말근무자인 경우에는 평일을 주휴일로 지정한다.');
+  h+=art(9,'임의사직 및 업무의 인계','① “을”은 본인의 의사에 따라 사직할 수 있다. 다만, “을”은 퇴직 시 최소 30일 이전에 “갑”에게 통보하고 퇴직 승인을 득한 후 퇴직하여야 한다.\n② “을”은 퇴직의 수리와 동시에 관련 업무인수인계를 철저히 하여 업무의 연속성을 보장하여야 하며, 부득이 기일을 경과한 경우 퇴직 후에도 일정한 기간동안 업무의 처리를 인계하여야 한다.');
+  h+=art(10,'비밀유지의무','① “을”은 재직 중이나 퇴직 후라도 업무상 취득한 비밀(고객 및 업체에 대한 정보 포함)을 누설하거나 개인적인 용도로 사용하지 아니한다.\n② “을”은 본인 및 타인의 임금에 관한 사항에 대하여 동료 등 타인에게 누설해서는 아니된다.\n③ 위 사항을 위반할 경우 “을”은 민형사상의 모든 책임을 진다.        [근로자 동의 :          (날인)]');
+  h+=art(11,'계약 해지에 관한 사항','“갑”은 “을”이 다음 각 호 중 하나에 해당할 경우 30일 전에 사전 통보하고 본 계약을 해지하거나 또는 재계약을 거부할 수 있다.\n 1. “을”의 직장이탈, 근무태만 및 근무성적의 현격한 불량에 해당한 때\n 2. 업무수행에 심각한 차질이 있거나 그 직무를 수행하지 못하는 사유가 있는 경우\n 3. 회사와 관련된 허위사실을 유포하거나 폭행·폭언 등으로 회사질서를 문란케 하는 경우\n 4. 정당한 사유 없이 계속하여 3일 이상 무단결근을 하거나 월 5회 이상 결근한 경우\n 5. 형사상 유죄판결을 받거나 공민권 정지선고 등을 받은 경우\n 6. 상사의 정당한 지시에 따르지 않는 경우\n 7. 취업규칙 중 징계조항의 해고사유에 해당되거나 또는 3회 이상 징계 처분을 받은 자\n 8. 현저한 매출감소로 경영상 긴박한 사유가 발생되어 “갑”의 사업 및 기구의 축소로 구조조정이 필요한 때\n 9. 업무시간 내에 개인적 업무를 하다 적발되는 경우\n 10. 기타 사회통념상 근로관계를 지속하기 곤란한 경우');
+  h+=art(12,'손해배상','“을”이 본 계약을 위반하거나 불법행위 등으로 인하여 “갑”에게 손해를 끼쳤을 경우에는 전적으로 “을”이 책임을 지며, “갑”은 “을”에게 손해배상을 청구할 수 있다.');
+  h+=art(13,'합의사항','“갑”은 “을”과 근로관계가 종료된 경우 임금 및 퇴직금의 지급은 퇴직일로부터 14일 이내 또는 퇴직일 이후 돌아오는 임금지급일에 지급하는 것에 합의한다.        [근로자 동의 :          (날인)]');
+  h+=art(14,'근로계약서 교부','“갑”은 근로계약을 체결함과 동시에 본 계약서 사본을 “을”의 교부요구와 관계없이 “을”에게 교부한다.\n[근로자 확인 : 근로자 '+wn+'는 근로계약서 작성, 서명, 교부 받았음을 확인합니다.        (날인)]');
+  h+=art(15,'보칙','① 계약내용을 변경할 필요가 있는 경우에는 서면으로 변경함을 원칙으로 한다.\n② 이 계약에 정함이 없는 사항은 근로기준법, 취업규칙, 민법 및 일반계약 관행을 따른다.\n③ 본 계약을 성실히 준수할 것을 다짐하며 본 계약서에 날인한 후 각자 보관한다.\n④ 본 계약은 “갑”과 “을” 사이의 서명날인으로 효력을 발생한다.');
+  h+='<p style="text-align:center;margin-top:14px">'+dstr(new Date().toISOString().slice(0,10))+'</p>';
+  h+='<div class="sign"><div><b>(사용자 갑)</b><br>회사명: '+co+'<br>주소: '+esc(val('k_addr'))+'<br>대표자: '+esc(val('k_ceo'))+' (인)</div><div><b>(근로자 을)</b><br>주소: '+esc(val('k_wa'))+'<br>성명: '+wn+' (인)</div></div></div>';
+  return h;
+}
 
 function renderDetail(ctx){
   const {t,wk,amt,hourly,mh,wtxt}=ctx;
@@ -1377,6 +1432,13 @@ function buildFin(){
   renderFin();
 }
 
+const GT=[['근로계약서 작성 의무','O','O','O','O'],['근로계약서 교부 의무','O','O','O','O'],['법정근로시간','X','주 40시간','주 40시간','주 40시간'],['별도 연장·야간·휴일수당','X','50% 추가 지급','50% 추가 지급','50% 추가 지급'],['수습기간 설정','근로계약 기간 1년 이상, 단순노무직 제외 → 최고 3개월'],['3개월 이내 해고 → 해고예고수당 지급여부','X','X','X','X'],['3개월 경과 해고 → 해고예고수당 지급여부','해고일을 적어서 30일 전에 서면 통지 → 미통지 시 30일분 수당 지급'],['해고 정당성','X','O','O','O'],['부당해고 구제신청','X','O','O','O'],['임금명세서 교부, 주휴일 부여, 최저임금, 퇴직금','O','O','O','O'],['출산휴가, 육아휴직','O','O','O','O'],['유급 연차','X','O','O','O'],['생리휴가','X','O','O','O'],['성희롱 예방교육','O','O','O','O'],['장애인 인식개선교육','O','O','O','O'],['개인정보 보호 교육','O','O','O','O'],['퇴직연금 가입 사업장 → 교육','O','O','O','O'],['제조업 → 산업안전보건 교육','X','O','O','O'],['직장 내 괴롭힘 예방교육','X','O','O','O'],['취업규칙 신고','X','X','O','O'],['노사협의회 설치','X','X','X','O'],['고충처리위원회 설치','X','X','X','O']];
+function gtTable(small){
+  const th='style="border:1px solid #333;padding:5px;background:#e8eef6;text-align:center"',td='style="border:1px solid #333;padding:5px;text-align:center"';
+  let h='<table style="border-collapse:collapse;width:100%;font-size:11.5px;margin:6px 0"><tr><th '+th+'>구분</th><th '+th+'>5인 미만</th><th '+th+'>5인 이상</th><th '+th+'>10인 이상</th><th '+th+'>30인 이상</th></tr>';
+  GT.forEach(r=>{h+='<tr><td '+td+'>'+esc(r[0])+'</td>'+(r.length===2?'<td '+td+' colspan="4">'+esc(r[1])+'</td>':r.slice(1).map((c,i)=>'<td '+td+(((small&&i===0)||(!small&&i>0&&false))?' ':'')+'>'+esc(c)+'</td>').join(''))+'</tr>';});
+  return h+'</table>';
+}
 function guideText(p){
   const nm=(p.name||'').trim();
   const small=p.small==='y';
@@ -1457,29 +1519,23 @@ function guideText(p){
     L.push(small?'   30일 전에 예고하거나 30일분 통상임금을 지급합니다. (근로기준법 제26조) 해고를 결정하기 전에 먼저 사무소와 상의해 주세요.':'   정당한 이유가 있어야 하고, 30일 전에 예고하거나 30일분 통상임금을 지급합니다. 해고 사유는 서면으로 통지합니다. (근로기준법 제26조·제27조) 해고를 결정하기 전에 먼저 사무소와 상의해 주세요.');
   }
   L.push('');
-  L.push('■ 참고. 상시근로자 수별 노동법 적용');
+  L.push('■ 참고. 상시근로자수 별 노동법 적용 범위');
   L.push('');
   L.push('귀 사업장: '+(small?'상시근로자 5명 미만':'상시근로자 5명 이상'));
-  L.push('상시근로자 수는 판단일 전날부터 거슬러 1개월간 (일별 근로자 수 합계 ÷ 가동일수)로 계산하며, 5명 이상인 날이 절반 이상이면 5명 이상 사업장으로 봅니다.');
+  L.push('상시근로자 수는 다음 중 하나로 판단합니다.');
+  L.push('ⓐ 판단일 전날부터 소급해서 1개월간 (일별 근로자 인원 합 ÷ 가동일수)');
+  L.push('ⓑ 판단일 전날부터 소급해서 1개월간 일자별 근로자 수를 파악했을 때 5인 이상인 날이 50% 이상 → 5인 이상');
   L.push('');
-  L.push('[규모와 관계없이 적용]');
-  L.push('· 근로계약서 작성·교부, 임금명세서 교부, 주휴일, 최저임금, 퇴직급여제도(4명 이하도 2010.12.1.부터 적용, 1년·주 15시간 이상), 해고예고(30일 전 또는 30일분 수당), 출산휴가·육아휴직, 4대보험 신고');
-  L.push('· 성희롱 예방교육, 개인정보 보호교육(개인정보 취급자), 장애인 인식개선교육, 퇴직연금 가입 사업장의 퇴직연금교육');
-  L.push('· 수습기간: 근로계약 1년 이상, 단순노무직 제외 시 최대 3개월 설정 가능. 수습 3개월 이내 해고는 해고예고수당 대상이 아니고, 3개월이 지난 뒤 해고하면 해고일을 적어 30일 전에 서면 통지(미통지 시 30일분 수당)');
+  L.push('@@T1@@');
+  GT.forEach(r=>{
+    if(r.length===2)L.push('· '+r[0]+' : '+r[1]);
+    else L.push('· '+r[0]+' : 5인 미만 '+r[1]+' / 5인 이상 '+r[2]+' / 10인 이상 '+r[3]+' / 30인 이상 '+r[4]);
+  });
+  L.push('@@T2@@');
   L.push('');
-  L.push('[5명 이상 사업장부터 적용 (5명 미만은 적용 안 됨)]');
-  L.push('· 법정근로시간(주 40시간) 및 연장근로 한도');
-  L.push('· 연장·야간·휴일근로 50% 가산수당');
-  L.push('· 연차유급휴가, 생리휴가');
-  L.push('· 해고의 정당한 이유 제한, 부당해고 구제신청');
-  L.push('· 제조업 등 산업안전보건 교육');
-  L.push('· 중대재해처벌법(5명 미만 사업장의 사업주는 제외)');
+  L.push('기타: 중대재해처벌법은 5명 이상 사업장에 적용(5명 미만 사업장의 사업주 제외), 퇴직급여제도는 4명 이하 사업장도 적용, 50명 이상은 장애인 의무고용(2026년 민간 3.1%)이 추가됩니다.');
   L.push('');
-  L.push('[10명 이상] 취업규칙 작성·고용노동부 신고');
-  L.push('[30명 이상] 노사협의회·고충처리위원회 설치(근로자참여 및 협력증진에 관한 법률 제4조)');
-  L.push('[50명 이상] 장애인 의무고용(2026년 민간 3.1%), 연 1회 장애인 인식개선교육 결과 보고');
-  L.push('');
-  L.push('※ 위 구분은 대표님 이해를 돕기 위한 요약이며, 실제 적용은 개별 조항과 업종에 따라 다릅니다.');
+  L.push('※ 복잡한 법을 대표님이 보시기 편하게 O, X로 간단히 표시했습니다. 실제 법 적용은 O, X가 아니므로 참고용으로만 보시기 바랍니다. 노동법·근로기준법 적용은 고용노동부와 노무사의 영역입니다.');
   L.push('');
   L.push('※ 업종, 근로시간(단시간·일용 등), 외국인 여부에 따라 달라질 수 있습니다. 개별 사안은 문의해 주세요.');
   L.push('');
@@ -1487,12 +1543,13 @@ function guideText(p){
   return L.join('\n');
 }
 function renderGuide(){
-  const t=guideText({name:val('g_name'),small:val('g_small'),scope:val('g_scope')});
+  const t0=guideText({name:val('g_name'),small:val('g_small'),scope:val('g_scope')});
+  const t=t0.replace(/@@T1@@\n[\s\S]*?@@T2@@\n?/,m=>m.replace(/@@T[12]@@\n?/g,''));
   $('g_msg').textContent=t;
   const nm=(val('g_name')||'').trim();
   const dt=new Date();const ds=dt.getFullYear()+'.'+(dt.getMonth()+1)+'.'+dt.getDate()+'.';
   const dv=document.createElement('div');dv.textContent=t;
-  $('g_doc').innerHTML='<div style="font-family:inherit;color:#111"><div style="border-bottom:2px solid #1b3a5c;padding-bottom:8px;margin-bottom:14px"><div style="font-size:11px;color:#555">원제우세무사사무소 · 노무 업무 안내</div><div style="font-size:20px;font-weight:700;margin-top:4px">직원 입사 · 근무 · 퇴사 업무 안내</div><div style="font-size:11px;color:#555;margin-top:4px">'+(nm?esc(nm)+' · ':'')+'작성일 '+ds+'</div></div><div style="white-space:pre-wrap;font-size:12px;line-height:1.85">'+esc(t)+'</div><div style="border-top:1px solid #999;margin-top:18px;padding-top:8px;font-size:10.5px;color:#444;line-height:1.6">원제우세무사사무소 · 세무사 · 경기도 부천시 소향로 135, 3층 · 032-321-4521 · taxmancall.com<br>본 안내는 일반적인 법령 요약이며, 업종·근로형태에 따라 달라질 수 있습니다.</div></div>';
+  $('g_doc').innerHTML='<div style="font-family:inherit;color:#111"><div style="border-bottom:2px solid #1b3a5c;padding-bottom:8px;margin-bottom:14px"><div style="font-size:11px;color:#555">원제우세무사사무소 · 노무 업무 안내</div><div style="font-size:20px;font-weight:700;margin-top:4px">직원 입사 · 근무 · 퇴사 업무 안내</div><div style="font-size:11px;color:#555;margin-top:4px">'+(nm?esc(nm)+' · ':'')+'작성일 '+ds+'</div></div>'+(function(){const m=t0.match(/^([\s\S]*?)@@T1@@\n[\s\S]*?@@T2@@\n?([\s\S]*)$/);const st='white-space:pre-wrap;font-size:12px;line-height:1.85';if(!m)return '<div style="'+st+'">'+esc(t0)+'</div>';return '<div style="'+st+'">'+esc(m[1])+'</div>'+gtTable(val('g_small')==='y')+'<div style="'+st+'">'+esc(m[2])+'</div>';})()+'<div style="border-top:1px solid #999;margin-top:18px;padding-top:8px;font-size:10.5px;color:#444;line-height:1.6">원제우세무사사무소 · 세무사 · 경기도 부천시 소향로 135, 3층 · 032-321-4521 · taxmancall.com<br>본 안내는 일반적인 법령 요약이며, 업종·근로형태에 따라 달라질 수 있습니다.</div></div>';
 }
 function renderFin(){
   const can=val('f_can')==='y',bank=val('f_bank')||'금융기관';
