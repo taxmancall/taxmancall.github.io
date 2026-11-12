@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.7</title>
+<title>노무 통합 대시보드 v2.8</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.7</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.8</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -1005,6 +1005,52 @@ function renderBasis(){
   $('b_out').innerHTML=h;
 }
 
+
+// ----- 피부양자 빠른 판정 (질문 흐름) -----
+let DFLOW=[];
+function dflowNext(a){
+  // a: 지금까지의 답 배열. 반환 {q, opts} 또는 {end, ok, msg}
+  const n=a.length;
+  const biz=a[0];
+  if(n===0)return {q:'① 사업소득이 있나요?',opts:['예','아니오']};
+  if(biz==='예'){
+    if(n===1)return {q:'② 사업자등록이 있나요?',opts:['예','아니오']};
+    const reg=a[1];
+    if(n===2&&reg==='예')return {q:'③ 장애인·국가유공자 등 예외 대상인가요?',opts:['예','아니오']};
+    const sp=reg==='예'?a[2]:null;
+    if(reg==='예'&&sp==='아니오')return {end:true,ok:false,msg:'사업자등록이 있는 사업소득은 1원이라도 있으면 피부양자 자격이 인정되지 않습니다.'};
+    const k=reg==='예'?3:2;
+    if(n===k)return {q:'④ 사업소득이 연 500만원 이하인가요?',opts:['예','아니오']};
+    if(a[k]==='아니오')return {end:true,ok:false,msg:'사업소득이 연 500만원을 넘으면 인정되지 않습니다.'};
+    return dflowTail(a,k+1);
+  }
+  return dflowTail(a,1);
+}
+function dflowTail(a,i){
+  const n=a.length;
+  if(n===i)return {q:'⑤ 모든 소득 합산(이자·배당·근로·연금·사업·기타)이 연 2,000만원 이하인가요?',opts:['예','아니오']};
+  if(a[i]==='아니오')return {end:true,ok:false,msg:'연간 합산소득이 2,000만원을 넘으면 인정되지 않습니다.'};
+  if(n===i+1)return {q:'⑥ 재산세 과세표준 합계는 얼마인가요?',opts:['5.4억원 이하','5.4억 초과 ~ 9억 이하','9억 초과']};
+  const pr=a[i+1];
+  if(pr==='9억 초과')return {end:true,ok:false,msg:'재산세 과세표준 9억원 초과는 소득과 관계없이 인정되지 않습니다.'};
+  if(pr==='5.4억원 이하')return {end:true,ok:true,msg:'소득·재산 요건을 충족합니다.'};
+  if(n===i+2)return {q:'⑦ 연 소득이 1,000만원 이하인가요?',opts:['예','아니오']};
+  if(a[i+2]==='예')return {end:true,ok:true,msg:'재산 5.4억~9억 구간이지만 소득 1,000만원 이하라 소득·재산 요건을 충족합니다.'};
+  return {end:true,ok:false,msg:'재산세 과세표준 5.4억~9억 구간은 소득이 연 1,000만원 이하여야 인정됩니다.'};
+}
+function renderDflow(){
+  const r=dflowNext(DFLOW);
+  let h='';
+  if(DFLOW.length)h+='<div class="sm">선택: '+DFLOW.map(x=>esc(x)).join(' → ')+'</div>';
+  if(r.end){
+    h+='<div class="res" style="border-left:4px solid '+(r.ok?'#1a7f37':'#b3261e')+'"><b>'+(r.ok?'소득·재산 요건 충족':'요건 미충족')+'</b><p>'+r.msg+'</p>'+(r.ok?'<p class="sm">부양관계(부양요건)·형제자매 등은 아래 도표와 공단 안내로 별도 확인하세요.</p>':'')+'</div>';
+  } else {
+    h+='<p><b>'+r.q+'</b></p><div class="chips">'+r.opts.map(o=>'<button class="btn" data-df="'+esc(o)+'">'+esc(o)+'</button>').join(' ')+'</div>';
+  }
+  h+='<p><button class="btn" id="d_flow_back"'+(DFLOW.length?'':' disabled')+'>이전</button> <button class="btn" id="d_flow_reset">처음부터</button></p>';
+  $('d_flow').innerHTML=h;
+}
+
 // ----- 사업장·EDI -----
 function buildOffice(){
   $('office').innerHTML='<div class="card"><h2>신규 사업장 개설 · 이관 EDI 위임/해임 신청서</h2><div class="grid">'+
@@ -1043,6 +1089,7 @@ function buildDep(){
   F('d_prop','재산세 과세표준 합계(원)',{type:'number',hint:'토지·건축물·주택 등 재산에 대한 재산세 과세표준의 합'})+
   '</div><div id="d_out"></div><button class="btn" data-copy="d_out">결과 복사</button>'+
   BS('국민건강보험법 제5조 제2항(피부양자는 직장가입자의 배우자, 직계존속(배우자의 직계존속 포함), 직계비속(배우자의 직계비속 포함)과 그 배우자, 형제·자매 중 직장가입자에게 주로 생계를 의존하고 소득·재산이 기준 이하인 사람), 같은 법 시행규칙 제2조 제1항(부양요건 별표 1과 소득·재산요건 별표 1의2를 모두 충족), 별표 1의2(소득 연 2천만원 이하, 사업소득 없을 것(예외 연 500만원 이하), 재산세 과세표준 5억 4천만원 이하 또는 5억 4천만원 초과 9억원 이하이면서 소득 연 1천만원 이하, 기혼자는 부부 모두 충족).','시행규칙 별표 1 부양요건 세부(동거·비동거, 형제·자매, 직계비속의 소득 유무), 형제·자매의 재산요건, 사업소득 예외 중 주택임대소득 처리, 소득 산정 자료(영 제41조), 시행규칙 2026.9.28. 개정 반영 여부. 별표는 공단 자격 판단이 우선하므로 최종은 공단 확인이 필요합니다.')+'</div>'+
+  '<div class="card"><h2>피부양자 빠른 판정 (질문 순서대로 누르세요)</h2><div id="d_flow"></div></div>'+
   '<div class="card"><h2>피부양자 자격 요건 도표</h2><table><tr><th>구분</th><th>기준</th><th>비고</th></tr>'+
   '<tr><td rowspan="3">소득요건</td><td>연간 합산소득 2,000만원 이하</td><td>이자·배당·사업·근로·연금·기타소득 합산 <span class="b ok">확인</span></td></tr>'+
   '<tr><td>사업소득(사업자등록 있음)</td><td>1원이라도 있으면 상실 (장애인·국가유공자 등 예외는 연 500만원 이하) <span class="b chk">재확인</span></td></tr>'+
@@ -1098,6 +1145,11 @@ function show(id){
   document.querySelectorAll('#hire input,#hire select').forEach(e=>e.addEventListener('input',renderHire));
   $('h_year').addEventListener('change',()=>{setRates();renderHire();});
   document.querySelectorAll('#dep input,#dep select').forEach(e=>e.addEventListener('input',renderDep));
+  $('d_flow').addEventListener('click',ev=>{const t=ev.target;
+    if(t.dataset&&t.dataset.df!==undefined){DFLOW.push(t.dataset.df);renderDflow();}
+    else if(t.id==='d_flow_back'){DFLOW.pop();renderDflow();}
+    else if(t.id==='d_flow_reset'){DFLOW=[];renderDflow();}});
+  renderDflow();
   document.querySelectorAll('#exit input,#exit select').forEach(e=>e.addEventListener('input',renderExit));
   document.querySelectorAll('#mid input,#mid select').forEach(e=>e.addEventListener('input',renderMid));
   document.querySelectorAll('#basis input,#basis select').forEach(e=>e.addEventListener('input',renderBasis));
