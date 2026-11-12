@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.33</title>
+<title>노무 통합 대시보드 v2.34</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -75,11 +75,12 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 .flow .st a{display:block;font-size:13.5px;color:var(--ink);text-decoration:none;padding:3px 0;border-bottom:1px dashed var(--gb)}
 .flow .st a:last-child{border-bottom:0}
 .flow .st a:hover{color:var(--g);font-weight:700}
+.res.irp .row{padding:9px 0;line-height:1.7}.res.irp .big{margin-bottom:6px}
 </style>
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.33</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.34</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -790,7 +791,7 @@ function renderSev(){
     const t=$('s_type').value, amtIn=num('s_amt');
     const amt=amtIn>0?amtIn:(t==='sev'?((r&&r.sev)||0):0);
     const q=irpRule({type:t,age:num('s_age'),amt:amt,ex:$('s_ex').value});
-    let g='<div class="res"><div class="big">'+(q.must&&amt<=0?'퇴직급여액을 입력하면 판정합니다':q.must?'IRP 이전 지급 의무 있음':'IRP 이전 예외 해당 (직접 지급 가능)')+'</div>'+
+    let g='<div class="res irp"><div class="big">'+(q.must&&amt<=0?'퇴직급여액을 입력하면 판정합니다':q.must?'IRP 이전 지급 의무 있음':'IRP 이전 예외 해당 (직접 지급 가능)')+'</div>'+
       row('① 제도',q.tn)+row('② 퇴직 시 만 나이',q.age+'세')+row('③ 퇴직급여액',amt>0?W(amt):'미입력')+
       row('④ 판정',q.must&&amt<=0?'금액 미입력':q.must?'55세 미만이고 300만원 초과 → 근로자가 지정한 IRP 계정으로 이전해 지급':'예외: '+q.ex.join(' / '));
     if(amt<=0)g+=row('⑤ 안내',(t==='sev'?'퇴직급여액이 비어 있습니다. 위 법정 퇴직금 계산 결과가 나오거나 금액을 직접 입력하세요.':'DB·DC는 퇴직연금 적립금(지급할 급여액)을 위 칸에 직접 입력하세요. 법정 퇴직금 계산 결과와 다를 수 있어 자동 반영하지 않습니다.'));
@@ -1497,6 +1498,7 @@ function copyText(el){
   if(el.id==='h_sum'){for(let i=out.length-1;i>=1;i--){if(/^(①|②|③|④)/.test(out[i]))out.splice(i,0,'');}}
   if(el.id==='h_sum')out.push('');
   if(el.id==='h_sum')out.push('※ 퇴직금은 월 지급총액 기준 근사치(연차수당·상여·임금인상 미반영), 월 조건 12개월 동일 가정');
+  if(el.id==='s_irp'){const o2=out.map(x=>x.replace(/^\n+/,'')).filter(Boolean);const i=o2.findIndex(x=>/^\[참고\]/.test(x));let t=o2.join('\n\n');if(i>0)t=o2.slice(0,i).join('\n\n')+'\n\n──────────\n\n'+o2.slice(i).join('\n\n');return t.replace(/\n{3,}/g,'\n\n').trim();}
   const res=out.join('\n').replace(/^\n+/,'').replace(/\n{3,}/g,'\n\n');
   return res.trim()?res:(el.innerText||el.textContent||'').trim();
 }
