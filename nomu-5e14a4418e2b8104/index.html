@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.12</title>
+<title>노무 통합 대시보드 v2.14</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.12</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.14</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -625,7 +625,7 @@ function calcRelJ(p){
 // ---------- UI ----------
 const $=id=>document.getElementById(id);
 const W=n=>Math.round(n).toLocaleString('ko-KR')+'원';
-const num=id=>{const v=parseFloat($(id).value);return isNaN(v)?0:v;};
+const num=id=>{const v=parseFloat(String($(id).value).replace(/,/g,''));return isNaN(v)?0:v;};
 const row=(a,b)=>'<div class="row"><span>'+a+'</span><b>'+b+'</b></div>';
 const err=m=>'<div class="err">'+m+'</div>';
 const na=m=>'<div class="na">'+m+'</div>';
@@ -773,7 +773,7 @@ function setRates(){const y=RATES[val('h_year')];$('h_pen').value=y.pen;$('h_hea
 function renderHire(){
   const hd=pd(val('h_hire'));
   const p={mode:val('h_mode'),amount:num('h_amt'),weekH:num('h_week'),size5:val('h_size')==='1',allow:num('h_allow'),meal:num('h_meal'),otH:num('h_ot'),nightH:num('h_night'),hol8:num('h_hol8'),holOver:num('h_holo'),hire:hd,method:val('h_method'),minWage:minWageFor(hd),
-    rates:{pen:num('h_pen'),penMin:num('h_penmin'),penMax:num('h_penmax'),hea:num('h_hea'),care:num('h_care'),emp:num('h_emp'),stab:parseFloat(val('h_stab')),ind:num('h_ind')}};
+    rates:{pen:num('h_pen'),penMin:num('h_penmin'),penMax:num('h_penmax'),hea:num('h_hea'),care:num('h_care'),emp:num('h_emp'),stab:parseFloat(String(val('h_stab')).replace(/,/g,'')),ind:num('h_ind')}};
   const r=calcHire(p);
   if(r.err){$('h_out').innerHTML=na(r.err);return;}
   let h='<div class="res"><div class="big">통상시급 '+W(r.hourly)+'</div>'+
@@ -1167,26 +1167,34 @@ function buildOffice(){
   F('o_co','사업장명',{})+F('o_biz','사업자등록번호',{ph:'000-00-00000'})+F('o_ceo','대표자',{})+F('o_addr','사업장 소재지',{})+F('o_tel','연락처',{})+
   F('o_nh','건강보험 사업장관리번호',{})+F('o_np','국민연금 사업장관리번호',{})+F('o_ei','고용·산재 사업장관리번호',{})+
   F('o_office','대행기관(세무사사무소)',{value:'원제우세무사사무소'})+F('o_oname','대행기관 대표',{})+F('o_prev','종전 대행기관(이관 시)',{})+F('o_date','작성일',{type:'date'})+
-  '</div><h3>위임·해임 범위</h3><div class="chips"><label><input type="checkbox" id="o_s1" checked>사업장 성립·변경·소멸 신고</label><label><input type="checkbox" id="o_s2" checked>가입자 자격 취득·상실 신고</label><label><input type="checkbox" id="o_s3" checked>보수월액·소득 변경 신고</label><label><input type="checkbox" id="o_s4" checked>보수총액·근로내용 확인 신고</label><label><input type="checkbox" id="o_s5" checked>보험료 고지·납부 내역 조회</label></div>'+
-  '<h3>대상 보험</h3><div class="chips"><label><input type="checkbox" id="o_i1" checked>건강보험</label><label><input type="checkbox" id="o_i2" checked>국민연금</label><label><input type="checkbox" id="o_i3" checked>고용보험</label><label><input type="checkbox" id="o_i4" checked>산재보험</label></div>'+
-  '<div class="warn">이 문서는 사무소 내부·거래처 확인용 양식입니다. 공단 공식 서식이 아니며, 실제 위임 등록·해지는 각 EDI(건강보험 EDI, 국민연금 EDI, 4대사회보험 정보연계센터, 근로복지공단 토탈서비스)의 대행기관 등록·해지 절차에서 이뤄져야 효력이 있습니다. 필요한 공식 서식과 절차는 각 사이트에서 확인하세요(원문 재확인). 신규 사업장은 근로자를 고용한 때부터 14일 이내 성립신고가 필요합니다(관련 법령 재확인).</div>'+
-  '<button class="btn" id="o_pdf">PDF로 저장(인쇄 창 → PDF로 저장)</button></div><div class="card"><h2>미리보기</h2><div id="o_out"></div></div>';
+  '</div>'+
+  '<h3>작성할 기관별 양식 (기관마다 서식·절차가 달라 각각 따로 출력)</h3><div class="chips"><label><input type="checkbox" id="o_i1" checked>건강보험</label><label><input type="checkbox" id="o_i2" checked>국민연금</label><label><input type="checkbox" id="o_i3" checked>고용·산재보험(근로복지공단·4대사회보험 정보연계센터)</label></div>'+
+  '<div class="warn">EDI 위임(대행기관 등록·해지)은 건강보험·국민연금·고용산재가 각각 별도 시스템·절차이고 양식도 다릅니다. 아래 출력물은 기관별로 나눈 사무소 내부·거래처 확인용 양식이며 공단 공식 서식이 아닙니다. 실제 효력은 각 기관 EDI의 대행기관 등록·해지 절차에서 발생하므로 기관별 현행 서식·구비서류는 각 사이트에서 확인해야 합니다(이번 조회에서 서식 원문은 열람하지 못함).</div>'+
+  '<button class="btn" id="o_pdf">전체 PDF로 저장(기관별 페이지 분리)</button> <span class="sm">기관별 PDF는 미리보기의 각 버튼 사용 · 인쇄 창에서 “PDF로 저장” 후 해당 기관 팩스번호로 전송</span></div><div class="card"><h2>미리보기</h2><div id="o_out"></div></div>';
 }
 function renderOffice(){
   const k=val('o_kind');
-  const T={new:'4대보험 사업장 성립 및 EDI 위임 신청서',in:'4대보험 EDI 위임 신청서(이관)',out:'4대보험 EDI 해임 신청서(이관)'}[k];
-  const sc=[1,2,3,4,5].filter(i=>chk('o_s'+i)).map(i=>({1:'사업장 성립·변경·소멸 신고',2:'가입자 자격 취득·상실 신고',3:'보수월액·소득 변경 신고',4:'보수총액·근로내용 확인 신고',5:'보험료 고지·납부 내역 조회'}[i]));
-  const ins=[1,2,3,4].filter(i=>chk('o_i'+i)).map(i=>({1:'건강보험',2:'국민연금',3:'고용보험',4:'산재보험'}[i]));
   const R=(a,b)=>'<tr><th>'+a+'</th><td>'+(esc(b)||'&nbsp;')+'</td></tr>';
-  let h='<div class="doc"><h1>'+T+'</h1><table>'+R('사업장명',val('o_co'))+R('사업자등록번호',val('o_biz'))+R('대표자',val('o_ceo'))+R('소재지',val('o_addr'))+R('연락처',val('o_tel'))+R('건강보험 관리번호',val('o_nh'))+R('국민연금 관리번호',val('o_np'))+R('고용·산재 관리번호',val('o_ei'))+R('대상 보험',ins.join(', '))+
-   (k==='out'?R('해임(위임 해지) 대상 대행기관',val('o_office')):R('위임받는 대행기관',val('o_office')+(val('o_oname')?' / 대표 '+val('o_oname'):'')))+
-   (k==='in'?R('종전 대행기관(해임 대상)',val('o_prev')):'')+
-   '<tr><th>'+(k==='out'?'해임 범위':'위임 범위')+'</th><td>'+(sc.map(x=>'- '+x).join('<br>')||'&nbsp;')+'</td></tr></table>';
-  if(k==='new')h+='<p>위 사업장은 근로자 고용에 따라 4대보험 사업장 성립신고를 하며, 신고와 관련한 EDI 업무를 위 대행기관에 위임합니다.</p>';
-  if(k==='in')h+='<p>위 사업장은 4대보험 신고 업무 대행기관을 위와 같이 변경하며, 위 대행기관에 EDI 업무를 위임합니다. 종전 대행기관의 위임은 이 신청일부터 해지합니다.</p>';
-  if(k==='out')h+='<p>위 사업장은 위 대행기관에 위임한 4대보험 EDI 업무를 이 신청일부터 해임(해지)합니다. 해임일 이후 신고·조회 권한은 종료되며, 해임 전 접수된 신고의 처리와 자료 인계는 상호 협의에 따릅니다.</p>';
-  h+='<p style="text-align:center;margin-top:14px">'+dstr(val('o_date'))+'</p><div class="sign"><div><b>사업주</b><br>사업장명: '+esc(val('o_co'))+'<br>대표자: '+esc(val('o_ceo'))+' (인)</div><div><b>'+(k==='out'?'종전 대행기관':'대행기관')+'</b><br>'+esc(val('o_office'))+'<br>대표: '+esc(val('o_oname'))+' (인)</div></div></div>';
-  $('o_out').innerHTML=h;
+  const G=[
+   {on:'o_i1',name:'건강보험',sys:'건강보험 EDI',no:'건강보험 사업장관리번호',nv:'o_nh',sc:['사업장 적용·변경·탈퇴 신고','직장가입자 자격 취득·상실 신고','보수월액 변경 신고','보수총액 신고(연말 정산)','보험료 고지·납부 내역 조회']},
+   {on:'o_i2',name:'국민연금',sys:'국민연금 EDI',no:'국민연금 사업장관리번호',nv:'o_np',sc:['사업장 가입·변경·탈퇴 신고','사업장가입자 자격 취득·상실 신고','기준소득월액 변경 신고','보험료 고지·납부 내역 조회']},
+   {on:'o_i3',name:'고용·산재보험',sys:'4대사회보험 정보연계센터·근로복지공단 토탈서비스',no:'고용·산재 사업장관리번호',nv:'o_ei',sc:['보험관계 성립·변경·소멸 신고','고용보험 피보험자격 취득·상실 신고','근로내용 확인 신고(월별 보수·근로시간)','보수총액(개산·확정) 신고','보험료 고지·납부 내역 조회']}
+  ].filter(g=>chk(g.on));
+  const verb=k==='out'?'해임':'위임';
+  let h='';
+  G.forEach((g,i)=>{
+    const T={new:g.name+' 사업장 성립 및 EDI 위임 신청서',in:g.name+' EDI 위임 신청서(이관)',out:g.name+' EDI 해임 신청서(이관)'}[k];
+    h+='<div class="noprint" style="margin:10px 0 4px"><button class="btn" data-opdf="o_doc'+i+'">'+g.name+' 양식만 PDF 저장 (팩스 전송용)</button></div><div id="o_doc'+i+'"><div class="doc"><h1>'+T+'</h1><table>'+R('사업장명',val('o_co'))+R('사업자등록번호',val('o_biz'))+R('대표자',val('o_ceo'))+R('소재지',val('o_addr'))+R('연락처',val('o_tel'))+R(g.no,val(g.nv))+R('신고 시스템',g.sys)+
+     (k==='out'?R('해임(위임 해지) 대상 대행기관',val('o_office')):R('위임받는 대행기관',val('o_office')+(val('o_oname')?' / 대표 '+val('o_oname'):'')))+
+     (k==='in'?R('종전 대행기관(해임 대상)',val('o_prev')):'')+
+     '<tr><th>'+verb+' 범위</th><td>'+g.sc.map(x=>'- '+x).join('<br>')+'</td></tr></table>';
+    if(k==='new')h+='<p>위 사업장은 근로자 고용에 따라 '+g.name+' 사업장 성립신고를 하며, 신고와 관련한 EDI 업무를 위 대행기관에 위임합니다.</p>';
+    if(k==='in')h+='<p>위 사업장은 '+g.name+' 신고 업무 대행기관을 위와 같이 변경하며, 위 대행기관에 EDI 업무를 위임합니다. 종전 대행기관의 위임은 이 신청일부터 해지합니다.</p>';
+    if(k==='out')h+='<p>위 사업장은 위 대행기관에 위임한 '+g.name+' EDI 업무를 이 신청일부터 해임(해지)합니다. 해임일 이후 신고·조회 권한은 종료되며, 해임 전 접수된 신고의 처리와 자료 인계는 상호 협의에 따릅니다.</p>';
+    h+='<p style="text-align:center;margin-top:14px">'+dstr(val('o_date'))+'</p><div class="sign"><div><b>사업주</b><br>사업장명: '+esc(val('o_co'))+'<br>대표자: '+esc(val('o_ceo'))+' (인)</div><div><b>'+(k==='out'?'종전 대행기관':'대행기관')+'</b><br>'+esc(val('o_office'))+'<br>대표: '+esc(val('o_oname'))+' (인)</div></div></div></div>';
+  });
+  $('o_out').innerHTML=h||'<p class="sm">작성할 기관을 하나 이상 선택하세요.</p>';
+  $('o_out').querySelectorAll('[data-opdf]').forEach(b=>b.onclick=()=>printDoc(b.dataset.opdf));
 }
 
 function buildDep(){
@@ -1262,12 +1270,39 @@ function show(id){
   try{if(location.hash.slice(1)!==id)location.hash=id;}catch(e){}
   window.scrollTo(0,0);
 }
+
+// ----- 숫자 입력 천 단위 쉼표 -----
+function fmtNumStr(v){
+  v=String(v).replace(/[^0-9.\-]/g,'');
+  const neg=v.charAt(0)==='-';v=v.replace(/-/g,'');
+  const i=v.indexOf('.');
+  let a=i<0?v:v.slice(0,i),b=i<0?'':v.slice(i+1).replace(/\./g,'');
+  a=a.replace(/^0+(?=\d)/,'').replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return (neg?'-':'')+a+(i<0?'':'.'+b);
+}
+function fmtInput(t){
+  const old=t.value;if(old===''){return;}
+  let pos=t.selectionStart,digitsLeft=0;
+  if(pos!=null)digitsLeft=old.slice(0,pos).replace(/[^0-9.\-]/g,'').length;
+  const nv=fmtNumStr(old);
+  if(nv!==old){
+    t.value=nv;
+    if(pos!=null){let c=0,k=0;while(k<nv.length&&c<digitsLeft){if(/[0-9.\-]/.test(nv.charAt(k)))c++;k++;}try{t.setSelectionRange(k,k);}catch(e){}}
+  }
+}
+function numPrep(){
+  document.querySelectorAll('input[type="number"]').forEach(e=>{e.type='text';e.setAttribute('inputmode','decimal');e.dataset.num='1';e.removeAttribute('min');e.removeAttribute('step');});
+}
+function formatAll(){document.querySelectorAll('input[data-num]').forEach(e=>{if(e.value!=='')e.value=fmtNumStr(e.value);});}
+document.addEventListener('input',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.num)fmtInput(t);},true);
+document.addEventListener('change',()=>{formatAll();});
 (function init(){
   const nav=$('tabs');
   let lg='';TABS.forEach(t=>{if(t[2]&&t[2]!==lg){lg=t[2];const g=document.createElement('span');g.className='grp';g.textContent=lg;nav.appendChild(g);}const b=document.createElement('button');b.textContent=t[1];b.dataset.id=t[0];b.onclick=()=>show(t[0]);nav.appendChild(b);});
   window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
   const today=fd(new Date());
   buildHire();buildDep();buildWork();buildExit();buildMid();buildBasis();buildScale();buildDocs();buildContract();buildOffice();
+  numPrep();
   setRates();
   document.querySelectorAll('#hire input,#hire select').forEach(e=>e.addEventListener('input',renderHire));
   $('h_year').addEventListener('change',()=>{setRates();renderHire();});
@@ -1302,6 +1337,7 @@ function show(id){
   }));
   $('u_min').value=minWageFor(null);
   renderLeave();renderUI();renderWage();renderSev();renderHire();renderDep();renderExit();renderMid();renderBasis();renderScale();renderContract();renderOffice();
+  formatAll();
   show(location.hash.slice(1)||'home');
 })();
 </script>
