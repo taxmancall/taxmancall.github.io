@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.30</title>
+<title>노무 통합 대시보드 v2.31</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.30</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.31</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -270,6 +270,21 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
       <span class="b chk">원문 재확인</span>퇴직금 지급기한 14일(퇴직급여법 제9조), 평균임금이 통상임금보다 적을 때 통상임금 적용(근기법 제2조 제2항). DC형·확정급여형의 부담금과 전환은 허브의 퇴직급여·퇴직연금 계산기를 사용하세요.
     </div>
   </div>
+  <div class="card" id="s_irp_card">
+    <h2>퇴직급여 지급 방식 · IRP 이전 의무 (퇴직금제도 · DB · DC)</h2>
+    <div class="grid">
+      <div><label>퇴직급여제도</label><select id="s_type"><option value="sev">퇴직금제도(퇴직연금 미가입)</option><option value="db">DB형 (확정급여형)</option><option value="dc">DC형 (확정기여형)</option></select></div>
+      <div><label>퇴직 시 만 나이</label><input type="number" id="s_age" value="40" step="1"></div>
+      <div><label>퇴직급여액(원)</label><input type="number" id="s_amt" placeholder="비우면 위 계산 결과 사용"></div>
+      <div><label>그 밖의 예외 사유</label><select id="s_ex"><option value="">해당 없음</option><option value="death">근로자 사망</option><option value="abroad">취업 가능 체류자격 외국인이 퇴직 후 출국</option><option value="deduct">다른 법령에서 급여 공제</option><option value="loan">급여 담보대출 상환(DB·DC만)</option></select></div>
+    </div>
+    <div id="s_irp"></div>
+    <button class="btn" data-copy="s_irp">결과 복사</button>
+    <div class="basis">
+      <span class="b ok">확인</span>근로자퇴직급여 보장법 제9조 제2항·제3항(퇴직금은 근로자가 지정한 개인형퇴직연금제도 계정등으로 이전하는 방법으로 지급, 미지정 시 근로자 명의 IRP로 이전), 시행령 제3조의2 제1항(퇴직금제도 이전 예외: 55세 이후 퇴직, 고시 금액 이하, 사망, 외국인 출국, 타 법령 공제), 시행령 제9조(DB·DC 급여 이전 예외: 위 사유 + 담보대출 상환), 고용노동부 고시 제2026-65호(2026.9.1. 발령·시행, 예외 기준 금액 300만원 이하).<br>
+      <span class="b chk">참고</span>법조문은 국가법령정보센터 직접 조회가 막혀 법령 해설 사이트의 조문 게재본으로 대조했습니다. 제출·실무 적용 전 law.go.kr 현행 조문과 고시 부칙(적용 시점: 시행 후 최초로 급여 지급사유가 발생한 경우부터)을 한 번 더 확인하세요. DB·DC의 이전 의무 조항 번호(제17조 제4항, 제20조 제6·7항)는 2차 자료 기준입니다.
+    </div>
+  </div>
 </section>
 
 <!-- 체크리스트 -->
@@ -435,6 +450,21 @@ function calcAvg(p){
   return r;
 }
 
+function irpRule(p){
+  const TH=3000000;
+  const type=p.type||'sev';
+  const amt=+p.amt||0, age=+p.age||0;
+  const tn={sev:'퇴직금제도',db:'DB형 퇴직연금',dc:'DC형 퇴직연금'}[type];
+  const ex=[];
+  if(age>=55)ex.push('55세 이후 퇴직하여 급여를 받는 경우');
+  if(amt>0&&amt<=TH)ex.push('퇴직급여액 300만원 이하(고용노동부 고시 제2026-65호)');
+  if(p.ex==='death')ex.push('근로자 사망');
+  if(p.ex==='abroad')ex.push('취업활동 체류자격 외국인이 퇴직 후 국외 출국');
+  if(p.ex==='deduct')ex.push('다른 법령에서 급여의 전부 또는 일부를 공제하도록 한 경우(남은 금액은 IRP로 이전)');
+  if(p.ex==='loan'){ if(type==='sev')ex.push('※ 담보대출 상환 예외는 DB·DC에만 있음(퇴직금제도에는 해당 없음)'); else ex.push('급여 담보대출 상환(상환액 범위 내에서만, 시행령 제9조 제2호)'); }
+  const valid=ex.filter(x=>x.indexOf('※')!==0);
+  return {type,tn,amt,age,ex:valid,note:ex.filter(x=>x.indexOf('※')===0),must:valid.length===0,TH};
+}
 function calcSev(p){
   const r={};
   if(!p.hire||!p.end){r.err='입사일과 퇴사일을 입력하세요.';return r;}
@@ -756,6 +786,26 @@ function renderSev(){
       row('산식','1일 임금 × 30일 × 재직일수 ÷ 365')+'</div>';
   }
   $('s_out').innerHTML=h;
+  (function(){
+    const t=$('s_type').value, amtIn=num('s_amt');
+    const amt=amtIn>0?amtIn:((r&&r.sev)||0);
+    const q=irpRule({type:t,age:num('s_age'),amt:amt,ex:$('s_ex').value});
+    let g='<div class="res"><div class="big">'+(q.must&&amt<=0?'퇴직급여액을 입력하면 판정합니다':q.must?'IRP 이전 지급 의무 있음':'IRP 이전 예외 해당 (직접 지급 가능)')+'</div>'+
+      row('제도',q.tn)+row('퇴직 시 만 나이',q.age+'세')+row('퇴직급여액',amt>0?W(amt):'미입력')+
+      row('판정',q.must&&amt<=0?'금액 미입력':q.must?'55세 미만이고 300만원 초과 → 근로자가 지정한 IRP 계정으로 이전해 지급':'예외: '+q.ex.join(' / '));
+    if(amt<=0)g+=row('안내','퇴직급여액이 비어 있어 300만원 기준 판정이 빠졌습니다. 위 계산 결과가 나오거나 금액을 직접 입력하세요.');
+    g+='</div>';
+    if(q.note.length)g+=warn(q.note.join(' '));
+    g+='<div class="sm" style="margin-top:8px;line-height:1.7">'+
+      '① 기준: <b>300만원 이하</b>이면 예외(직접 지급 가능), <b>300만원 초과</b>이면 IRP 이전. 만 55세 이후 퇴직이면 금액과 무관하게 예외입니다.<br>'+
+      '② 예외여도 근로자가 원하면 IRP로 이전할 수 있고, 퇴직소득세 이연·연금 수령을 원하면 IRP로 받아야 합니다.<br>'+
+      '③ 근로자가 IRP 계정을 지정하지 않으면 근로자 명의 IRP 계정으로 이전합니다(법 제9조 제3항, 퇴직금제도). 지급기한은 지급사유 발생일부터 14일 이내이며 당사자 합의로 연장할 수 있습니다(법 제9조 제1항).<br>'+
+      (t==='sev'?'④ 퇴직금제도: 사용자가 퇴직 시 평균임금 30일분 × 근속연수 이상을 지급합니다(법 제8조). 퇴직연금 미가입 사업장도 IRP 이전 대상입니다.':
+       t==='db'?'④ DB형: 근로자가 받을 급여 수준이 사전에 정해져 있는 제도(법 제2조 제8호)로, 퇴직 시 급여를 근로자 IRP 계정으로 이전합니다. 적립금 운용 책임은 사용자에게 있습니다.':
+       '④ DC형: 사용자가 부담할 부담금 수준이 사전에 정해져 있는 제도(법 제2조 제9호)로, 적립금은 이미 근로자 계정에 있어 퇴직 시 근로자가 IRP 계정으로 옮기거나 지급받습니다. 마지막 달 부담금·연차수당 반영 여부를 확인하세요.')+
+      '</div>';
+    $('s_irp').innerHTML=g;
+  })();
 }
 
 
@@ -917,7 +967,7 @@ function renderScale(){
 }
 
 const DOCS_IN=[['근로계약서 작성·교부(사본 보관)','근기법 제17조 확인'],['근로자 명부 작성(성명·생년월일·이력 등)','근기법 제41조 확인'],['신분증 사본·이력서','실무'],['통장 사본(급여 입금용)','실무'],['개인정보 수집·이용 동의서','개인정보보호법 재확인'],['주민등록번호(4대보험 취득신고용)','실무'],['소득·세액공제 신고서 및 부양가족 서류(연말정산·간이세액 공제대상 반영)','소득세법 재확인'],['연중 입사자의 종전근무지 근로소득원천징수영수증','소득세법 재확인'],['자격증·경력증명서(수당·경력 반영 시)','실무'],['연소자(18세 미만): 가족관계증명서·친권자 동의서·연령 증명 서류','근기법 제66조 및 시행령 제22조 확인'],['15세 미만: 취직인허증','근기법 제64조 재확인'],['외국인: 외국인등록증·취업 가능 체류자격 확인','출입국관리법 재확인'],['업종별 보건증(식품위생 등)','업종 법령 재확인'],['건강보험 피부양자 자격취득 신고: 피부양자 기준 가족관계증명서(상세) 등 첨부, 직장가입자 취득일부터 90일 이내','시행규칙 제2조 제2·4항 확인'],['4대보험 취득신고(건강 14일, 연금·고용·산재 익월 15일)','고용보험법 시행령 제7조 확인 / 건강·연금 재확인']];
-const DOCS_OUT=[['사직서 또는 합의해지·권고사직 확인서(해고면 해고예고·서면통지)','근기법 제26·27조'],['업무 인수인계서·비품·보안자료 반납 확인','실무'],['급여·퇴직금 정산서(퇴사 후 14일 이내 지급)','근기법 제36조 확인 / 퇴직급여법 제9조 재확인'],['사용증명서(재직증명·경력증명) 요청 시 즉시 교부','근기법 제39조 확인'],['이직확인서(요청 시 10일 이내 발급, 이직사유코드 정확히 기재)','고용보험법 시행규칙 제82조의2 확인'],['4대보험 상실신고(퇴직정산 포함)','고용보험법 시행령 제7조 확인 / 건강·연금 재확인'],['퇴직금: DB·DC는 IRP 계좌로 이전(가입자 지정 계좌)','퇴직급여법 제17조 제4항 확인'],['퇴직소득원천징수영수증·퇴직소득 지급명세서','소득세법 재확인'],['퇴직월 근로소득 정산(연말정산)·근로소득원천징수영수증 교부','소득세법 재확인'],['근로자 명부·근로계약서·임금대장 3년 보존(해고·퇴직일 등부터 기산)','근기법 제42조·시행령 제22조 확인'],['실업급여 수급 안내(고용24 수급자격 신청)','고용보험법 확인']];
+const DOCS_OUT=[['사직서 또는 합의해지·권고사직 확인서(해고면 해고예고·서면통지)','근기법 제26·27조'],['업무 인수인계서·비품·보안자료 반납 확인','실무'],['급여·퇴직금 정산서(퇴사 후 14일 이내 지급)','근기법 제36조 확인 / 퇴직급여법 제9조 재확인'],['사용증명서(재직증명·경력증명) 요청 시 즉시 교부','근기법 제39조 확인'],['이직확인서(요청 시 10일 이내 발급, 이직사유코드 정확히 기재)','고용보험법 시행규칙 제82조의2 확인'],['4대보험 상실신고(퇴직정산 포함)','고용보험법 시행령 제7조 확인 / 건강·연금 재확인'],['퇴직금·DB·DC 급여: 근로자 지정 IRP 계정으로 이전(55세 이후·300만원 이하 등은 예외, 퇴직 탭 판정 참고)','퇴직급여법 제9조 제2·3항, 시행령 제3조의2·제9조 확인'],['퇴직소득원천징수영수증·퇴직소득 지급명세서','소득세법 재확인'],['퇴직월 근로소득 정산(연말정산)·근로소득원천징수영수증 교부','소득세법 재확인'],['근로자 명부·근로계약서·임금대장 3년 보존(해고·퇴직일 등부터 기산)','근기법 제42조·시행령 제22조 확인'],['실업급여 수급 안내(고용24 수급자격 신청)','고용보험법 확인']];
 function docList(a){return '<ul class="chk">'+a.map(x=>'<li><input type="checkbox"><div>'+x[0]+' <span class="hint">'+x[1].replace(/확인/g,function(m,o,s){return m;})+'</span></div></li>').join('')+'</ul>';}
 function buildDocs(){
   $('docs').innerHTML='<div class="card"><h2>입사 시 받을·작성할 서류</h2>'+docList(DOCS_IN)+'</div><div class="card"><h2>퇴사 시 받을·줄 서류</h2>'+docList(DOCS_OUT)+'<div class="basis">각 항목 오른쪽 문구는 근거 조문 또는 확인 필요 표시입니다. 서류는 사업장 사정과 업종에 따라 추가됩니다. 항목의 "재확인"은 law.go.kr 현행 조문을 대조한 뒤 안내하세요.</div></div>';
