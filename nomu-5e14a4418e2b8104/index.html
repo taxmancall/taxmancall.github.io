@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.5</title>
+<title>노무 통합 대시보드 v2.6</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.5</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.6</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -99,6 +99,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
     <a class="tool" href="https://edi.nps.or.kr/" target="_blank" rel="noopener"><b>국민연금 EDI</b><span>취득·상실·소득 신고</span></a>
     <a class="tool" href="https://total.comwel.or.kr/" target="_blank" rel="noopener"><b>근로복지공단 토탈서비스</b><span>고용·산재 신고</span></a>
     <a class="tool" href="https://www.4insure.or.kr/pbiz/main/main.do" target="_blank" rel="noopener"><b>4대사회보험 정보연계센터</b><span>일괄 신고·조회</span></a>
+    <a class="tool" href="https://www.nhis.or.kr/nhis/minwon/wbhapa01000m01.do?mode=view&articleNo=10946887" target="_blank" rel="noopener"><b>피부양자 자격 요건 안내</b><span>건강보험공단 요건 안내</span></a>
     <a class="tool" href="https://www.nhis.or.kr/nhis/index.do" target="_blank" rel="noopener"><b>국민건강보험공단</b><span>보험료·민원</span></a>
     <a class="tool" href="https://www.nhis.or.kr/nhis/minwon/retrieveWkplcHltCtrbCalcuView.do" target="_blank" rel="noopener"><b>건강보험료 계산(사업장)</b><span>공단 모의계산</span></a>
     <a class="tool" href="https://www.law.go.kr/" target="_blank" rel="noopener"><b>국가법령정보센터</b><span>현행 조문 확인</span></a>
@@ -1051,6 +1052,7 @@ function buildDep(){
   '<li><input type="checkbox"><div>공단이 국가 등에서 받은 자료로 확인할 수 있으면 신고서 제출 없이 처리될 수 있음 <span class="b ok">시행규칙 제2조 제4항 단서</span></div></li></ul>'+
   '<div class="basis"><span class="b ok">확인</span>국민건강보험법 시행규칙 제2조 제4항(직장가입자가 별지 제1호서식 신고서에 서류를 첨부해 공단에 제출, 가족관계등록부의 증명서는 주민등록표 등본으로 제1항 요건을 확인할 수 없는 경우만 해당)과 별지 제1호서식 첨부서류. 신고는 직장가입자 자격 취득일 또는 변동일부터 90일 이내가 소급 기준입니다.</div></div>'+
   '<div class="card"><h2>건강보험 바로가기</h2><div class="tools">'+
+  '<a class="tool" href="https://www.nhis.or.kr/nhis/minwon/wbhapa01000m01.do?mode=view&articleNo=10946887" target="_blank" rel="noopener"><b>피부양자 자격 요건 안내 (건강보험공단)</b><span>공단 요건 안내 게시글</span></a>'+
   '<a class="tool" href="https://www.nhis.or.kr/nhis/index.do" target="_blank" rel="noopener"><b>국민건강보험공단</b><span>피부양자 자격·보험료 민원</span></a>'+
   '<a class="tool" href="https://www.nhis.or.kr/nhis/minwon/retrieveWkplcHltCtrbCalcuView.do" target="_blank" rel="noopener"><b>건강보험료 계산(사업장)</b><span>공단 모의계산</span></a>'+
   '<a class="tool" href="https://edi.nhis.or.kr/homeapp/wep/m/retrieveMain.xx" target="_blank" rel="noopener"><b>건강보험 EDI</b><span>피부양자 자격 취득·상실 신고 접수</span></a></div>'+
