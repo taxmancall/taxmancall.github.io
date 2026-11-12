@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>노무 통합 대시보드 v2.4</title>
+<title>노무 통합 대시보드 v2.5</title>
 <style>
 :root{--g:#1f6b4a;--g2:#2f8a63;--gl:#e8f4ee;--gb:#cfe6da;--ink:#1c2a24;--mute:#5d6f66;--line:#d8e3dc;--warn:#b26a00;--warnbg:#fff4e0;--err:#b3261e;--errbg:#fdeceb;--bg:#f6f9f7;--card:#fff}
 *{box-sizing:border-box}
@@ -79,7 +79,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 </head>
 <body>
 <header>
-  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.4</span></h1>
+  <h1>원제우세무사사무소 · 노무 통합 대시보드 <span style="font-weight:600;font-size:13px;opacity:.85">v2.5</span></h1>
   <div class="sub">입사 → 근무 → 퇴사 · 임금/4대보험 · 근로계약서 · 연차 · 실업급여 · 퇴직금 · 상시근로자 · 서류/EDI | 법령 조회 기준일 2026.11.12. (국가법령정보센터)</div>
 </header>
 <nav id="tabs"></nav>
@@ -302,6 +302,7 @@ nav .grp{flex:0 0 auto;align-self:center;font-size:11px;font-weight:800;color:#f
 <section id="work"></section>
 <section id="exit"></section>
 <section id="mid"></section>
+<section id="basis"></section>
 <section id="scale"></section>
 <section id="docs"></section>
 <section id="office"></section>
@@ -540,6 +541,33 @@ function calcDep(p){
   else if(p.prop<=900000000){r.propOk=p.income<=10000000;r.propBand='5.4억원 초과 9억원 이하(소득 연 1천만원 이하 필요)';}
   else {r.propOk=false;r.propBand='9억원 초과';}
   r.ok=r.incomeOk&&r.bizOk&&r.propOk;
+  return r;
+}
+
+function calcBasis(p){
+  const r={};
+  const mh=p.monthH>0?p.monthH:autoMonthH(p.weekH);
+  r.monthH=mh;
+  r.ord=(p.base+p.fixedAllow)/mh;                 // 통상시급
+  r.ordDay=r.ord*p.dayH;                          // 통상일급
+  const bonusM=p.bonusYear*3/12, leaveM=p.leavePayYear*3/12;
+  r.avgRaw=p.days3>0?(p.wage3+bonusM+leaveM)/p.days3:0;  // 평균임금 1일
+  r.avgFloor=r.avgRaw<r.ordDay;
+  r.avg=Math.max(r.avgRaw,r.ordDay);              // 시행령 제2조 ②
+  r.avgMonth=r.avg*30;
+  r.sev=r.avg*30*(p.tenureDays/365);
+  r.otAdd=r.ord*0.5*p.otH; r.otAll=r.ord*1.5*p.otH;
+  r.nightAdd=r.ord*0.5*p.nightH;
+  r.holAll=r.ord*(1.5*Math.min(p.holH,8)+2.0*Math.max(p.holH-8,0));
+  r.leaveOrd=r.ordDay*p.leaveDays;
+  r.leaveAvg=r.avg*p.leaveDays;
+  r.weekHolHours=Math.min(8,p.weekH/5);
+  r.weekHol=r.ord*r.weekHolHours;
+  r.notice=r.ordDay*30;
+  r.idleDay=Math.min(r.avg*0.7,r.ordDay);        // 제46조 단서
+  r.idle=r.idleDay*p.idleDays;
+  r.idle70=r.avg*0.7;
+  r.ui=r.avg*0.6;
   return r;
 }
 // </PURE>
@@ -933,6 +961,49 @@ function printDoc(id){
   try{window.print();}catch(e){done();alert('인쇄 창을 열 수 없습니다. 배포 사이트(taxmancall.com/labor/)에서 사용하세요.');}
 }
 
+
+function buildBasis(){
+  $('basis').innerHTML='<div class="card"><h2>통상시급 · 평균임금 계산과 영향 항목</h2><div class="grid">'+
+  F('b_base','월 기본급(원)',{type:'number',value:2500000})+F('b_fix','통상임금 포함 고정수당(원/월)',{type:'number',value:0})+
+  F('b_wk','주 소정근로시간',{type:'number',value:40,step:0.5})+F('b_dh','1일 소정근로시간',{type:'number',value:8,step:0.5})+F('b_mh','월 소정근로시간(0=자동)',{type:'number',value:0})+
+  F('b_w3','직전 3개월 임금총액(원, 연장수당 등 모두 포함)',{type:'number',value:7800000})+F('b_d3','직전 3개월 총일수',{type:'number',value:92})+
+  F('b_bn','연간 상여금(원, 평균임금 가산용)',{type:'number',value:0})+F('b_lp','전년도 연차수당(원, 평균임금 가산용)',{type:'number',value:0})+
+  F('b_ten','재직일수(퇴직금용)',{type:'number',value:1095})+F('b_ld','미사용 연차일수',{type:'number',value:5,step:0.5})+
+  F('b_ot','월 연장근로(시간)',{type:'number',value:10})+F('b_nt','월 야간근로(시간)',{type:'number',value:0})+F('b_ho','월 휴일근로(시간)',{type:'number',value:0})+F('b_id','휴업일수',{type:'number',value:0})+
+  '</div><div id="b_out"></div></div>'+
+  '<div class="card"><h2>임금 항목별 어느 기준에 들어가는가</h2><table><tr><th>임금 항목</th><th>통상임금</th><th>평균임금</th><th>메모</th></tr>'+
+  '<tr><td>기본급·고정 직무수당</td><td>포함</td><td>포함</td><td>월급제 소정근로시간으로 나눠 통상시급 산정</td></tr>'+
+  '<tr><td>정기상여금(정기·일률·고정)</td><td>포함 가능</td><td>연 상여금 3/12 가산</td><td>통상임금 해당 여부는 판례 확인 <span class="b chk">재확인</span></td></tr>'+
+  '<tr><td>연장·야간·휴일 수당</td><td>제외</td><td>포함(3개월 총액)</td><td>통상임금에 넣으면 수당이 수당을 낳는 구조가 됨</td></tr>'+
+  '<tr><td>연차수당</td><td>제외</td><td>연 지급액 3/12 가산</td><td>시행령 평균임금 산정 항목</td></tr>'+
+  '<tr><td>식대·교통비 등 복리후생 고정급</td><td>일률·고정이면 포함</td><td>포함</td><td>비과세 여부와 통상임금 여부는 별개</td></tr>'+
+  '<tr><td>실비변상 성격(출장비 등)</td><td>제외</td><td>제외 가능</td><td>임금성 여부 개별 판단</td></tr></table></div>'+
+  '<div class="card"><h2>근거</h2><div class="basis">'+
+  '<span class="b ok">확인</span>연장·야간·휴일근로 가산은 통상임금 기준(근기법 제56조), 해고예고수당 30일분은 통상임금(제26조), 휴업수당은 평균임금 100분의 70 이상이며 이 금액이 통상임금을 넘으면 통상임금으로 지급 가능(제46조).<br>'+
+  '<span class="b ok">확인</span>평균임금이 통상임금보다 적으면 통상임금을 평균임금으로 함(근기법 시행령 제2조 제2항).<br>'+
+  '<span class="b chk">원문 재확인</span>연차수당(제60조 제5항: 통상임금 또는 평균임금 중 취업규칙 등에 정한 방법), 퇴직금(퇴직급여법 제8조: 평균임금 30일분 × 계속근로연수), 평균임금 정의(제2조 제1항 제6호)·산입 항목, 주휴수당 산식, 산재보험 휴업급여(평균임금 70%), 구직급여(평균임금 기초일액 60%와 상·하한은 실업급여 탭), 통상임금 범위 판례(정기성·일률성·고정성, 최근 전원합의체 변경 여부).</div></div>';
+}
+function renderBasis(){
+  const p={base:num('b_base'),fixedAllow:num('b_fix'),weekH:num('b_wk'),dayH:num('b_dh'),monthH:num('b_mh'),wage3:num('b_w3'),days3:num('b_d3'),bonusYear:num('b_bn'),leavePayYear:num('b_lp'),tenureDays:num('b_ten'),leaveDays:num('b_ld'),otH:num('b_ot'),nightH:num('b_nt'),holH:num('b_ho'),idleDays:num('b_id')};
+  const r=calcBasis(p);
+  let h='<div class="res"><b>① 기준 금액</b>'+row('월 소정근로시간',r.monthH+'시간')+row('통상시급',W(r.ord))+row('통상일급('+p.dayH+'시간)',W(r.ordDay))+row('평균임금 1일',W(r.avg)+(r.avgFloor?' (통상임금 하한 적용)':''))+row('평균임금 30일분(월 환산)',W(r.avgMonth))+'</div>';
+  const t=(a,b,c,d,e)=>'<tr><td>'+a+'</td><td>'+b+'</td><td>'+c+'</td><td><b>'+d+'</b></td><td class="sm">'+e+'</td></tr>';
+  h+='<div class="res"><b>② 어디에 영향을 주는가 (금액)</b><table><tr><th>항목</th><th>기준</th><th>산식</th><th>금액</th><th>근거</th></tr>'+
+  t('퇴직금','평균임금','1일 평균임금 × 30 × 재직일수/365',W(r.sev),'퇴직급여법 제8조 [재확인]')+
+  t('연차수당','통상(원칙) 또는 평균','1일 × 미사용 '+p.leaveDays+'일',W(r.leaveOrd)+(Math.abs(r.leaveAvg-r.leaveOrd)>1?' (평균 기준 '+W(r.leaveAvg)+')':''),'제60조 제5항 [재확인]')+
+  t('연장근로수당','통상시급','통상시급 × 0.5 가산 × '+p.otH+'h (시급제는 1.5배)',W(r.otAdd)+' (총 '+W(r.otAll)+')','제56조 제1항 확인')+
+  t('야간근로 가산','통상시급','통상시급 × 0.5 × '+p.nightH+'h',W(r.nightAdd),'제56조 제3항 확인')+
+  t('휴일근로(총액)','통상시급','8h 이내 1.5배, 초과 2배 × '+p.holH+'h',W(r.holAll),'제56조 제2항 확인')+
+  t('주휴수당(1주)','통상시급','통상시급 × 주휴시간 '+r.weekHolHours+'h',W(r.weekHol),'제55조 [재확인]')+
+  t('해고예고수당','통상임금','통상일급 × 30일',W(r.notice),'제26조 확인')+
+  t('휴업수당','평균임금 70% (통상 상한)','min(평균 70%, 통상일급) × '+p.idleDays+'일',W(r.idle)+' (1일 '+W(r.idleDay)+')','제46조 확인')+
+  t('구직급여 일액(참고)','평균임금 60%','1일 평균임금 × 60%',W(r.ui),'실업급여 탭 상·하한 [재확인]')+
+  '</table></div>';
+  if(r.avgFloor)h+='<div class="warn">직전 3개월 임금총액으로 산정한 평균임금('+W(r.avgRaw)+')이 통상일급보다 낮아 통상일급을 평균임금으로 봤습니다.</div>';
+  if(p.days3<=0)h+='<div class="warn">직전 3개월 총일수를 입력하세요.</div>';
+  $('b_out').innerHTML=h;
+}
+
 // ----- 사업장·EDI -----
 function buildOffice(){
   $('office').innerHTML='<div class="card"><h2>신규 사업장 개설 · 이관 EDI 위임/해임 신청서</h2><div class="grid">'+
@@ -994,7 +1065,7 @@ function renderDep(){
   $('d_out').innerHTML=h;
 }
 
-const TABS=[['home','홈',''],['hire','임금·4대보험','입사'],['contract','근로계약서','입사'],['dep','피부양자','입사'],['scale','상시근로자','입사'],['leave','연차','근무'],['work','휴가·근로시간','근무'],['exit','퇴사 정산','퇴사'],['ui','실업급여','퇴사'],['wage','주휴·해고예고','퇴사'],['sev','퇴직금','퇴사'],['mid','중간정산','퇴사'],['docs','서류','사무소'],['office','EDI·사업장','사무소'],['check','체크리스트','사무소']];
+const TABS=[['home','홈',''],['hire','임금·4대보험','입사'],['contract','근로계약서','입사'],['dep','피부양자','입사'],['scale','상시근로자','입사'],['leave','연차','근무'],['basis','통상·평균임금','근무'],['work','휴가·근로시간','근무'],['exit','퇴사 정산','퇴사'],['ui','실업급여','퇴사'],['wage','주휴·해고예고','퇴사'],['sev','퇴직금','퇴사'],['mid','중간정산','퇴사'],['docs','서류','사무소'],['office','EDI·사업장','사무소'],['check','체크리스트','사무소']];
 function show(id){
   if(!TABS.some(t=>t[0]===id))id='home';
   TABS.forEach(t=>{$(t[0]).classList.toggle('on',t[0]===id);});
@@ -1007,13 +1078,14 @@ function show(id){
   let lg='';TABS.forEach(t=>{if(t[2]&&t[2]!==lg){lg=t[2];const g=document.createElement('span');g.className='grp';g.textContent=lg;nav.appendChild(g);}const b=document.createElement('button');b.textContent=t[1];b.dataset.id=t[0];b.onclick=()=>show(t[0]);nav.appendChild(b);});
   window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
   const today=fd(new Date());
-  buildHire();buildDep();buildWork();buildExit();buildMid();buildScale();buildDocs();buildContract();buildOffice();
+  buildHire();buildDep();buildWork();buildExit();buildMid();buildBasis();buildScale();buildDocs();buildContract();buildOffice();
   setRates();
   document.querySelectorAll('#hire input,#hire select').forEach(e=>e.addEventListener('input',renderHire));
   $('h_year').addEventListener('change',()=>{setRates();renderHire();});
   document.querySelectorAll('#dep input,#dep select').forEach(e=>e.addEventListener('input',renderDep));
   document.querySelectorAll('#exit input,#exit select').forEach(e=>e.addEventListener('input',renderExit));
   document.querySelectorAll('#mid input,#mid select').forEach(e=>e.addEventListener('input',renderMid));
+  document.querySelectorAll('#basis input,#basis select').forEach(e=>e.addEventListener('input',renderBasis));
   document.querySelectorAll('#scale input,#scale select').forEach(e=>e.addEventListener('input',renderScale));
   document.querySelectorAll('#contract input,#contract select').forEach(e=>e.addEventListener('input',renderContract));
   document.querySelectorAll('#office input,#office select').forEach(e=>e.addEventListener('input',renderOffice));
@@ -1033,7 +1105,7 @@ function show(id){
     try{navigator.clipboard.writeText(t).then(done,()=>{});}catch(e){}
   }));
   $('u_min').value=minWageFor(null);
-  renderLeave();renderUI();renderWage();renderSev();renderHire();renderDep();renderExit();renderMid();renderScale();renderContract();renderOffice();
+  renderLeave();renderUI();renderWage();renderSev();renderHire();renderDep();renderExit();renderMid();renderBasis();renderScale();renderContract();renderOffice();
   show(location.hash.slice(1)||'home');
 })();
 </script>
