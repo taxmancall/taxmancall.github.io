@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>세무 통합 대시보드 v2.4 · 원제우세무사사무소</title>
+<title>세무 통합 대시보드 v2.5 · 원제우세무사사무소</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--sub:#5b6676;--line:#dfe3ea;--pri:#1f4e8c;--pri-bg:#e8f0fb;--ok:#13795b;--ok-bg:#e3f5ee;--chk:#9a5b00;--chk-bg:#fff2d9}
 @media(prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--ink:#e8ecf2;--sub:#9aa5b5;--line:#2c3542;--pri:#7fb0f0;--pri-bg:#1e2c40;--ok:#58d3a8;--ok-bg:#15332b;--chk:#f0b45a;--chk-bg:#3a2d14}}
@@ -67,11 +67,22 @@ td.tt b{line-height:1.5}
 .fwrap{margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
 #v-frame{display:block;width:100%;height:78vh;min-height:520px;border:0}
 a.open{display:inline-block;margin-top:2px;color:var(--pri);font-size:14px;text-decoration:none;border:1px solid var(--line);border-radius:16px;padding:5px 12px;background:var(--card)}
+.shr{border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;background:var(--card)}
+.shr .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:600}
+.shr .top button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:4px 10px;cursor:pointer}
+#sh-doc{background:#fff;color:#000;padding:18px;border:1px solid var(--line);min-width:640px}
+#sh-doc h1{text-align:center;font-size:22px;letter-spacing:.3em;margin:0 0 14px}
+#sh-doc table{width:100%;border-collapse:collapse;font-size:13px}
+#sh-doc th,#sh-doc td{border:1px solid #444;padding:5px 6px;text-align:center}
+#sh-doc td.l{text-align:left}#sh-doc td.r{text-align:right}
+#sh-doc .meta{font-size:13px;line-height:1.7;margin-bottom:10px}
+#sh-doc .sign{margin-top:18px;font-size:13px;line-height:1.9;text-align:right}
+@media print{body *{visibility:hidden}#sh-doc,#sh-doc *{visibility:visible}#sh-doc{position:absolute;left:0;top:0;width:100%;border:0;min-width:0}@page{size:A4;margin:15mm}}
 </style>
 </head>
 <body>
 <header>
-  <h1>세무 통합 대시보드<span class="ver">v2.4</span></h1>
+  <h1>세무 통합 대시보드<span class="ver">v2.5</span></h1>
   <div class="meta">원제우세무사사무소 · 직원용 내부 도구 · 법령 조회 기준일 <b>2026.11.13</b> (국가법령정보센터 조회) · 개업/설립 → 사업 중 신고 → 폐업/청산</div>
 </header>
 <nav><div class="in" id="nav"></div></nav>
@@ -181,6 +192,39 @@ a.open{display:inline-block;margin-top:2px;color:var(--pri);font-size:14px;text-
   <div class="card"><h2>연간 신고·납부 기한표</h2>
     <div class="note">12월 결산 법인, 과세기간이 1.1~12.31인 개인사업자 기준입니다. 신고기한이 토·일·공휴일이면 다음 날로 넘어가는지 별도 확인하세요.</div>
     <div class="tw" id="cal-tbl"></div>
+  </div>
+</section>
+
+<section id="s-sh">
+  <div class="card"><h2>주주명부 생성</h2>
+    <div class="note">기초 정보를 입력하면 주주명부가 만들어집니다. 입력값은 저장하지 않고 이 화면에만 있으며, 새로고침하면 지워집니다(주주 개인정보 보호). 주민등록번호는 받지 않고 생년월일이나 사업자번호만 적습니다.</div>
+    <h3>법인 정보</h3>
+    <div class="grid">
+      <div><label>법인명</label><input id="sh-corp" oninput="shDoc()" placeholder="예: 주식회사 ○○"></div>
+      <div><label>사업자등록번호</label><input id="sh-bn" oninput="shDoc()" placeholder="000-00-00000"></div>
+      <div><label>대표이사</label><input id="sh-ceo" oninput="shDoc()"></div>
+      <div><label>본점 소재지</label><input id="sh-addr" oninput="shDoc()"></div>
+      <div><label>기준일</label><input id="sh-date" type="date" oninput="shDoc()"></div>
+      <div><label>1주의 금액 (액면가, 원)</label><input id="sh-par" inputmode="numeric" value="5000" oninput="shDoc()"></div>
+      <div><label>발행주식 총수 (주)</label><input id="sh-issued" inputmode="numeric" oninput="shDoc()" placeholder="예: 100000"></div>
+      <div><label>주식 종류</label><input id="sh-kind" value="보통주" oninput="shDoc()"></div>
+    </div>
+    <h3>기존 주주명부 불러오기</h3>
+    <div class="note">기존 주주명부(엑셀·한글 표)를 복사해 아래에 붙여넣고 「불러오기」를 누르면 우리 양식으로 채워집니다. 열 제목(성명, 주소, 주식수, 취득일, 비고 등)을 보고 자동으로 맞추며, 제목이 없으면 성명·주소·주식수 순서로 읽습니다. 주민등록번호가 있으면 생년월일 6자리만 남깁니다. 기준일은 오늘로 채웁니다. PDF·이미지 파일은 이 화면에서 읽지 못하니 표를 복사하거나 Claude 대화에 올려 변환하세요.</div>
+    <textarea id="sh-paste" rows="5" style="width:100%;box-sizing:border-box" placeholder="여기에 붙여넣기"></textarea>
+    <button class="act" onclick="shImport()">불러오기</button>
+    <h3>주주</h3>
+    <div id="sh-list"></div>
+    <button class="act" onclick="shAdd()">주주 추가</button>
+    <button class="act cp" onclick="shSample()">예시 채우기</button>
+    <button class="act cp" onclick="shClear()">전체 지우기</button>
+  </div>
+  <div class="card"><h2>미리보기</h2>
+    <div id="sh-chk" class="note"></div>
+    <div class="tw"><div id="sh-doc"></div></div>
+    <button class="act" onclick="window.print()">인쇄 / PDF 저장</button>
+    <button class="act cp" onclick="shCopy()">표 복사 (엑셀 붙여넣기)</button>
+    <div class="note">상법상 주주명부에는 주주의 성명·주소, 주식의 종류와 수, 주권을 발행했으면 주권 번호, 취득 연월일을 적습니다(상법 제352조 제1항, 원문 재확인). 제출처에 따라 요구 양식과 기재 항목이 다를 수 있습니다. 법인세 신고 때 내는 주식등변동상황명세서는 별도 서식입니다.</div>
   </div>
 </section>
 
@@ -422,7 +466,7 @@ var PEND=[
  ['지방소득세','지방세법 – 이번 버전 미조회']
 ];
 
-var NAVS=[['person','개인사업자'],['corp','법인'],['vat','부가세'],['calc','가산세·기한 계산기'],['cal','기한표'],['link','바로가기·확인필요']];
+var NAVS=[['person','개인사업자'],['corp','법인'],['vat','부가세'],['calc','가산세·기한 계산기'],['cal','기한표'],['sh','주주명부'],['link','바로가기·확인필요']];
 function $(id){return document.getElementById(id)}
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
 
@@ -624,6 +668,94 @@ function runX(){
 var _showSec=showSec;
 showSec=function(id){_showSec(id);if(id==='vat'&&!window._vinit){window._vinit=1;vatPick(0)}};
 mkVat();
+/*SH-START*/
+function shNum(v){var n=parseInt(String(v==null?'':v).replace(/[^0-9]/g,''),10);return isNaN(n)?0:n}
+function calcSH(list,issued,par){
+  var tot=0,rows=[];list.forEach(function(s){tot+=shNum(s.q)});
+  list.forEach(function(s){var q=shNum(s.q);rows.push({q:q,pct:tot>0?q/tot*100:0,amt:q*par})});
+  var iss=shNum(issued);
+  return {rows:rows,total:tot,amt:tot*par,capital:iss*par,diff:iss?iss-tot:null,top:rows.length?Math.max.apply(null,rows.map(function(r){return r.pct})):0};
+}
+/*SH-END*/
+var SH=[{n:'',t:'개인',id:'',ad:'',q:'',d:'',r:''}];
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function shList(){
+  var h='';SH.forEach(function(s,i){
+    h+='<div class="shr"><div class="top"><span>주주 '+(i+1)+'</span>'+(SH.length>1?'<button onclick="shDel('+i+')">삭제</button>':'')+'</div><div class="grid">'
+     +'<div><label>성명(법인명)</label><input value="'+esc(s.n)+'" oninput="shSet('+i+',\'n\',this.value)"></div>'
+     +'<div><label>구분</label><select onchange="shSet('+i+',\'t\',this.value)"><option'+(s.t==='개인'?' selected':'')+'>개인</option><option'+(s.t==='법인'?' selected':'')+'>법인</option></select></div>'
+     +'<div><label>생년월일 / 사업자번호</label><input value="'+esc(s.id)+'" oninput="shSet('+i+',\'id\',this.value)" placeholder="예: 1970.01.01"></div>'
+     +'<div><label>주소</label><input value="'+esc(s.ad)+'" oninput="shSet('+i+',\'ad\',this.value)"></div>'
+     +'<div><label>보유 주식수 (주)</label><input inputmode="numeric" value="'+esc(s.q)+'" oninput="shSet('+i+',\'q\',this.value)"></div>'
+     +'<div><label>취득일</label><input type="date" value="'+esc(s.d)+'" oninput="shSet('+i+',\'d\',this.value)"></div>'
+     +'<div><label>비고 (관계·주권번호 등)</label><input value="'+esc(s.r)+'" oninput="shSet('+i+',\'r\',this.value)"></div>'
+     +'</div></div>';
+  });$('sh-list').innerHTML=h;shDoc();
+}
+/*SHP-START*/
+function shParse(text){
+  var lines=String(text||'').split(/\r?\n/).map(function(l){return l.split('\t')}).filter(function(c){return c.join('').trim()});
+  if(!lines.length)return [];
+  var map={},hdr=-1,keys=[['n',/성명|주주|이름|법인명/],['id',/생년|사업자|주민/],['ad',/주소/],['q',/주식수|보유|수량/],['d',/취득/],['r',/비고/],['t',/구분/]];
+  for(var i=0;i<Math.min(lines.length,5);i++){
+    var m={},hit=0;lines[i].forEach(function(c,j){keys.forEach(function(k){if(m[k[0]]===undefined&&k[1].test(c)){m[k[0]]=j;hit++}})});
+    if(hit>=2&&m.n!==undefined){map=m;hdr=i;break}
+  }
+  if(hdr<0)map={n:0,ad:1,q:2};
+  var out=[];
+  lines.slice(hdr+1).forEach(function(c){
+    var g=function(k){return map[k]===undefined?'':String(c[map[k]]||'').trim()};
+    var n=g('n');if(!n||/합계|계$/.test(n))return;
+    var id=g('id').replace(/(\d{6})[-\s]?\d{7}/,'$1'),d=g('d').replace(/[.\/]/g,'-').replace(/\s/g,'').replace(/-$/,'');
+    var dm=d.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);d=dm?dm[1]+'-'+('0'+dm[2]).slice(-2)+'-'+('0'+dm[3]).slice(-2):'';
+    out.push({n:n,t:g('t')==='법인'?'법인':'개인',id:id,ad:g('ad'),q:g('q').replace(/[^0-9]/g,''),d:d,r:g('r')});
+  });
+  return out;
+}
+/*SHP-END*/
+function shImport(){
+  var r=shParse($('sh-paste').value);
+  if(!r.length){$('sh-chk').textContent='불러올 주주 행을 찾지 못했습니다. 엑셀에서 표를 복사해 붙여넣었는지 확인하세요.';return}
+  SH=r;$('sh-date').value=new Date().toISOString().slice(0,10);
+  var tot=0;r.forEach(function(x){tot+=shNum(x.q)});if(!$('sh-issued').value&&tot)$('sh-issued').value=tot;
+  shList();
+}
+function shSet(i,k,v){SH[i][k]=v;shDoc()}
+function shAdd(){SH.push({n:'',t:'개인',id:'',ad:'',q:'',d:'',r:''});shList()}
+function shDel(i){SH.splice(i,1);shList()}
+function shClear(){SH=[{n:'',t:'개인',id:'',ad:'',q:'',d:'',r:''}];['sh-corp','sh-bn','sh-ceo','sh-addr','sh-date','sh-issued'].forEach(function(x){$(x).value=''});shList()}
+function shSample(){
+  $('sh-corp').value='주식회사 예시';$('sh-bn').value='000-00-00000';$('sh-ceo').value='홍길동';$('sh-addr').value='경기도 부천시 ○○로 1';
+  $('sh-date').value=new Date().toISOString().slice(0,10);$('sh-par').value='5000';$('sh-issued').value='100000';
+  SH=[{n:'홍길동',t:'개인',id:'1970.01.01',ad:'경기도 부천시 ○○로 1',q:'60000',d:'2020-03-02',r:'대표이사'},{n:'김영희',t:'개인',id:'1972.05.05',ad:'경기도 부천시 ○○로 1',q:'40000',d:'2020-03-02',r:'배우자'}];shList();
+}
+function shFmtDate(d){return d?d.replace(/-/g,'.'):''}
+function shDoc(){
+  var par=shNum($('sh-par').value),iss=$('sh-issued').value,kind=$('sh-kind').value||'보통주';
+  var r=calcSH(SH,iss,par),w=[];
+  if(!iss)w.push('발행주식 총수를 입력하세요.');
+  else if(r.diff!==0)w.push('주주 보유 합계('+r.total.toLocaleString()+'주)가 발행주식 총수('+shNum(iss).toLocaleString()+'주)와 '+Math.abs(r.diff).toLocaleString()+'주 '+(r.diff>0?'부족':'초과')+'합니다.');
+  else w.push('주식수 합계가 발행주식 총수와 일치합니다. 자본금 '+r.capital.toLocaleString()+'원(발행주식 총수 × 액면가).');
+  if(r.top>50)w.push('최대주주 지분율이 50%를 넘습니다. 특수관계인 합산 지분은 별도 확인(과점주주 등).');
+  $('sh-chk').innerHTML=w.map(esc).join('<br>');
+  var h='<h1>주 주 명 부</h1><div class="meta">법인명: '+esc($('sh-corp').value)+(($('sh-bn').value)?' ('+esc($('sh-bn').value)+')':'')+'<br>본점 소재지: '+esc($('sh-addr').value)+'<br>대표이사: '+esc($('sh-ceo').value)+'<br>기준일: '+esc(shFmtDate($('sh-date').value))+'<br>발행주식 총수: '+(iss?shNum(iss).toLocaleString()+'주':'')+' / 1주의 금액: '+par.toLocaleString()+'원 / 주식 종류: '+esc(kind)+'</div>';
+  h+='<table><tr><th>번호</th><th>성명(법인명)</th><th>생년월일<br>사업자번호</th><th>주소</th><th>주식 종류</th><th>주식수</th><th>금액(원)</th><th>지분율</th><th>취득일</th><th>비고</th></tr>';
+  SH.forEach(function(s,i){var x=r.rows[i];
+    h+='<tr><td>'+(i+1)+'</td><td>'+esc(s.n)+'</td><td>'+esc(s.id)+'</td><td class="l">'+esc(s.ad)+'</td><td>'+esc(kind)+'</td><td class="r">'+(x.q?x.q.toLocaleString():'')+'</td><td class="r">'+(x.q?x.amt.toLocaleString():'')+'</td><td class="r">'+(x.q?x.pct.toFixed(2)+'%':'')+'</td><td>'+esc(shFmtDate(s.d))+'</td><td class="l">'+esc(s.r)+'</td></tr>';});
+  h+='<tr><td colspan="5"><b>합계</b></td><td class="r"><b>'+r.total.toLocaleString()+'</b></td><td class="r"><b>'+r.amt.toLocaleString()+'</b></td><td class="r"><b>'+(r.total?'100.00%':'')+'</b></td><td colspan="2"></td></tr></table>';
+  h+='<div class="sign">위 주주명부는 '+esc(shFmtDate($('sh-date').value))+' 현재 주주의 현황과 틀림이 없음을 확인합니다.<br>'+esc($('sh-corp').value)+'<br>대표이사 '+esc($('sh-ceo').value)+' (인)</div>';
+  $('sh-doc').innerHTML=h;
+}
+function shCopy(){
+  var rows=[['번호','성명(법인명)','생년월일/사업자번호','주소','주식종류','주식수','금액','지분율','취득일','비고']];
+  var par=shNum($('sh-par').value),r=calcSH(SH,$('sh-issued').value,par);
+  SH.forEach(function(s,i){var x=r.rows[i];rows.push([i+1,s.n,s.id,s.ad,$('sh-kind').value||'보통주',x.q,x.amt,x.pct.toFixed(2)+'%',shFmtDate(s.d),s.r])});
+  rows.push(['합계','','','','',r.total,r.amt,r.total?'100.00%':'','','']);
+  var t=rows.map(function(a){return a.join('\t')}).join('\n');
+  try{navigator.clipboard.writeText(t)}catch(e){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
+}
+
+shList();
 mkNav();lifecycle('x',XD,'anbun');var _pick2=pick;pick=function(pf,k){_pick2(pf,k);if(pf==='x')$('x-calc').style.display=k==='anbun'?'block':'none';$('x-fx').style.display=(k==='exp'||k==='expdoc')?'block':'none'};pick('x','anbun');lifecycle('p',P,'open');lifecycle('c',C,'found');mkCal();mkCalc();
 </script>
 </body>
