@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>세무 통합 대시보드 v1.0 · 원제우세무사사무소</title>
+<title>세무 통합 대시보드 v1.1 · 원제우세무사사무소</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--sub:#5b6676;--line:#dfe3ea;--pri:#1f4e8c;--pri-bg:#e8f0fb;--ok:#13795b;--ok-bg:#e3f5ee;--chk:#9a5b00;--chk-bg:#fff2d9}
 @media(prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--ink:#e8ecf2;--sub:#9aa5b5;--line:#2c3542;--pri:#7fb0f0;--pri-bg:#1e2c40;--ok:#58d3a8;--ok-bg:#15332b;--chk:#f0b45a;--chk-bg:#3a2d14}}
@@ -48,7 +48,7 @@ footer{max-width:1100px;margin:0 auto;padding:0 16px 40px;color:var(--sub);font-
 </head>
 <body>
 <header>
-  <h1>세무 통합 대시보드<span class="ver">v1.0</span></h1>
+  <h1>세무 통합 대시보드<span class="ver">v1.1</span></h1>
   <div class="meta">원제우세무사사무소 · 직원용 내부 도구 · 법령 조회 기준일 <b>2026.11.13</b> (국가법령정보센터 조회) · 개업/설립 → 사업 중 신고 → 폐업/청산</div>
 </header>
 <nav><div class="in" id="nav"></div></nav>
@@ -71,19 +71,21 @@ footer{max-width:1100px;margin:0 auto;padding:0 16px 40px;color:var(--sub);font-
 </section>
 
 <section id="s-calc">
-  <div class="card"><h2>① 신고·납부 관련 가산세 (국세기본법)</h2>
-    <div class="note">무신고(제47조의2) · 과소신고(제47조의3) · 납부지연(제47조의4①1호, 시행령 제27조의4①: 1일 10만분의 22) · 감면(제48조②). 고지 후(지정납부기한 후) 가산세는 계산하지 않습니다.</div>
+  <div class="card"><h2>① 수정신고·기한후신고 기본 가산세</h2>
+    <div class="note">신고불성실가산세(수정신고=과소신고 제47조의3, 기한후신고=무신고 제47조의2)와 납부지연가산세(제47조의4①1호, 시행령 제27조의4: 1일 10만분의 22)를 한 번에 계산합니다. 감면 구간(제48조②)은 법정신고기한과 신고일로 자동 판정하며 납부지연가산세는 감면 대상이 아닙니다.</div>
     <div class="grid">
-      <div><label>신고 유형</label><select id="a-type"><option value="none">해당 없음 (납부지연만)</option><option value="nofile">무신고</option><option value="under">과소신고</option></select></div>
+      <div><label>신고 유형</label><select id="a-type"><option value="under">수정신고 (과소신고 + 납부지연)</option><option value="nofile">기한후신고 (무신고 + 납부지연)</option><option value="none">납부지연만</option></select></div>
       <div><label>신고 위반 성격</label><select id="a-fraud"><option value="normal">일반</option><option value="fraud">부정행위</option><option value="offshore">역외거래 부정행위</option></select></div>
-      <div><label>무신고·과소신고 납부세액 (원)</label><input id="a-base" inputmode="numeric" placeholder="예: 10000000"></div>
-      <div><label>기한후신고·수정신고 시점</label><select id="a-red"></select></div>
-      <div><label>납부지연 세액 (원)</label><input id="a-late" inputmode="numeric" placeholder="법정납부기한까지 미납한 세액"></div>
-      <div><label>납부지연 일수</label><input id="a-days" inputmode="numeric" placeholder="법정납부기한 다음 날부터 납부일 전일까지"></div>
+      <div><label>추가납부할 세액 (원)</label><input id="a-base" inputmode="numeric" placeholder="수정신고: 증가 세액 / 기한후신고: 납부할 세액"></div>
+      <div><label>법정신고기한 (= 법정납부기한)</label><input type="date" id="a-due"></div>
+      <div><label>신고·납부일</label><input type="date" id="a-pay"></div>
+      <div><label>감면 적용</label><select id="a-nored"><option value="0">자진 신고 – 감면 적용</option><option value="1">감면 배제 (경정·결정 예고를 미리 알고 신고 등)</option></select></div>
+      <div><label>납부지연 일수 직접입력 (선택)</label><input id="a-days" inputmode="numeric" placeholder="비우면 신고·납부일 − 법정납부기한"></div>
+      <div><label>납부지연 세액 직접입력 (선택)</label><input id="a-late" inputmode="numeric" placeholder="비우면 추가납부할 세액과 동일"></div>
     </div>
     <button class="act" onclick="runA()">계산</button><button class="act cp" onclick="cp('a-res')">결과 복사</button>
     <div class="res" id="a-res">결과가 여기에 표시됩니다.</div>
-    <div class="warn">복식부기의무자·법인의 부당 무신고는 수입금액 × 14/10,000과 비교하여 큰 금액으로 하는 특례(제47조의2②)가 있으나 이 계산기는 반영하지 않습니다 (원문 재확인). 가산세 한도(제49조), 정당한 사유 면제(제48조①), 예정·중간신고분과의 중복 배제(제47조의2⑤)도 별도 검토하세요.</div>
+    <div class="warn">감면율: 수정신고 1·3·6개월 90·75·50%, 1년 30%, 1년6개월 20%, 2년 10% / 기한후신고 1·3·6개월 50·30·20% (국세기본법 제48조② 조문은 2차 자료로 대조했으므로 신고 전 원문 재확인). 복식부기의무자·법인의 부당 무신고 수입금액 14/10,000 특례(제47조의2②), 가산세 한도(제49조), 정당한 사유 면제(제48조①), 예정·중간신고분과의 중복 배제(제47조의2⑤)는 반영하지 않습니다. 수정신고는 추가납부세액을 신고와 동시에 납부해야 감면이 적용됩니다(제45조③ 취지, 원문 재확인).</div>
   </div>
 
   <div class="card"><h2>② 세금계산서·합계표 가산세 (부가가치세법 제60조)</h2>
@@ -165,29 +167,41 @@ function parseD(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
 function won(n){return Math.floor(n).toLocaleString('ko-KR')+'원'}
 
 var RATE={nofile:{normal:0.20,fraud:0.40,offshore:0.60},under:{normal:0.10,fraud:0.40,offshore:0.60}};
-var RED={
-  nofile:[['none','감면 없음',0],['m1','기한후신고 1개월 이내 (50%)',0.5],['m3','1개월 초과 3개월 이내 (30%)',0.3],['m6','3개월 초과 6개월 이내 (20%)',0.2]],
-  under:[['none','감면 없음',0],['m1','수정신고 1개월 이내 (90%)',0.9],['m3','1개월 초과 3개월 이내 (75%)',0.75],['m6','3개월 초과 6개월 이내 (50%)',0.5],['y1','6개월 초과 1년 이내 (30%)',0.3],['y15','1년 초과 1년 6개월 이내 (20%)',0.2],['y2','1년 6개월 초과 2년 이내 (10%)',0.1]]
+var TIERS={
+  nofile:[[1,0.5,'1개월 이내'],[3,0.3,'1개월 초과 3개월 이내'],[6,0.2,'3개월 초과 6개월 이내']],
+  under:[[1,0.9,'1개월 이내'],[3,0.75,'1개월 초과 3개월 이내'],[6,0.5,'3개월 초과 6개월 이내'],[12,0.3,'6개월 초과 1년 이내'],[18,0.2,'1년 초과 1년 6개월 이내'],[24,0.1,'1년 6개월 초과 2년 이내']]
 };
-var DAILY=22/100000;
+function reduceTier(type,due,pay){
+  var list=TIERS[type];if(!list||!due||!pay)return {rate:0,label:'해당 없음'};
+  for(var i=0;i<list.length;i++){
+    if(pay<=addMonthsEOM(due,list[i][0]))return {rate:list[i][1],label:'법정신고기한 후 '+list[i][2]};
+  }
+  return {rate:0,label:'감면 기간 경과'};
+}
+function dayDiff(a,b){return Math.round((b-a)/86400000)}
 function calcA(o){
-  var out={lines:[],total:0};
-  var base=+o.base||0,lateTax=+o.late||0,days=+o.days||0;
+  var out={lines:[],total:0,tier:null};
+  var base=+o.base||0;
+  var days=+o.days||0;
+  if(!days&&o.due&&o.pay)days=Math.max(0,dayDiff(o.due,o.pay));
+  var lateTax=(+o.late)||base;
   if(o.type!=='none'){
     var rate=RATE[o.type][o.fraud];
     var rep=Math.floor(base*rate);
-    var rr=0,list=RED[o.type];
-    for(var i=0;i<list.length;i++){if(list[i][0]===o.red)rr=list[i][2]}
-    var cut=Math.floor(rep*rr);
+    var t=o.noReduce?{rate:0,label:'감면 배제'}:reduceTier(o.type,o.due,o.pay);
+    var cut=Math.floor(rep*t.rate);
+    out.tier=t;
     out.lines.push((o.type==='nofile'?'무신고':'과소신고')+'가산세: '+won(base)+' × '+(rate*100)+'% = '+won(rep));
-    if(rr>0)out.lines.push('감면(제48조②): '+won(rep)+' × '+(rr*100)+'% = △'+won(cut));
+    if(t.rate>0)out.lines.push('감면(제48조②, '+t.label+' '+(t.rate*100)+'%): △'+won(cut));
+    else out.lines.push('감면 없음 ('+t.label+')');
     out.total+=rep-cut;
   }
   if(lateTax>0&&days>0){
     var late=Math.floor(lateTax*days*22/100000);
-    out.lines.push('납부지연가산세: '+won(lateTax)+' × '+days+'일 × 22/100,000 = '+won(late));
+    out.lines.push('납부지연가산세: '+won(lateTax)+' × '+days+'일 × 22/100,000 = '+won(late)+' (감면 대상 아님)');
     out.total+=late;
   }
+  out.days=days;
   return out;
 }
 var BRATE=[
@@ -379,21 +393,22 @@ function mkCal(){
   $('pend').innerHTML=p+'</table>';
 }
 function opt(sel,arr,vfn,lfn){var h='';arr.forEach(function(x,i){h+='<option value="'+vfn(x,i)+'">'+lfn(x,i)+'</option>'});$(sel).innerHTML=h}
-function fillRed(){
-  var t=$('a-type').value;
-  var list=t==='nofile'?RED.nofile:RED.under;
-  opt('a-red',list,function(x){return x[0]},function(x){return x[1]});
-}
 function mkCalc(){
   opt('b-type',BRATE,function(x,i){return i},function(x){return x[0]+' – '+(x[1]*100)+'%'});
   opt('c-type',CRATE,function(x,i){return i},function(x){return x[0]+' – '+(x[1]*100)+'%'});
   opt('d-kind',DK,function(x){return x[0]},function(x){return x[1]});
-  $('a-type').onchange=fillRed;fillRed();
+  var t=new Date();$('a-pay').value=t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(t.getDate());
 }
 function runA(){
-  var o={type:$('a-type').value,fraud:$('a-fraud').value,base:$('a-base').value.replace(/,/g,''),red:$('a-red').value,late:$('a-late').value.replace(/,/g,''),days:$('a-days').value};
+  var o={type:$('a-type').value,fraud:$('a-fraud').value,base:$('a-base').value.replace(/,/g,''),
+    due:$('a-due').value?parseD($('a-due').value):null,pay:$('a-pay').value?parseD($('a-pay').value):null,
+    noReduce:$('a-nored').value==='1',late:$('a-late').value.replace(/,/g,''),days:$('a-days').value};
+  if(!(+o.base>0)){$('a-res').textContent='추가납부할 세액을 입력하세요.';return}
+  if(!o.due||!o.pay){$('a-res').textContent='법정신고기한과 신고·납부일을 입력하세요.';return}
+  if(o.pay<=o.due){$('a-res').textContent='신고·납부일이 법정신고기한 이후여야 합니다.';return}
   var r=calcA(o);
-  $('a-res').textContent=r.lines.length?r.lines.join('\n')+'\n────────\n가산세 합계: '+won(r.total):'입력값을 확인하세요.';
+  var head='법정신고기한 '+fmt(o.due)+' → 신고·납부일 '+fmt(o.pay)+' ('+r.days+'일 경과)\n';
+  $('a-res').textContent=head+r.lines.join('\n')+'\n────────\n가산세 합계: '+won(r.total)+'\n본세 포함 총 납부액: '+won(o.base-0+r.total);
 }
 function runB(){
   var r=calcB(+$('b-type').value,$('b-amt').value.replace(/,/g,''));
