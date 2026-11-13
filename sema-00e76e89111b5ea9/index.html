@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>세무 통합 대시보드 v1.0 · 원제우세무사사무소</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--sub:#5b6676;--line:#dfe3ea;--pri:#1f4e8c;--pri-bg:#e8f0fb;--ok:#13795b;--ok-bg:#e3f5ee;--chk:#9a5b00;--chk-bg:#fff2d9}
+@media(prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--ink:#e8ecf2;--sub:#9aa5b5;--line:#2c3542;--pri:#7fb0f0;--pri-bg:#1e2c40;--ok:#58d3a8;--ok-bg:#15332b;--chk:#f0b45a;--chk-bg:#3a2d14}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
+header{padding:18px 16px 10px;max-width:1100px;margin:0 auto}
+h1{margin:0 0 4px;font-size:21px}
+.meta{color:var(--sub);font-size:13px}
+.ver{display:inline-block;background:var(--pri);color:#fff;border-radius:10px;padding:0 8px;font-size:12px;margin-left:6px}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav .in{max-width:1100px;margin:0 auto;padding:8px 16px;display:flex;gap:6px;overflow-x:auto}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 14px;border-radius:18px;font-size:14px;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+main{max-width:1100px;margin:0 auto;padding:12px 16px 60px}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.card h2{margin:0 0 4px;font-size:17px}
+.card h3{margin:14px 0 6px;font-size:15px}
+.step{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.step button{flex:1;min-width:120px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px;border-radius:10px;cursor:pointer;font-size:14px}
+.step button.on{background:var(--pri-bg);border-color:var(--pri);color:var(--pri);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-top:1px solid var(--line);padding:8px 6px;vertical-align:top;text-align:left}
+th{color:var(--sub);font-weight:600;font-size:13px;border-top:0}
+td.law{color:var(--sub);font-size:13px}
+.b{display:inline-block;border-radius:10px;padding:0 8px;font-size:12px;white-space:nowrap}
+.b.ok{background:var(--ok-bg);color:var(--ok)}.b.chk{background:var(--chk-bg);color:var(--chk)}
+.note{color:var(--sub);font-size:13px;margin:6px 0}
+.warn{background:var(--chk-bg);color:var(--chk);border-radius:8px;padding:8px 10px;font-size:13px;margin:8px 0}
+label{display:block;font-size:13px;color:var(--sub);margin:8px 0 3px}
+input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:0 12px}
+button.act{margin-top:10px;background:var(--pri);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:14px;cursor:pointer}
+button.cp{background:var(--card);color:var(--pri);border:1px solid var(--pri);margin-left:6px}
+.res{margin-top:10px;background:var(--pri-bg);border-radius:8px;padding:10px;font-size:14px;white-space:pre-wrap}
+.links a{display:inline-block;margin:4px 8px 4px 0;padding:6px 12px;border:1px solid var(--line);border-radius:16px;color:var(--pri);text-decoration:none;font-size:14px;background:var(--card)}
+.tick{width:18px;height:18px}
+.tw{overflow-x:auto}
+footer{max-width:1100px;margin:0 auto;padding:0 16px 40px;color:var(--sub);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>세무 통합 대시보드<span class="ver">v1.0</span></h1>
+  <div class="meta">원제우세무사사무소 · 직원용 내부 도구 · 법령 조회 기준일 <b>2026.11.13</b> (국가법령정보센터 조회) · 개업/설립 → 사업 중 신고 → 폐업/청산</div>
+</header>
+<nav><div class="in" id="nav"></div></nav>
+<main>
+
+<section id="s-person">
+  <div class="card"><h2>개인사업자 업무 흐름</h2>
+    <div class="note">개업 → 사업 중 신고 → 폐업. 단계를 선택하면 업무·기한·근거 조문을 보여줍니다. 「확인」은 국가법령정보센터 조문을 이번에 직접 조회한 항목, 「원문 재확인」은 신고·발송 전 원문 대조가 필요한 항목입니다.</div>
+    <div class="step" id="p-step"></div>
+    <div class="tw" id="p-tbl"></div>
+  </div>
+</section>
+
+<section id="s-corp">
+  <div class="card"><h2>법인 업무 흐름</h2>
+    <div class="note">설립 → 사업 중 신고 → 해산·청산. 청산소득·폐업일 규정은 개인과 다르므로 구분해서 봅니다.</div>
+    <div class="step" id="c-step"></div>
+    <div class="tw" id="c-tbl"></div>
+  </div>
+</section>
+
+<section id="s-calc">
+  <div class="card"><h2>① 신고·납부 관련 가산세 (국세기본법)</h2>
+    <div class="note">무신고(제47조의2) · 과소신고(제47조의3) · 납부지연(제47조의4①1호, 시행령 제27조의4①: 1일 10만분의 22) · 감면(제48조②). 고지 후(지정납부기한 후) 가산세는 계산하지 않습니다.</div>
+    <div class="grid">
+      <div><label>신고 유형</label><select id="a-type"><option value="none">해당 없음 (납부지연만)</option><option value="nofile">무신고</option><option value="under">과소신고</option></select></div>
+      <div><label>신고 위반 성격</label><select id="a-fraud"><option value="normal">일반</option><option value="fraud">부정행위</option><option value="offshore">역외거래 부정행위</option></select></div>
+      <div><label>무신고·과소신고 납부세액 (원)</label><input id="a-base" inputmode="numeric" placeholder="예: 10000000"></div>
+      <div><label>기한후신고·수정신고 시점</label><select id="a-red"></select></div>
+      <div><label>납부지연 세액 (원)</label><input id="a-late" inputmode="numeric" placeholder="법정납부기한까지 미납한 세액"></div>
+      <div><label>납부지연 일수</label><input id="a-days" inputmode="numeric" placeholder="법정납부기한 다음 날부터 납부일 전일까지"></div>
+    </div>
+    <button class="act" onclick="runA()">계산</button><button class="act cp" onclick="cp('a-res')">결과 복사</button>
+    <div class="res" id="a-res">결과가 여기에 표시됩니다.</div>
+    <div class="warn">복식부기의무자·법인의 부당 무신고는 수입금액 × 14/10,000과 비교하여 큰 금액으로 하는 특례(제47조의2②)가 있으나 이 계산기는 반영하지 않습니다 (원문 재확인). 가산세 한도(제49조), 정당한 사유 면제(제48조①), 예정·중간신고분과의 중복 배제(제47조의2⑤)도 별도 검토하세요.</div>
+  </div>
+
+  <div class="card"><h2>② 세금계산서·합계표 가산세 (부가가치세법 제60조)</h2>
+    <div class="grid">
+      <div><label>위반 유형</label><select id="b-type"></select></div>
+      <div><label>공급가액 (원)</label><input id="b-amt" inputmode="numeric" placeholder="예: 5000000"></div>
+    </div>
+    <button class="act" onclick="runB()">계산</button><button class="act cp" onclick="cp('b-res')">결과 복사</button>
+    <div class="res" id="b-res">결과가 여기에 표시됩니다.</div>
+    <div class="note">지연발급 1%·미발급 2%는 제60조② 조문 확인. 나머지 비율은 부가가치세법 시행규칙 별지 제21호서식(2025.7.4 개정) 가산세 명세 기준이며, 항별 조문은 원문 재확인.</div>
+  </div>
+
+  <div class="card"><h2>③ 지급명세서 불성실 가산세 (소득세법 제81조의11)</h2>
+    <div class="grid">
+      <div><label>종류 / 제출 시기</label><select id="c-type"></select></div>
+      <div><label>지급금액 (원)</label><input id="c-amt" inputmode="numeric" placeholder="미제출·불분명 지급금액"></div>
+    </div>
+    <button class="act" onclick="runC()">계산</button><button class="act cp" onclick="cp('c-res')">결과 복사</button>
+    <div class="res" id="c-res">결과가 여기에 표시됩니다.</div>
+    <div class="note">법인이 제출하는 지급명세서의 가산세는 법인세법 시행규칙 별지 제9호서식(가산세액계산서) 기준으로 같은 비율입니다 (조문번호 원문 재확인).</div>
+  </div>
+
+  <div class="card"><h2>④ 신고·납부기한 계산</h2>
+    <div class="grid">
+      <div><label>업무</label><select id="d-kind"></select></div>
+      <div><label>기준일</label><input type="date" id="d-date"></div>
+    </div>
+    <button class="act" onclick="runD()">기한 계산</button><button class="act cp" onclick="cp('d-res')">결과 복사</button>
+    <div class="res" id="d-res">결과가 여기에 표시됩니다.</div>
+    <div class="warn">법정 계산일만 표시합니다. 토·일요일은 표시만 하며 공휴일·기한 이월(국세기본법 제5조)은 반영하지 않습니다 — 원문과 달력으로 최종 확인하세요.</div>
+  </div>
+</section>
+
+<section id="s-cal">
+  <div class="card"><h2>연간 신고·납부 기한표</h2>
+    <div class="note">12월 결산 법인, 과세기간이 1.1~12.31인 개인사업자 기준입니다. 신고기한이 토·일·공휴일이면 다음 날로 넘어가는지 별도 확인하세요.</div>
+    <div class="tw" id="cal-tbl"></div>
+  </div>
+</section>
+
+<section id="s-link">
+  <div class="card"><h2>직원 바로가기</h2>
+    <div class="links">
+      <a href="https://www.hometax.go.kr" target="_blank" rel="noopener">홈택스</a>
+      <a href="https://www.law.go.kr" target="_blank" rel="noopener">국가법령정보센터</a>
+      <a href="https://www.nts.go.kr" target="_blank" rel="noopener">국세청</a>
+      <a href="https://www.wetax.go.kr" target="_blank" rel="noopener">위택스(지방소득세)</a>
+      <a href="https://taxmancall.com/nomu-5e14a4418e2b8104/" target="_blank" rel="noopener">노무 통합 대시보드</a>
+    </div>
+    <div class="note">지방소득세(개인·법인)는 지방세법 소관으로 이번 버전에서 조회하지 않았습니다. 신고 시 위택스에서 별도 확인하세요.</div>
+  </div>
+  <div class="card"><h2>원문 재확인 필요 항목 (미확정)</h2>
+    <div class="note">아래는 조문 전체를 이번에 확인하지 못했거나 개정 이유·서식으로만 확인한 항목입니다. 직원 안내나 업체 발송 전에 국가법령정보센터 원문으로 확정하세요.</div>
+    <div class="tw" id="pend"></div>
+  </div>
+</section>
+
+</main>
+<footer>
+  본 대시보드는 업무 보조용 요약이며 법적 판단은 조문 원문과 관할 세무서 안내를 우선합니다. 계산 결과는 근사값입니다. 조회 대상: 부가가치세법·시행령·시행규칙, 소득세법·시행령, 법인세법·시행령·시행규칙, 국세기본법·시행령 (국가법령정보센터, 2026.11.13).
+</footer>
+
+<script>
+/*CALC-START*/
+function pad(n){return n<10?'0'+n:''+n}
+function dim(y,m){return new Date(y,m+1,0).getDate()}
+function addMonthsEOM(d,n){
+  var y=d.getFullYear(),m=d.getMonth(),day=d.getDate();
+  var isEom=(day===dim(y,m));
+  var t=m+n,ty=y+Math.floor(t/12),tm=((t%12)+12)%12;
+  var last=dim(ty,tm);
+  return new Date(ty,tm,isEom?last:Math.min(day,last));
+}
+function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n)}
+function eomOf(d){return new Date(d.getFullYear(),d.getMonth(),dim(d.getFullYear(),d.getMonth()))}
+var WD=['일','월','화','수','목','금','토'];
+function fmt(d){return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+'('+WD[d.getDay()]+')'+((d.getDay()===0||d.getDay()===6)?' ※주말':'')}
+function parseD(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2])}
+function won(n){return Math.floor(n).toLocaleString('ko-KR')+'원'}
+
+var RATE={nofile:{normal:0.20,fraud:0.40,offshore:0.60},under:{normal:0.10,fraud:0.40,offshore:0.60}};
+var RED={
+  nofile:[['none','감면 없음',0],['m1','기한후신고 1개월 이내 (50%)',0.5],['m3','1개월 초과 3개월 이내 (30%)',0.3],['m6','3개월 초과 6개월 이내 (20%)',0.2]],
+  under:[['none','감면 없음',0],['m1','수정신고 1개월 이내 (90%)',0.9],['m3','1개월 초과 3개월 이내 (75%)',0.75],['m6','3개월 초과 6개월 이내 (50%)',0.5],['y1','6개월 초과 1년 이내 (30%)',0.3],['y15','1년 초과 1년 6개월 이내 (20%)',0.2],['y2','1년 6개월 초과 2년 이내 (10%)',0.1]]
+};
+var DAILY=22/100000;
+function calcA(o){
+  var out={lines:[],total:0};
+  var base=+o.base||0,lateTax=+o.late||0,days=+o.days||0;
+  if(o.type!=='none'){
+    var rate=RATE[o.type][o.fraud];
+    var rep=Math.floor(base*rate);
+    var rr=0,list=RED[o.type];
+    for(var i=0;i<list.length;i++){if(list[i][0]===o.red)rr=list[i][2]}
+    var cut=Math.floor(rep*rr);
+    out.lines.push((o.type==='nofile'?'무신고':'과소신고')+'가산세: '+won(base)+' × '+(rate*100)+'% = '+won(rep));
+    if(rr>0)out.lines.push('감면(제48조②): '+won(rep)+' × '+(rr*100)+'% = △'+won(cut));
+    out.total+=rep-cut;
+  }
+  if(lateTax>0&&days>0){
+    var late=Math.floor(lateTax*days*22/100000);
+    out.lines.push('납부지연가산세: '+won(lateTax)+' × '+days+'일 × 22/100,000 = '+won(late));
+    out.total+=late;
+  }
+  return out;
+}
+var BRATE=[
+ ['지연발급 (공급시기 속한 과세기간 확정신고기한까지 발급)',0.01,'제60조②1호'],
+ ['미발급 (확정신고기한까지 미발급)',0.02,'제60조②2호'],
+ ['지연수취 (지연 수취 세금계산서 매입세액 공제)',0.005,'별지 제21호서식'],
+ ['전자세금계산서 발급명세 지연전송',0.003,'별지 제21호서식'],
+ ['전자세금계산서 발급명세 미전송',0.005,'별지 제21호서식'],
+ ['세금계산서합계표 제출 불성실',0.005,'별지 제21호서식'],
+ ['세금계산서합계표 지연제출 (확정신고와 함께 제출)',0.003,'별지 제21호서식']
+];
+function calcB(i,amt){var r=BRATE[i];return {name:r[0],rate:r[1],src:r[2],amt:Math.floor((+amt||0)*r[1])}}
+var CRATE=[
+ ['지급명세서 미제출 (일반)',0.01],
+ ['지급명세서 기한 후 3개월 이내 제출 (일반)',0.005],
+ ['일용근로소득 지급명세서 미제출',0.0025],
+ ['일용근로소득 지급명세서 기한 후 1개월 이내 제출',0.00125],
+ ['간이지급명세서 미제출',0.0025],
+ ['간이지급명세서 기한 후 1개월 이내 제출',0.00125]
+];
+function calcC(i,amt){var r=CRATE[i];return {name:r[0],rate:r[1],amt:Math.floor((+amt||0)*r[1])}}
+var DK=[
+ ['reg','사업자등록 신청기한 (사업 개시일 기준)'],
+ ['vatclose','폐업 시 부가세 확정신고기한 (폐업일 기준)'],
+ ['corp3','법인세 신고기한 (사업연도 종료일 기준)'],
+ ['corp4','법인세 신고기한 – 성실신고확인서 제출 법인 (사업연도 종료일 기준)'],
+ ['corpsplit1','법인세 분납기한 – 일반법인 (신고·납부기한 기준)'],
+ ['corpsplit2','법인세 분납기한 – 중소기업 (신고·납부기한 기준)'],
+ ['corpmid','법인세 중간예납 납부기한 (사업연도 개시일 기준)'],
+ ['liq','청산소득 확정신고기한 (잔여재산가액 확정일 기준)'],
+ ['wh','원천징수세액 납부기한 – 매월 (징수일 기준)'],
+ ['wh6','원천징수세액 납부기한 – 반기납부 (징수일 기준)']
+];
+function calcD(k,d){
+  var r,tx='';
+  if(k==='reg'){r=addDays(d,20);tx='사업 개시일부터 20일 이내 (부가가치세법 제8조①)'}
+  else if(k==='vatclose'){r=new Date(d.getFullYear(),d.getMonth()+1,25);tx='폐업일이 속한 달의 다음 달 25일 (부가가치세법 제49조①)'}
+  else if(k==='corp3'){r=addMonthsEOM(eomOf(d),3);tx='사업연도 종료일이 속하는 달의 말일부터 3개월 (법인세법 제60조①)'}
+  else if(k==='corp4'){r=addMonthsEOM(eomOf(d),4);tx='성실신고확인서 제출 시 4개월 (법인세법 제60조①)'}
+  else if(k==='corpsplit1'){r=addMonthsEOM(d,1);tx='납부기한이 지난 날부터 1개월 이내, 납부세액 1천만원 초과 시 (법인세법 제64조②)'}
+  else if(k==='corpsplit2'){r=addMonthsEOM(d,2);tx='중소기업 2개월 이내, 납부세액 1천만원 초과 시 (법인세법 제64조②)'}
+  else if(k==='corpmid'){var pe=addDays(addMonthsEOM(d,6),-1);r=addMonthsEOM(pe,2);tx='중간예납기간(개시일부터 6개월, 말일 '+fmt(pe)+')이 지난 날부터 2개월 이내 (법인세법 제63조의2③)'}
+  else if(k==='liq'){r=addMonthsEOM(eomOf(d),3);tx='잔여재산가액 확정일이 속하는 달의 말일부터 3개월 (법인세법 제84조①1호)'}
+  else if(k==='wh'){r=new Date(d.getFullYear(),d.getMonth()+1,10);tx='징수일이 속하는 달의 다음 달 10일 (소득세법 제128조①)'}
+  else {var half=d.getMonth()<6?6:12;r=new Date(d.getFullYear(),half,10);tx='징수일이 속하는 반기의 마지막 달의 다음 달 10일 (소득세법 제128조②, 시행령 제186조)'}
+  return {date:r,text:tx};
+}
+/*CALC-END*/
+
+var STAT={ok:'<span class="b ok">확인</span>',chk:'<span class="b chk">원문 재확인</span>'};
+var P={};
+P.open={title:'① 개업',rows:[
+ ['사업자등록 신청','사업 개시일부터 20일 이내 (사업장마다). 신규 개시 예정자는 개시 전에도 신청 가능','부가가치세법 제8조①','ok'],
+ ['미등록 가산세','사업 개시일부터 등록 신청일 직전일까지 공급가액 합계의 1%','부가가치세법 제60조①1호','ok'],
+ ['등록 전 매입세액','사업자등록 신청 전 매입세액은 원칙적 불공제. 공급시기가 속한 과세기간 종료 후 20일 이내 등록 신청 시 그 과세기간 기산일까지 역산한 기간 내 매입세액은 공제 대상','부가가치세법 제39조(공제하지 않는 매입세액) 해당 호 번호는 원문 확인','chk'],
+ ['최초 과세기간','사업 개시일(개시 전 등록 시 등록 신청일)부터 그 날이 속한 과세기간 종료일까지','부가가치세법 제5조②','ok'],
+ ['최초 예정신고기간','사업 개시일(개시 전 등록 시 신청일)부터 그 날이 속한 예정신고기간 종료일까지','부가가치세법 제48조① 단서','ok'],
+ ['간이과세자 납부의무 면제','해당 과세기간 공급대가 합계 4,800만원 미만이면 납부의무 면제 (재고납부세액 등 제64조 가산분 제외)','부가가치세법 제69조①','ok']
+]};
+P.run={title:'② 사업 중',rows:[
+ ['부가세 예정신고·납부 (일반과세자)','예정신고기간 종료 후 25일 이내 → 1기 4.25, 2기 10.25','부가가치세법 제48조①','ok'],
+ ['예정고지','개인사업자와 영세법인(시행령 정한 법인)은 직전 과세기간 납부세액의 50%를 결정·고지. 사업 부진(직전 공급가액·납부세액의 1/3 미달), 조기환급 등은 예정신고·납부 가능','부가가치세법 제48조③④, 시행령 제90조','ok'],
+ ['부가세 확정신고·납부','과세기간 종료 후 25일 이내 → 1기 7.25, 2기 다음 해 1.25','부가가치세법 제49조①','ok'],
+ ['간이과세자 확정신고','과세기간(1.1~12.31) 종료 후 25일 이내 → 다음 해 1.25','부가가치세법 제67조①','chk'],
+ ['세금계산서 가산세','지연발급 1%, 미발급 2% (계산기 ② 참조)','부가가치세법 제60조②','ok'],
+ ['종합소득세 확정신고','다음 해 5.1~5.31. 복식부기의무자가 조정계산서 미제출 시 신고하지 않은 것으로 봄','소득세법 제70조①④','ok'],
+ ['성실신고확인대상','성실신고확인서 제출 시 다음 해 6.30까지 신고. 미제출 가산세: ①산출세액×(사업소득금액/종합소득금액)×5% ②사업소득 총수입금액×2/10,000 중 큰 금액','소득세법 제70조의2①②, 제81조의2①','ok'],
+ ['중간예납','직전 과세기간 종합소득세의 1/2을 11.30까지 납부 (고지 11.1~11.15)','소득세법 제65조①②','ok'],
+ ['소득세 분납','1천만원 초과 시 분납 가능 (기간은 원문 재확인)','소득세법 제77조','chk'],
+ ['사업장현황신고 (면세사업자)','다음 해 2.10까지. 부가세 신고를 한 사업자는 신고한 것으로 봄 (겸영 시 면세분은 별도)','소득세법 제78조①②','ok'],
+ ['원천징수세액 납부','징수일이 속하는 달의 다음 달 10일','소득세법 제128조①','ok'],
+ ['반기별 납부','직전 연도 상시고용인원 20명 이하(금융·보험업 제외) + 세무서장 승인/국세청장 지정. 신청: 반기 직전월 1일~말일(6월·12월), 승인통지: 신청일 속한 반기의 다음 달 말일(미통지 시 승인 간주). 납부: 7.10 / 1.10','소득세법 제128조②, 시행령 제186조','ok'],
+ ['지급명세서 불성실 가산세','미제출 지급금액 1% (3개월 내 제출 0.5%). 일용근로·간이지급명세서 0.25% (1개월 내 제출 0.125%). 산출세액 없어도 적용','소득세법 제81조의11','ok'],
+ ['간이지급명세서 제출기한 (상용근로)','소득 지급한 달의 다음 달 말일 (서식 안내 기준, 원문 대조 필요)','소득세법 제164조의3, 시행규칙 서식','chk'],
+ ['영수증 수취명세서','미제출·불분명 지급금액의 1% (소규모사업자 등 제외)','소득세법 제81조①','ok'],
+ ['신고 후 수정','과소신고 가산세 감면: 1개월 90%, 3개월 75%, 6개월 50%, 1년 30%, 1.5년 20%, 2년 10%','국세기본법 제48조②1호','ok']
+]};
+P.close={title:'③ 폐업',rows:[
+ ['폐업신고','지체 없이 휴업(폐업)신고서 제출(사업자등록증 첨부). 부가세 확정신고서에 폐업연월일·사유를 적고 등록증을 첨부하면 폐업신고서 제출로 봄','부가가치세법 시행령 제13조①②③','ok'],
+ ['폐업일','사업을 실질적으로 폐업하는 날 (불분명하면 폐업신고서 접수일). 개시 전 등록 후 6개월 내 공급실적 없으면 6개월 되는 날','부가가치세법 시행령 제7조①③','ok'],
+ ['폐업 부가세 확정신고','폐업일이 속한 달의 다음 달 25일까지. 과세기간 개시일~폐업일 실적과 잔존재화 포함','부가가치세법 제49조①, 시행규칙 별지 제9호서식','ok'],
+ ['사업장현황신고','폐업·휴업 사업자 포함하여 다음 해 2.10까지','소득세법 제78조①','ok'],
+ ['종합소득세 신고','폐업 연도 소득도 다음 해 5.1~5.31 확정신고','소득세법 제70조①','ok'],
+ ['휴업 중 신고','휴업 기간 중에도 신고기한이 도래하면 부가세 확정신고·납부','시행규칙 별지 제9호서식 유의사항','ok'],
+ ['폐업월 원천세·지급명세서','원천세는 다음 달 10일 납부. 폐업 시 지급명세서 제출기한은 원문 대조','소득세법 제128조①, 제164조','chk']
+]};
+var C={};
+C.found={title:'① 설립',rows:[
+ ['법인설립신고 및 사업자등록','별지 제73호서식으로 법인설립 및 사업자등록 신청. 첨부: 주주 또는 출자자명세서, 임대차계약서 사본(임차 시), 사업허가·등록·신고 사본(해당 시), 현물출자명세서(현물출자 시)','법인세법 제109조·제111조, 시행령 제152조~제154조, 시행규칙 별지 제73호서식','ok'],
+ ['법인설립신고 기한','설립일부터 2개월 이내 (원문 확인 필요)','법인세법 제109조①','chk'],
+ ['사업자등록 신청기한','사업 개시일부터 20일 이내. 설립등기 전·허가 전에도 사업계획서 등 첨부하여 신청 가능','부가가치세법 제8조①, 시행령 제11조④','chk'],
+ ['주주등의 명세서','미제출·누락 시 해당 주주 보유 액면금액(출자가액)의 0.5% 가산세, 산출세액 없어도 징수','법인세법 가산세 규정 (조문번호 원문 재확인)','chk'],
+ ['주주명부·명의대여','내국법인은 주주(사원)명부를 작성·비치. 주주명의 대여 시 양도소득세·증여세 과세 가능','별지 제73호서식 안내','ok'],
+ ['미등록 가산세','개시일부터 등록 신청일 직전일까지 공급가액 합계 1%','부가가치세법 제60조①1호','ok']
+]};
+C.run={title:'② 사업 중',rows:[
+ ['부가세 예정·확정신고','예정: 예정신고기간 종료 후 25일 이내(4.25, 10.25). 확정: 과세기간 종료 후 25일 이내(7.25, 1.25). 영세법인사업자는 예정고지 대상 (범위는 시행령 제90조 원문 확인)','부가가치세법 제48조·제49조','ok'],
+ ['법인세 신고','사업연도 종료일이 속하는 달의 말일부터 3개월 이내 (성실신고확인서 제출 법인 4개월). 12월 결산: 다음 해 3.31','법인세법 제60조①','ok'],
+ ['신고서 첨부서류','재무상태표·포괄손익계산서·이익잉여금처분계산서(또는 결손금처리계산서), 세무조정계산서 등. 소득금액이 없거나 결손이어도 신고','법인세법 제60조②③','ok'],
+ ['필수서류 미첨부','재무제표·세무조정계산서 미첨부 시 신고로 보지 않는 규정 (현행 항 번호 확인)','법인세법 제60조','chk'],
+ ['법인세 납부·분납','신고기한까지 납부. 1천만원 초과 시 납부기한이 지난 날부터 1개월(중소기업 2개월) 이내 분납','법인세법 제64조①②','ok'],
+ ['중간예납','사업연도 개시일부터 6개월을 중간예납기간으로 하여 지난 날부터 2개월 이내 납부 (12월 결산 8.31). 직전 사업연도 중소기업 + 계산세액 50만원 미만 제외. 1천만원 초과 분납','법인세법 제63조, 제63조의2','ok'],
+ ['원천징수 소득세','징수일이 속하는 달의 다음 달 10일. 상시고용 20명 이하 + 승인 시 반기납부','소득세법 제128조, 시행령 제186조','ok'],
+ ['원천징수 법인세 반기납부','법인 원천징수 법인세도 20인 이하 + 승인 시 반기납부. 승인 신청: 반기 직전월 1일~말일','법인세법 제73조⑨, 시행령 (조문번호 확인)','chk'],
+ ['지급명세서 불성실 가산세','미제출 1% (3개월 내 제출 50% 감면), 일용근로 0.25% (1개월 내 50% 감면), 간이지급명세서 0.25%','법인세법 시행규칙 별지 제9호서식, 소득세법 제81조의11','ok'],
+ ['세금계산서 가산세','지연발급 1%, 미발급 2%','부가가치세법 제60조②','ok'],
+ ['수정신고 감면','과소신고 가산세: 1개월 90%, 3개월 75%, 6개월 50%, 1년 30%, 1.5년 20%, 2년 10%','국세기본법 제48조②1호','ok']
+]};
+C.liq={title:'③ 해산·청산',rows:[
+ ['청산소득 계산','잔여재산가액 − 해산등기일 현재 자기자본 총액(자본금·출자금 + 잉여금). 합병·분할 해산은 제외. 해산등기일 현재 이월결손금은 자기자본 총액과 상계','법인세법 제79조①④','ok'],
+ ['청산기간 중 사업연도 소득','청산기간 중 생기는 각 사업연도 소득금액은 사업연도 소득금액에 산입 (청산소득에 포함하지 않음)','법인세법 제79조⑥','ok'],
+ ['잔여재산가액 확정일','잔여재산의 추심·환가 완료일, 그대로 분배하는 경우 분배 완료일. 해산일부터 365일까지 미확정이면 365일 되는 날에 확정된 것으로 봄','법인세법 시행령 (잔여재산가액 확정 규정, 조문번호 확인)','ok'],
+ ['청산소득 확정신고','잔여재산가액 확정일이 속하는 달의 말일부터 3개월 이내. 확정일 현재 재무상태표 첨부. 청산소득 금액이 없어도 신고','법인세법 제84조①②③','ok'],
+ ['청산소득 중간신고','잔여재산가액 확정 전 일부 분배 시 분배한 날, 해산등기일부터 1년까지 미확정 시 그 1년이 되는 날을 기준으로 신고 (신고기한은 원문 확인)','법인세법 제85조','chk'],
+ ['의제 사업연도','잔여재산가액이 사업연도 중 확정되면 그 사업연도 개시일부터 확정일까지를 사업연도로 봄. 해산 시 의제사업연도(개시일~해산등기일)는 원문 확인','법인세법 제8조','chk'],
+ ['부가세 폐업일','청산 중 법인은 사업을 실질적으로 폐업하는 날부터 25일 이내 신고·승인을 받으면 잔여재산가액 확정일(365일 미확정 시 365일 되는 날)을 폐업일로 할 수 있음','부가가치세법 시행령 제7조②','ok'],
+ ['폐업신고·부가세 확정신고','폐업일이 속한 달의 다음 달 25일까지. 신고서에 폐업일·사유 적고 사업자등록증 첨부','부가가치세법 제49조①, 시행령 제13조','ok'],
+ ['합병 시 폐업','존속·신설법인이 법인합병신고서에 사업자등록증을 첨부하여 소멸법인 폐업 신고. 합병·분할 해산은 청산소득 과세 대상 아님','부가가치세법 시행령 제13조④, 법인세법 제79조①','ok'],
+ ['상법상 해산등기·청산인·청산종결등기','세법 외 절차(상법·법원 등기). 이번에 조회하지 않음. 해산등기일은 청산소득 계산 기준일이므로 등기부 확인 필요','상법 (미조회)','chk']
+]};
+
+var CAL=[
+ ['매월 10일','원천징수세액 납부 (전월 지급분)','소득세법 제128조①','ok'],
+ ['1.10','반기납부자 하반기분 원천세 납부','소득세법 제128조②','ok'],
+ ['1.25','부가세 2기 확정신고·납부 (일반, 법인). 간이과세자 확정신고','부가가치세법 제49조·제67조','ok'],
+ ['2.10','면세사업자 사업장현황신고','소득세법 제78조①','ok'],
+ ['3.31','12월 결산 법인 법인세 신고·납부 (성실신고확인서 제출 법인 4.30)','법인세법 제60조①','ok'],
+ ['4.25','부가세 1기 예정신고·납부 (법인, 고지 대상 아닌 개인)','부가가치세법 제48조①','ok'],
+ ['5.31','종합소득세 확정신고 (5.1~5.31)','소득세법 제70조①','ok'],
+ ['6.30','성실신고확인대상 개인사업자 종합소득세 신고','소득세법 제70조의2②','ok'],
+ ['7.10','반기납부자 상반기분 원천세 납부','소득세법 제128조②','ok'],
+ ['7.25','부가세 1기 확정신고·납부','부가가치세법 제49조①','ok'],
+ ['8.31','12월 결산 법인 법인세 중간예납','법인세법 제63조의2③','ok'],
+ ['10.25','부가세 2기 예정신고·납부','부가가치세법 제48조①','ok'],
+ ['11.30','개인 종합소득세 중간예납 (고지 11.1~11.15)','소득세법 제65조①②','ok']
+];
+var PEND=[
+ ['납부지연가산세 – 지정납부기한 후(고지 후) 월 단위 이율','국세기본법 제47조의4①1호의2·2호의2 월 단위 산정은 조문 확인. 월 이자율 1만분의 67은 시행령 개정이유 기준이므로 시행령 제27조의4② 원문 확인 필요. 150만원 미만 고지분 제외(제47조의4⑧), 지정납부기한 후 3%(제3호)도 별도 확인'],
+ ['법인설립신고 기한','법인세법 제109조① 원문 (설립일부터 2개월 이내 여부)'],
+ ['주주등의 명세서 가산세 조문번호·율','법인세법 현행 가산세 조문 (0.5% 여부)'],
+ ['간이과세자 확정신고기한','부가가치세법 제67조① 현행 문언'],
+ ['상용근로 간이지급명세서 제출기한','소득세법 제164조의3 (서식 안내 기준 \'다음 달 말일\')'],
+ ['소득세 분납 기간','소득세법 제77조 (1천만원 초과, 납부기한 후 2개월)'],
+ ['청산소득 중간신고 기한 및 의제사업연도','법인세법 제85조, 제8조'],
+ ['기한 이월 (토·일·공휴일)','국세기본법 제5조'],
+ ['기한후신고 3개월 초과 6개월 이내 감면율(20%)','국세기본법 제48조②2호다목'],
+ ['부당 무신고 수입금액 14/10,000 특례','국세기본법 제47조의2② 현행 문언'],
+ ['지방소득세','지방세법 – 이번 버전 미조회']
+];
+
+var NAVS=[['person','개인사업자'],['corp','법인'],['calc','가산세·기한 계산기'],['cal','기한표'],['link','바로가기·확인필요']];
+function $(id){return document.getElementById(id)}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+
+function showSec(id){
+  NAVS.forEach(function(n){$('s-'+n[0]).classList.toggle('on',n[0]===id);});
+  var bs=$('nav').children;for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',NAVS[i][0]===id);
+}
+function mkNav(){
+  var h='';NAVS.forEach(function(n){h+='<button onclick="showSec(\''+n[0]+'\')">'+n[1]+'</button>'});
+  $('nav').innerHTML=h;showSec('person');
+}
+function rowsHtml(pfx,key,rows){
+  var h='<table><tr><th style="width:26px">✔</th><th>업무</th><th>기한·기준</th><th>근거 (국가법령정보센터)</th><th>상태</th></tr>';
+  rows.forEach(function(r,i){
+    var id='tx_'+pfx+'_'+key+'_'+i,on=store(id)==='1';
+    h+='<tr><td><input class="tick" type="checkbox" '+(on?'checked':'')+' onchange="store(\''+id+'\',this.checked?\'1\':\'0\')"></td><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td class="law">'+r[2]+'</td><td>'+STAT[r[3]]+'</td></tr>';
+  });
+  return h+'</table>';
+}
+function lifecycle(pfx,obj,def){
+  var keys=Object.keys(obj),sh='';
+  keys.forEach(function(k){sh+='<button data-k="'+k+'" onclick="pick(\''+pfx+'\',\''+k+'\')">'+obj[k].title+'</button>'});
+  $(pfx+'-step').innerHTML=sh;
+  window['_o_'+pfx]=obj;
+  pick(pfx,def);
+}
+function pick(pfx,k){
+  var obj=window['_o_'+pfx],bs=$(pfx+'-step').children;
+  for(var i=0;i<bs.length;i++)bs[i].classList.toggle('on',bs[i].getAttribute('data-k')===k);
+  $(pfx+'-tbl').innerHTML=rowsHtml(pfx,k,obj[k].rows);
+}
+function mkCal(){
+  var h='<table><tr><th>기한</th><th>업무</th><th>근거</th><th>상태</th></tr>';
+  CAL.forEach(function(r){h+='<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td class="law">'+r[2]+'</td><td>'+STAT[r[3]]+'</td></tr>'});
+  $('cal-tbl').innerHTML=h+'</table>';
+  var p='<table><tr><th>항목</th><th>확인할 원문</th></tr>';
+  PEND.forEach(function(r){p+='<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td></tr>'});
+  $('pend').innerHTML=p+'</table>';
+}
+function opt(sel,arr,vfn,lfn){var h='';arr.forEach(function(x,i){h+='<option value="'+vfn(x,i)+'">'+lfn(x,i)+'</option>'});$(sel).innerHTML=h}
+function fillRed(){
+  var t=$('a-type').value;
+  var list=t==='nofile'?RED.nofile:RED.under;
+  opt('a-red',list,function(x){return x[0]},function(x){return x[1]});
+}
+function mkCalc(){
+  opt('b-type',BRATE,function(x,i){return i},function(x){return x[0]+' – '+(x[1]*100)+'%'});
+  opt('c-type',CRATE,function(x,i){return i},function(x){return x[0]+' – '+(x[1]*100)+'%'});
+  opt('d-kind',DK,function(x){return x[0]},function(x){return x[1]});
+  $('a-type').onchange=fillRed;fillRed();
+}
+function runA(){
+  var o={type:$('a-type').value,fraud:$('a-fraud').value,base:$('a-base').value.replace(/,/g,''),red:$('a-red').value,late:$('a-late').value.replace(/,/g,''),days:$('a-days').value};
+  var r=calcA(o);
+  $('a-res').textContent=r.lines.length?r.lines.join('\n')+'\n────────\n가산세 합계: '+won(r.total):'입력값을 확인하세요.';
+}
+function runB(){
+  var r=calcB(+$('b-type').value,$('b-amt').value.replace(/,/g,''));
+  $('b-res').textContent=r.name+'\n공급가액 × '+(r.rate*100)+'% = '+won(r.amt)+'\n근거: 부가가치세법 '+r.src;
+}
+function runC(){
+  var r=calcC(+$('c-type').value,$('c-amt').value.replace(/,/g,''));
+  $('c-res').textContent=r.name+'\n지급금액 × '+(r.rate*100)+'% = '+won(r.amt)+'\n근거: 소득세법 제81조의11';
+}
+function runD(){
+  var v=$('d-date').value;if(!v){$('d-res').textContent='기준일을 입력하세요.';return}
+  var r=calcD($('d-kind').value,parseD(v));
+  $('d-res').textContent='법정 기한: '+fmt(r.date)+'\n'+r.text;
+}
+function cp(id){
+  var t=$(id).textContent;
+  try{navigator.clipboard.writeText(t)}catch(e){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
+}
+mkNav();lifecycle('p',P,'open');lifecycle('c',C,'found');mkCal();mkCalc();
+</script>
+</body>
+</html>
