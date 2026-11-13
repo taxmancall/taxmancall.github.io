@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>세무 통합 대시보드 v1.3 · 원제우세무사사무소</title>
+<title>세무 통합 대시보드 v1.4 · 원제우세무사사무소</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--sub:#5b6676;--line:#dfe3ea;--pri:#1f4e8c;--pri-bg:#e8f0fb;--ok:#13795b;--ok-bg:#e3f5ee;--chk:#9a5b00;--chk-bg:#fff2d9}
 @media(prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--ink:#e8ecf2;--sub:#9aa5b5;--line:#2c3542;--pri:#7fb0f0;--pri-bg:#1e2c40;--ok:#58d3a8;--ok-bg:#15332b;--chk:#f0b45a;--chk-bg:#3a2d14}}
@@ -64,11 +64,14 @@ th,td{padding:10px 8px;line-height:1.6}
 td.tt b{line-height:1.5}
 .note{line-height:1.65;margin:8px 0}.warn{line-height:1.65}
 .res{line-height:1.75}
+.fwrap{margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+#v-frame{display:block;width:100%;height:78vh;min-height:520px;border:0}
+a.open{display:inline-block;margin-top:2px;color:var(--pri);font-size:14px;text-decoration:none;border:1px solid var(--line);border-radius:16px;padding:5px 12px;background:var(--card)}
 </style>
 </head>
 <body>
 <header>
-  <h1>세무 통합 대시보드<span class="ver">v1.3</span></h1>
+  <h1>세무 통합 대시보드<span class="ver">v1.4</span></h1>
   <div class="meta">원제우세무사사무소 · 직원용 내부 도구 · 법령 조회 기준일 <b>2026.11.13</b> (국가법령정보센터 조회) · 개업/설립 → 사업 중 신고 → 폐업/청산</div>
 </header>
 <nav><div class="in" id="nav"></div></nav>
@@ -87,6 +90,16 @@ td.tt b{line-height:1.5}
     <div class="note">설립 → 사업 중 신고 → 해산·청산. 청산소득·폐업일 규정은 개인과 다르므로 구분해서 봅니다.</div>
     <div class="step" id="c-step"></div>
     <div class="tw" id="c-tbl"></div>
+  </div>
+</section>
+
+<section id="s-vat">
+  <div class="card"><h2>부가세 도구</h2>
+    <div class="note">사무소에서 운영 중인 부가세 공제·분석 도구를 이 탭에서 바로 씁니다. 아래 화면은 각 도구의 실제 페이지이므로 원본이 수정되면 그대로 반영됩니다. 화면이 좁으면 「새 창으로 열기」를 쓰세요.</div>
+    <div class="step" id="v-step"></div>
+    <div class="note" id="v-desc"></div>
+    <div><a class="open" id="v-open" href="#" target="_blank" rel="noopener">새 창으로 열기 ↗</a></div>
+    <div class="fwrap"><iframe id="v-frame" title="부가세 도구" loading="lazy"></iframe></div>
   </div>
 </section>
 
@@ -372,7 +385,7 @@ var PEND=[
  ['지방소득세','지방세법 – 이번 버전 미조회']
 ];
 
-var NAVS=[['person','개인사업자'],['corp','법인'],['calc','가산세·기한 계산기'],['cal','기한표'],['link','바로가기·확인필요']];
+var NAVS=[['person','개인사업자'],['corp','법인'],['vat','부가세'],['calc','가산세·기한 계산기'],['cal','기한표'],['link','바로가기·확인필요']];
 function $(id){return document.getElementById(id)}
 function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
 
@@ -447,6 +460,27 @@ function cp(id){
   var t=$(id).textContent;
   try{navigator.clipboard.writeText(t)}catch(e){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
 }
+var VT=[
+ ['card','카드 사용 세무 가이드','/card/','법인·사업자 카드 사용 시 부가세 공제·불공제와 세무 처리 기준을 정리한 가이드'],
+ ['gong','발행세액공제 판정','/cardgong/','신용카드매출전표 등 발행세액공제 대상 여부 판정 도구'],
+ ['work','카드매입 위하고 변환기','/cardwork/','위하고 카드매입 엑셀을 홈택스 사업용신용카드 매입세액 공제 확인·변경 양식 등으로 변환'],
+ ['ann','부가세 연간 분석','/AnnualVATReport1.0/','홈택스 부가세 신고서 PDF를 읽어 기간별 비교 보고서를 만드는 도구'],
+ ['we','위하고 내보내기','/wehago_export_tool.html','위하고(WEHAGO T) 자료를 엑셀 등으로 내보내는 도구']
+];
+function mkVat(){
+  var h='';VT.forEach(function(v,i){h+='<button data-i="'+i+'" onclick="vatPick('+i+')">'+v[1]+'</button>'});
+  $('v-step').innerHTML=h;
+}
+function vatPick(i){
+  var v=VT[i],bs=$('v-step').children;
+  for(var k=0;k<bs.length;k++)bs[k].classList.toggle('on',k===i);
+  $('v-desc').textContent=v[3];
+  $('v-open').href=v[2];
+  if($('v-frame').getAttribute('data-i')!==''+i){$('v-frame').src=v[2];$('v-frame').setAttribute('data-i',''+i)}
+}
+var _showSec=showSec;
+showSec=function(id){_showSec(id);if(id==='vat'&&!$('v-frame').getAttribute('data-i'))vatPick(0)};
+mkVat();
 mkNav();lifecycle('p',P,'open');lifecycle('c',C,'found');mkCal();mkCalc();
 </script>
 </body>
