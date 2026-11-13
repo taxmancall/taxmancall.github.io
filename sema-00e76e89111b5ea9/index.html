@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>세무 통합 대시보드 v2.3 · 원제우세무사사무소</title>
+<title>세무 통합 대시보드 v2.4 · 원제우세무사사무소</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--sub:#5b6676;--line:#dfe3ea;--pri:#1f4e8c;--pri-bg:#e8f0fb;--ok:#13795b;--ok-bg:#e3f5ee;--chk:#9a5b00;--chk-bg:#fff2d9}
 @media(prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--ink:#e8ecf2;--sub:#9aa5b5;--line:#2c3542;--pri:#7fb0f0;--pri-bg:#1e2c40;--ok:#58d3a8;--ok-bg:#15332b;--chk:#f0b45a;--chk-bg:#3a2d14}}
@@ -71,7 +71,7 @@ a.open{display:inline-block;margin-top:2px;color:var(--pri);font-size:14px;text-
 </head>
 <body>
 <header>
-  <h1>세무 통합 대시보드<span class="ver">v2.3</span></h1>
+  <h1>세무 통합 대시보드<span class="ver">v2.4</span></h1>
   <div class="meta">원제우세무사사무소 · 직원용 내부 도구 · 법령 조회 기준일 <b>2026.11.13</b> (국가법령정보센터 조회) · 개업/설립 → 사업 중 신고 → 폐업/청산</div>
 </header>
 <nav><div class="in" id="nav"></div></nav>
@@ -104,6 +104,15 @@ a.open{display:inline-block;margin-top:2px;color:var(--pri);font-size:14px;text-
       <div class="warn">이번 버전의 새 항목은 law.go.kr 원문을 열 수 없어 조문 인용문·국세청 유권해석 사례·실무 자료로 대조했습니다. 「확인」은 조문 문언이 인용문으로 확인된 항목, 「원문 재확인」은 그 밖의 항목입니다. 신고 전 원문과 대조하세요.</div>
       <div class="step" id="x-step"></div>
       <div class="tw" id="x-tbl"></div>
+      <div id="x-fx" class="note" style="display:none">
+        <b>환율 조회</b> (수출 공급시기 환산용)<br>
+        <div class="links" style="margin:6px 0">
+          <a href="https://www.smbs.biz" target="_blank" rel="noopener">서울외국환중개 (매매기준율·재정환율)</a>
+          <a href="https://www.bok.or.kr" target="_blank" rel="noopener">한국은행</a>
+          <a href="https://unipass.customs.go.kr" target="_blank" rel="noopener">관세청 UNI-PASS</a>
+        </div>
+        선적일(B/L On Board 일자) 당일 고시 환율을 조회해 건별로 기록하세요. 시행령 제59조의 기준환율·재정환율이 어느 고시를 가리키는지, 휴일 선적일의 적용 환율은 원문 재확인. 관세청 신고 환율은 부가세 환율과 다를 수 있어 그대로 쓰지 않습니다.
+      </div>
       <div id="x-calc" style="display:none">
         <h3>공통매입세액 안분 계산 (영 제81조 제1항)</h3>
         <div class="grid">
@@ -181,6 +190,7 @@ a.open{display:inline-block;margin-top:2px;color:var(--pri);font-size:14px;text-
       <a href="https://www.hometax.go.kr" target="_blank" rel="noopener">홈택스</a>
       <a href="https://www.law.go.kr" target="_blank" rel="noopener">국가법령정보센터</a>
       <a href="https://www.nts.go.kr" target="_blank" rel="noopener">국세청</a>
+      <a href="https://www.smbs.biz" target="_blank" rel="noopener">서울외국환중개(환율)</a>
       <a href="https://www.wetax.go.kr" target="_blank" rel="noopener">위택스(지방소득세)</a>
       <a href="https://taxmancall.com/nomu-5e14a4418e2b8104/" target="_blank" rel="noopener">노무 통합 대시보드</a>
     </div>
@@ -614,7 +624,7 @@ function runX(){
 var _showSec=showSec;
 showSec=function(id){_showSec(id);if(id==='vat'&&!window._vinit){window._vinit=1;vatPick(0)}};
 mkVat();
-mkNav();lifecycle('x',XD,'anbun');var _pick2=pick;pick=function(pf,k){_pick2(pf,k);if(pf==='x')$('x-calc').style.display=k==='anbun'?'block':'none'};pick('x','anbun');lifecycle('p',P,'open');lifecycle('c',C,'found');mkCal();mkCalc();
+mkNav();lifecycle('x',XD,'anbun');var _pick2=pick;pick=function(pf,k){_pick2(pf,k);if(pf==='x')$('x-calc').style.display=k==='anbun'?'block':'none';$('x-fx').style.display=(k==='exp'||k==='expdoc')?'block':'none'};pick('x','anbun');lifecycle('p',P,'open');lifecycle('c',C,'found');mkCal();mkCalc();
 </script>
 </body>
 </html>
