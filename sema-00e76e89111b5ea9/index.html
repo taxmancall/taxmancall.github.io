@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>세무 통합 대시보드 v1.4 · 원제우세무사사무소</title>
+<title>세무 통합 대시보드 v1.5 · 원제우세무사사무소</title>
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--sub:#5b6676;--line:#dfe3ea;--pri:#1f4e8c;--pri-bg:#e8f0fb;--ok:#13795b;--ok-bg:#e3f5ee;--chk:#9a5b00;--chk-bg:#fff2d9}
 @media(prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--ink:#e8ecf2;--sub:#9aa5b5;--line:#2c3542;--pri:#7fb0f0;--pri-bg:#1e2c40;--ok:#58d3a8;--ok-bg:#15332b;--chk:#f0b45a;--chk-bg:#3a2d14}}
@@ -71,7 +71,7 @@ a.open{display:inline-block;margin-top:2px;color:var(--pri);font-size:14px;text-
 </head>
 <body>
 <header>
-  <h1>세무 통합 대시보드<span class="ver">v1.4</span></h1>
+  <h1>세무 통합 대시보드<span class="ver">v1.5</span></h1>
   <div class="meta">원제우세무사사무소 · 직원용 내부 도구 · 법령 조회 기준일 <b>2026.11.13</b> (국가법령정보센터 조회) · 개업/설립 → 사업 중 신고 → 폐업/청산</div>
 </header>
 <nav><div class="in" id="nav"></div></nav>
@@ -462,6 +462,7 @@ function cp(id){
 }
 var VT=[
  ['card','카드 사용 세무 가이드','/card/','법인·사업자 카드 사용 시 부가세 공제·불공제와 세무 처리 기준을 정리한 가이드'],
+ ['chk','카드 공제 확인 (업체용)','/cardcheck/','위하고 공제/불공제 분류 중 업체 확인이 필요한 건을 업체에 보내 응답받는 도구 (링크 발급용)'],
  ['gong','발행세액공제 판정','/cardgong/','신용카드매출전표 등 발행세액공제 대상 여부 판정 도구'],
  ['work','카드매입 위하고 변환기','/cardwork/','위하고 카드매입 엑셀을 홈택스 사업용신용카드 매입세액 공제 확인·변경 양식 등으로 변환'],
  ['ann','부가세 연간 분석','/AnnualVATReport1.0/','홈택스 부가세 신고서 PDF를 읽어 기간별 비교 보고서를 만드는 도구'],
