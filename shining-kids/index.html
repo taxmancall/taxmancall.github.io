@@ -497,13 +497,30 @@ function stopSpeak(){
     if(playingBtn.id==="btn-listen")playingBtn.textContent="🔊 전체 듣기";
     else playingBtn.textContent="🔊";
     playingBtn=null;}
+  releaseAwake();
 }
+
+/* 재생 중 화면 꺼짐 방지 + 앱 복귀 시 이어서 재생 */
+let wakeLock=null;
+async function keepAwake(){
+  try{if("wakeLock" in navigator){wakeLock=await navigator.wakeLock.request("screen")}}catch(e){}
+}
+function releaseAwake(){
+  try{if(wakeLock){wakeLock.release();wakeLock=null}}catch(e){}
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&playingBtn){
+    keepAwake();
+    try{if(synth&&synth.paused)synth.resume()}catch(e){}
+  }
+});
 /* segments: [{text, pauseAfter(ms)}, ...] 를 순서대로 읽기 */
 function speakSeq(segments,btn,activeLabel){
   if(!synth){hint.textContent="이 기기에서는 읽어주기를 지원하지 않아요 😢";return}
   if(playingBtn===btn){stopSpeak();return}
   stopSpeak();
   playingBtn=btn; btn.classList.add("playing"); btn.textContent=activeLabel;
+  keepAwake();
   const myToken=seqToken;
   let i=0;
   function next(){
