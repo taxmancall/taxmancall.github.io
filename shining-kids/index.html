@@ -487,7 +487,7 @@ paintLoop();
    1) "N절" 먼저 읽고 잠깐 쉼
    2) 본문 읽기 (서너 단어씩 끊어 또박또박)
    3) 다음 절로 넘어가기 전 한 템포 쉼 */
-const PAUSE_AFTER_NUM=300, PAUSE_BETWEEN_VERSES=500;
+const PAUSE_AFTER_NUM=300, PAUSE_BETWEEN_VERSES=2000;
 let playingBtn=null, seqTimer=null, seqToken=0;
 function stopSpeak(){
   seqToken++;                       // 진행 중인 시퀀스 무효화
@@ -543,10 +543,9 @@ function slowText(t){
   for(let i=0;i<ws.length;i+=3) out.push(ws.slice(i,i+3).join(" "));
   return out.join(", ");
 }
-/* 한 절 = ["N절"(쉼)] + [본문] */
+/* 한 절 = 본문만 (절 번호 안 읽음), 절 사이 2초 쉼 */
 function verseSegments(n,text,last){
   return [
-    {text:n+"절",pauseAfter:PAUSE_AFTER_NUM},
     {text:slowText(text),pauseAfter:last?0:PAUSE_BETWEEN_VERSES}
   ];
 }
