@@ -222,6 +222,9 @@ footer b{font-family:var(--font-display);color:var(--accent)}
   <div class="sec-label">주차별 암송 말씀</div>
   <div class="weeks" id="week-list"></div>
 
+  <div class="sec-label">🎄 크리스마스 암송</div>
+  <div class="weeks" id="xmas-list"></div>
+
   <div class="sec-label">기본암송</div>
   <div class="weeks" id="basic-list"></div>
 
@@ -375,7 +378,13 @@ const BASICS=[
   [105,"주의 말씀은 내 발에 등이요 내 길에 빛이니이다"]]},
 ];
 
-const ALL={}; WEEKS.concat(BASICS).forEach(x=>ALL[x.id]=x);
+/* 🎄 크리스마스 암송: 요한복음 1장 1-18절 전체 (3·4·5주차 합본) */
+const XMAS={id:"xmas",badge:"🎄",ref:"요한복음 1:1-18",date:"크리스마스 암송",
+ st:"말씀이 우리에게로 — 성탄",
+ story:"크리스마스는 '말씀이 육신이 되어 우리 가운데 오신 날'이에요. 태초의 말씀이(1~5절), 요한의 증언을 지나(6~8절), 참 빛으로 세상에 오시고(9~13절), 마침내 사람이 되어 우리 가운데 거하셨어요(14~18절). 요한복음 1장 전체가 하나의 성탄 이야기랍니다!",
+ verses:WEEKS[2].verses.concat(WEEKS[3].verses,WEEKS[4].verses)};
+
+const ALL={}; WEEKS.concat(BASICS).forEach(x=>ALL[x.id]=x); ALL[XMAS.id]=XMAS;
 
 /* ---- progress (localStorage, best-effort) ---- */
 function loadDone(){try{return JSON.parse(localStorage.getItem("sk-done")||"{}")}catch(e){return{}}}
@@ -414,6 +423,8 @@ function renderHome(){
   const wl=document.getElementById("week-list"); wl.innerHTML="";
   WEEKS.forEach(w=>wl.appendChild(weekCard(w,false)));
   wl.appendChild(weekCard(PARTY,true));
+  const xl=document.getElementById("xmas-list"); xl.innerHTML="";
+  xl.appendChild(weekCard(XMAS,false));
   const bl=document.getElementById("basic-list"); bl.innerHTML="";
   BASICS.forEach(b=>bl.appendChild(weekCard(b,false)));
   const n=WEEKS.filter(w=>done[w.id]).length;
@@ -430,7 +441,7 @@ const HINTS={full:"말씀을 소리내어 읽어 보세요",pic:"그림 장면�
 function openPractice(id){
   cur=ALL[id]; mode="full";
   document.getElementById("p-ref").textContent=cur.ref;
-  document.getElementById("p-date").textContent=(cur.badge?"기본암송":"WEEK-"+cur.week+" · "+cur.date);
+  document.getElementById("p-date").textContent=(cur.week?"WEEK-"+cur.week+" · "+cur.date:cur.date);
   document.getElementById("story-title").textContent=cur.st||"";
   document.getElementById("story-text").textContent=cur.story||"";
   document.getElementById("story-card").hidden=!cur.story;
@@ -618,6 +629,8 @@ P("b1","#705a43",{
  9:["🚪🖊️","문설주와 바깥문에 기록해요"]});
 P("b2","#2b3450",{
  105:["🏮👣","주의 말씀은 내 발의 등, 내 길의 빛"]});
+/* 크리스마스 암송 그림 = 3·4·5주차 그림 합치기 (1~18절) */
+PICS.xmas=Object.assign({},PICS.w3,PICS.w4,PICS.w5);
 
 function renderVerses(){
   stopSpeak();
