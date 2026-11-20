@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R&amp;D 세액공제 위하고 작성 매뉴얼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* layout: sticky chapter nav + hero; each chapter a card; workflow as a drawn 5-stage rail; numbers in mono */
+:root{
+  --forest:#17503a; --leaf:#2f8058; --sprout:#86c79b; --mint:#e7f3eb; --paper:#f3f8f4;
+  --ink:#18261f; --mute:#5b6d62; --line:#cfe2d5; --card:#ffffff; --warn:#a4562a; --warnbg:#fbeee3; --gold:#b8892c;
+  --display:'Noto Serif KR','Batang',serif; --body:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --forest:#8fd1a6; --leaf:#6bb98a; --sprout:#3f7d5a; --mint:#1b2b23; --paper:#111a15;
+  --ink:#e2eee6; --mute:#9bb1a4; --line:#2b4136; --card:#17231c; --warn:#e8a77b; --warnbg:#33241a; --gold:#e0b862; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --forest:#8fd1a6; --leaf:#6bb98a; --sprout:#3f7d5a; --mint:#1b2b23; --paper:#111a15;
+  --ink:#e2eee6; --mute:#9bb1a4; --line:#2b4136; --card:#17231c; --warn:#e8a77b; --warnbg:#33241a; --gold:#e0b862; color-scheme:dark;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:60px}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15.5px/1.75 var(--body);word-break:keep-all;overflow-wrap:break-word}
+.wrap{max-width:820px;margin:0 auto}
+.hero{background:linear-gradient(135deg,#123f2d 0%,#17503a 45%,#2f8058 100%);color:#fff;padding:40px 20px 60px}
+.hero .tag{display:inline-flex;gap:8px;font-size:12.5px;letter-spacing:.04em;background:#ffffff22;border:1px solid #ffffff4d;border-radius:99px;padding:3px 12px;margin-bottom:14px}
+.hero h1{font:700 30px/1.35 var(--display);margin:0 0 10px;text-wrap:balance}
+.hero p{margin:0;opacity:.92;max-width:36em}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}
+.kpi{background:#ffffff1a;border:1px solid #ffffff33;border-radius:12px;padding:10px 12px}
+.kpi b{display:block;font:700 22px var(--mono);font-variant-numeric:tabular-nums}
+.kpi span{font-size:12.5px;opacity:.85}
+nav{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap;padding:0 12px}
+nav a{display:inline-block;padding:13px 10px;color:var(--mute);text-decoration:none;font-size:14px;border-bottom:3px solid transparent}
+nav a:hover,nav a:focus-visible{color:var(--forest);border-bottom-color:var(--sprout);outline:none}
+main{padding:0 16px 48px}
+main .wrap{margin-top:-28px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;margin:0 0 16px;box-shadow:0 2px 12px #17503a10}
+.card h2{font:700 21px/1.4 var(--display);color:var(--forest);margin:0 0 6px;display:flex;gap:10px;align-items:center;text-wrap:balance}
+.no{flex:none;width:30px;height:30px;border-radius:9px;background:var(--forest);color:var(--paper);display:grid;place-items:center;font:700 15px var(--mono)}
+.lead{color:var(--mute);margin:0 0 14px}
+h3{font-size:15.5px;color:var(--forest);margin:18px 0 4px}
+ul{margin:6px 0 0;padding-left:0;list-style:none}
+li{position:relative;padding:4px 0 4px 20px}
+ul li::before{content:"";position:absolute;left:3px;top:14px;width:7px;height:7px;border-radius:50%;background:var(--sprout)}
+.rail{display:grid;grid-template-columns:repeat(5,1fr);margin:6px 0 2px}
+.st{position:relative;text-align:center;padding:0 4px}
+.st i{display:grid;place-items:center;width:44px;height:44px;margin:0 auto 8px;border-radius:12px;background:var(--leaf);color:#fff;font:700 16px var(--mono);font-style:normal;position:relative;z-index:1}
+.st:not(:last-child)::after{content:"";position:absolute;top:21px;left:calc(50% + 26px);right:calc(-50% + 26px);height:3px;background:repeating-linear-gradient(90deg,var(--sprout) 0 8px,transparent 8px 13px)}
+.st b{display:block;font-size:14.5px}.st span{display:block;font-size:12.5px;color:var(--mute);line-height:1.5}
+.tw{overflow-x:auto;margin:10px 0 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+th{background:var(--forest);color:var(--paper);text-align:left;padding:9px 11px;font-weight:500}
+th:first-child{border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:var(--mint)}
+td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.hl td{background:#f6ecd5;font-weight:700}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) tr.hl td{background:#3a301a}}
+:root[data-theme="dark"] tr.hl td{background:#3a301a}
+.pill{display:inline-block;font-size:12px;padding:1px 9px;border-radius:99px;background:var(--mint);color:var(--forest);border:1px solid var(--line);margin-right:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{background:var(--mint);border-radius:12px;padding:14px;border-top:4px solid var(--leaf)}
+.box.alt{border-top-color:var(--gold)}
+.box b{display:block;color:var(--forest)}
+.formula{font:500 15px var(--mono);margin:6px 0 2px}
+.box span{font-size:13px;color:var(--mute)}
+.note{background:var(--mint);border-left:4px solid var(--leaf);border-radius:8px;padding:11px 14px;font-size:14.5px;margin:14px 0 0}
+.warn{background:var(--warnbg);border-left-color:var(--warn)}
+ol.flow{counter-reset:f;padding:0;margin:8px 0 0;list-style:none}
+ol.flow li{counter-increment:f;padding:10px 0 10px 44px;border-top:1px solid var(--line)}
+ol.flow li:first-child{border-top:0}
+ol.flow li::before{content:counter(f);position:absolute;left:0;top:10px;width:30px;height:30px;border-radius:50%;background:var(--mint);color:var(--forest);border:1px solid var(--sprout);display:grid;place-items:center;font:700 14px var(--mono)}
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line);cursor:pointer}
+.chk label:first-of-type{border-top:0}
+.chk input{width:20px;height:20px;margin-top:4px;flex:none;accent-color:var(--leaf)}
+.chk input:checked+span{color:var(--mute);text-decoration:line-through}
+.chk input:focus-visible{outline:3px solid var(--sprout);outline-offset:2px}
+.cnt{float:right;font:500 13px var(--mono);color:var(--mute)}
+button{font:inherit;font-size:13.5px;padding:7px 14px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;cursor:pointer;margin-top:10px}
+button:focus-visible{outline:3px solid var(--sprout)}
+.foot{font-size:12.5px;color:var(--mute);text-align:center;margin:18px 0 0}
+@media(max-width:620px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}
+ .rail{grid-template-columns:1fr;gap:12px}.st{display:grid;grid-template-columns:44px 1fr;text-align:left;gap:0 12px;align-items:center}.st i{margin:0;grid-row:span 2}.st:not(:last-child)::after{display:none}
+ .hero h1{font-size:25px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <span class="tag">직원용 · 내부 자료 · 조세특례제한법 제10조</span>
+  <h1>R&amp;D 세액공제, 위하고로 신고서 작성하기</h1>
+  <p>업체 자료를 받는 것부터 신고서 연계, 사후관리 대응까지 한 페이지에 정리했습니다. 법령은 신고 시점에 law.go.kr 현행 조문으로 다시 확인합니다.</p>
+  <div class="kpis">
+    <div class="kpi"><b>50%</b><span>중소 증가분 공제율</span></div>
+    <div class="kpi"><b>25%</b><span>중소 당기분 공제율</span></div>
+    <div class="kpi"><b>5년</b><span>계획서·보고서 보관</span></div>
+    <div class="kpi"><b>30일</b><span>변경신고 기한</span></div>
+  </div>
+</div></header>
+<nav aria-label="목차">
+  <a href="#c1">1 사전 판단</a><a href="#c2">2 수령 자료</a><a href="#c3">3 위하고 입력</a><a href="#c4">4 공제액 검증</a><a href="#c5">5 서식 연계</a><a href="#c6">6 위험 점검</a><a href="#c7">7 사후관리</a><a href="#c8">8 최종 체크</a>
+</nav>
+<main><div class="wrap">
+
+<section class="card" style="margin-top:44px">
+  <h2>전체 흐름</h2>
+  <div class="rail">
+    <div class="st"><i>1</i><b>사전 판단</b><span>유형·인정 상태</span></div>
+    <div class="st"><i>2</i><b>자료 수령</b><span>인력·과제·비용</span></div>
+    <div class="st"><i>3</i><b>위하고 입력</b><span>과제 → 인건비 → 비용</span></div>
+    <div class="st"><i>4</i><b>공제액 검증</b><span>증가분 vs 당기분</span></div>
+    <div class="st"><i>5</i><b>서식 연계</b><span>신청서·법인세 서식</span></div>
+  </div>
+</section>
+
+<section class="card" id="c1">
+  <h2><span class="no">1</span>공제 구조와 사전 판단</h2>
+  <p class="lead">업종·규모와 관계없이 적격 비용이 있으면 공제되고, 공제율만 규모와 기술 유형에 따라 다릅니다.</p>
+  <div class="tw"><table>
+    <tr><th>유형</th><th>공제율</th><th>비고</th></tr>
+    <tr><td><span class="pill">01</span>신성장·원천기술</td><td>중소 30%, 그 밖 20% + 매출 대비 비율×3 (한도 10%)</td><td>연구개발비만, 인력개발비 제외</td></tr>
+    <tr><td><span class="pill">02</span>국가전략기술</td><td>중소 40%, 그 밖 30% + 매출 대비 비율×3 (한도 10%)</td><td>01과 동시 해당 시 선택</td></tr>
+    <tr><td><span class="pill">03</span>일반 · 증가분</td><td>초과액의 중소 50%, 중견 40%, 그 밖 25%</td><td>직전 4년 요건 충족 시</td></tr>
+    <tr><td><span class="pill">03</span>일반 · 당기분</td><td>중소 25% (유예 후 점감, 중견 등 별도 확인)</td><td>증가분과 택일</td></tr>
+  </table></div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="box"><b>증가분 가능 여부</b><span>개시일부터 소급 4년간 발생이 없거나, 직전 연도 발생액이 4년 연평균보다 적으면 당기분만 가능합니다. 연도별 발생액으로 확인합니다.</span></div>
+    <div class="box alt"><b>연구소 인정 상태</b><span>인정서의 인정일·취소일과 변경신고 처리일을 확인합니다. 취소일 이후 비용은 공제할 수 없습니다.</span></div>
+  </div>
+  <div class="note">01·02 비용은 일반에 합산해 일반 방식으로 공제받을 수도 있습니다. 적용 기한은 2029.12.31.까지 발생분(국가전략 중 반도체 2031.12.31.)입니다.</div>
+</section>
+
+<section class="card chk" id="c2" data-k="recv">
+  <h2><span class="no">2</span>업체에서 받을 자료 <span class="cnt" data-c></span></h2>
+  <p class="lead">모든 비용을 과제와 연결할 수 있어야 합니다. 체크 상태는 이 기기에만 저장됩니다.</p>
+  <h3>A. 연구소 기본</h3>
+  <label><input type="checkbox"><span>연구소(전담부서) 인정서, rnd.or.kr 신고내역 출력본</span></label>
+  <label><input type="checkbox"><span>변경신고 이력과 처리일(인력·공간)</span></label>
+  <label><input type="checkbox"><span>연구개발활동조사표 제출 내역(매년 4월 말)</span></label>
+  <label><input type="checkbox"><span>연구 공간 도면·사진</span></label>
+  <h3>B. 인력·인건비</h3>
+  <label><input type="checkbox"><span>연구인력 명단(직위, 전담요원 여부, 입·퇴사일, 신고일)</span></label>
+  <label><input type="checkbox"><span>급여대장·원천징수 자료</span></label>
+  <label><input type="checkbox"><span>과제별 연구 투입시간 기록(소정근로시간 아님)</span></label>
+  <label><input type="checkbox"><span>겸직 여부, 지분 10% 초과 주주·지배주주 임원 여부(주주명부)</span></label>
+  <h3>C. 과제</h3>
+  <label><input type="checkbox"><span>과제별 연구개발계획서·보고서</span></label>
+  <label><input type="checkbox"><span>연구일지(결재본)·회의록·연구 사진</span></label>
+  <label><input type="checkbox"><span>기술구분(01·02·03)과 제외 활동 여부</span></label>
+  <h3>D. 비용</h3>
+  <label><input type="checkbox"><span>재료비 세금계산서 + 재료 사용대장(일자·재료·수량·과제·사용자·용도)</span></label>
+  <label><input type="checkbox"><span>위탁·공동연구 계약서와 결과물</span></label>
+  <label><input type="checkbox"><span>정부·지자체 지원금 수령 내역</span></label>
+  <label><input type="checkbox"><span>직전 4년 발생액(과거 신고서·발생명세서)</span></label>
+  <button type="button" data-reset>이 섹션 초기화</button>
+  <div class="note warn">작성일이 연구 당시인지 확인합니다. 신고 임박해 소급 작성한 자료는 증거력이 낮고, 사후 작성이면 그렇게 표시합니다. 지분율·인정일·근무시간은 구두가 아니라 문서로 확인합니다.</div>
+</section>
+
+<section class="card" id="c3">
+  <h2><span class="no">3</span>위하고 입력 순서</h2>
+  <p class="lead">발생명세서는 시행규칙 별지 제3호서식(1)(2)(3)과 부표(1)~(4)에 대응합니다. 화면 탭 이름은 버전에 따라 다를 수 있습니다.</p>
+  <ol class="flow">
+    <li><b>연구소 현황</b> — 인정일, 인정기관, 연구인력 수. 빈칸으로 출력하지 않습니다.</li>
+    <li><b>연구과제총괄표</b> — 과제명, 기간, 기술구분 코드. 대부분 중소 연구소는 <span class="pill">03 일반</span>입니다.</li>
+    <li><b>연구개발인건비명세(부표 4)</b> — 2025.3.21. 신설. 인원별 인건비와 과제별 투입시간을 입력합니다.</li>
+    <li><b>비용 입력</b> — 재료비·위탁비 등을 유형별로 구분하고, 공통비용은 안분합니다.</li>
+    <li><b>발생명세 탭(1-2 ~ 3-2)</b> — 일반 유형은 3-1, 3-2에서 집계와 공제액을 확인합니다.</li>
+    <li><b>직전 4년 발생액</b> — 과거 신고서와 대조해 입력합니다.</li>
+    <li><b>검토서식</b> — 오류 메시지와 합계를 확인합니다.</li>
+  </ol>
+  <div class="grid2" style="margin-top:14px">
+    <div class="box"><b>공통비용 안분</b><span>인건비·위탁비가 일반과 01·02에 공통이면 일반으로, 01과 02에 공통이면 01로 봅니다. 재료비 등 그 외 공통비용은 연구인력 인건비 비율로 안분합니다(시행령 제9조⑫).</span></div>
+    <div class="box alt"><b>입력 실수 많은 곳</b><span>투입시간에 소정근로시간 입력 · 연구소 현황 공란 · 검토서식은 ‘전담부서’인데 업체는 ‘연구소’ · 변경신고 처리일 이전 인건비 포함</span></div>
+  </div>
+</section>
+
+<section class="card" id="c4">
+  <h2><span class="no">4</span>공제액 계산과 검증</h2>
+  <div class="grid2">
+    <div class="box"><b>증가분 (중소)</b><div class="formula">(당기 − 직전) × 50%</div><span>직전 4년 요건 충족 시</span></div>
+    <div class="box alt"><b>당기분 (중소)</b><div class="formula">당기 × 25%</div><span>요건 미충족 시 이것만 가능</span></div>
+  </div>
+  <h3>샘플 검증 (위하고 화면 확인값)</h3>
+  <div class="tw"><table>
+    <tr><th>항목</th><th class="n">금액(원)</th><th>비고</th></tr>
+    <tr><td>당기 인건비 (2명)</td><td class="n">76,681,845</td><td>36,689,490 + 39,992,355</td></tr>
+    <tr><td>직전 1년 발생액</td><td class="n">19,435,815</td><td></td></tr>
+    <tr><td>직전 4년 합계</td><td class="n">21,635,815</td><td>연도별로 연평균 요건 확인</td></tr>
+    <tr><td>증가 발생액</td><td class="n">57,246,030</td><td>76,681,845 − 19,435,815</td></tr>
+    <tr><td>당기분 공제액</td><td class="n">19,170,461</td><td>× 25%</td></tr>
+    <tr class="hl"><td>증가분 공제액</td><td class="n">28,623,015</td><td>× 50% · 약 945만원 유리</td></tr>
+  </table></div>
+  <ul style="margin-top:12px">
+    <li>인건비 합계 = 인원별 합계 = 급여대장 연구인력 지급액</li>
+    <li>과제별 투입시간 합계 = 인원별 연구 시간 (샘플 2,508시간 · 1,672시간)</li>
+    <li>최저한세·산출세액 한도 안에서 적용되는지 5장에서 확인</li>
+  </ul>
+</section>
+
+<section class="card" id="c5">
+  <h2><span class="no">5</span>서식 연계와 신고</h2>
+  <div class="tw"><table>
+    <tr><th>서식</th><th>확인할 점</th></tr>
+    <tr><td>발생명세서 (별지 제3호서식, 부표 1~4)</td><td>기술구분 코드, 비용 합계, 인건비명세</td></tr>
+    <tr><td>세액공제신청서 (별지 제1호서식)</td><td>공제 항목 코드와 금액. 현행 서식은 law.go.kr에서 확인</td></tr>
+    <tr><td>법인세 별지 제8호서식(갑)(을) · 2026.3.20. 개정</td><td>세액공제 합계가 조정명세와 일치</td></tr>
+    <tr><td>최저한세 조정계산서</td><td>조특법 제132조 원문을 직접 확인 후 판단</td></tr>
+    <tr><td>이월공제</td><td>이월 기간은 조문 원문 확인</td></tr>
+  </table></div>
+  <div class="note warn">최저한세와 이월공제는 이 매뉴얼에 정한 답이 없습니다. 담당자가 매해 조문 원문으로 판단합니다.</div>
+</section>
+
+<section class="card" id="c6">
+  <h2><span class="no">6</span>위험 점검 · 국세청 적용 오류 유형</h2>
+  <div class="tw"><table>
+    <tr><th>항목</th><th>확인 방법</th><th>위험</th></tr>
+    <tr><td>인정·직권취소 후 비용</td><td>인정서 취소일, 변경신고 미이행</td><td>취소일 이후 공제 배제</td></tr>
+    <tr><td>지분 10% 초과 임원</td><td>주주명부 × 인력 명단</td><td>인건비 배제 (사례 21.5%)</td></tr>
+    <tr><td>겸직 연구원</td><td>직무 범위, 근무시간</td><td>인건비 배제 (행정 겸 연구소장)</td></tr>
+    <tr><td>증가분 오적용</td><td>직전 4년 발생액</td><td>증가분 배제</td></tr>
+    <tr><td>사업운영 시스템 위탁</td><td>POS·ERP 여부</td><td>위탁비 배제</td></tr>
+    <tr><td>제외 활동</td><td>위탁 수행, 시장조사, 단순 보완</td><td>비용 배제</td></tr>
+    <tr><td>양산·납품용 재료</td><td>재료 사용대장의 용도</td><td>재료비 불인정</td></tr>
+    <tr><td>환경디자인</td><td>건축·인테리어·조경</td><td>연구 범위 밖</td></tr>
+    <tr><td>변경신고 소급</td><td>처리일과 인건비 반영 시점</td><td>처리일 이전 불인정</td></tr>
+  </table></div>
+  <p style="font-size:13.5px;color:var(--mute);margin:10px 0 0">참고 사례: 서울고법 2024누55121 (2025.5.14.) · 조심-2022-서-5721 · 조심-2015-중-4344 — 사안별 원문 확인 후 적용</p>
+</section>
+
+<section class="card" id="c7">
+  <h2><span class="no">7</span>사후관리 · 해명자료 대응</h2>
+  <div class="rail">
+    <div class="st"><i>1</i><b>접수</b><span>요청·처리기한 대장 기록</span></div>
+    <div class="st"><i>2</i><b>담당자 연락</b><span>기한 연장 협의</span></div>
+    <div class="st"><i>3</i><b>자료 수집</b><span>당시 기록만</span></div>
+    <div class="st"><i>4</i><b>소명서</b><span>과제-비용 연결</span></div>
+    <div class="st"><i>5</i><b>제출</b><span>제출본 보관</span></div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="box"><b>사전심사</b><span>신고 전 홈택스로 연구개발 활동 해당 여부를 심사받을 수 있습니다(시행령 제9조⑰). 심사받은 활동은 사후관리 제외·가산세 면제로 안내됨(국세청 2024.2.19. 보도자료).</span></div>
+    <div class="box alt"><b>요청기한 vs 처리기한</b><span>요청기한이 지났어도 처리기한 전이면 담당자에게 바로 연락해 대응합니다. 인정취소 사유별 배제 시점은 시행령 제9조⑲ 원문 확인.</span></div>
+  </div>
+</section>
+
+<section class="card chk" id="c8" data-k="final">
+  <h2><span class="no">8</span>신고 전 최종 체크 <span class="cnt" data-c></span></h2>
+  <label><input type="checkbox"><span>인정서 인정일·취소일, 변경신고 처리일과 인력 일치</span></label>
+  <label><input type="checkbox"><span>인력 명단·급여대장·근무시간 일치 (소정근로시간 아님)</span></label>
+  <label><input type="checkbox"><span>지분 10% 초과 임원·겸직자 제외</span></label>
+  <label><input type="checkbox"><span>과제별 계획서·보고서·연구일지·사진 보유</span></label>
+  <label><input type="checkbox"><span>재료비 연구용/납품용 구분, 재료 사용대장 대조</span></label>
+  <label><input type="checkbox"><span>위탁비가 사업운영 시스템 아님</span></label>
+  <label><input type="checkbox"><span>직전 4년 확인 후 증가분/당기분 선택</span></label>
+  <label><input type="checkbox"><span>기술구분 코드·공통비용 안분 확인</span></label>
+  <label><input type="checkbox"><span>위하고 검토서식 오류 없음, 연구소 현황 입력</span></label>
+  <label><input type="checkbox"><span>세액공제신청서·법인세 서식 금액 일치</span></label>
+  <label><input type="checkbox"><span>최저한세·이월공제 조문 원문 확인</span></label>
+  <label><input type="checkbox"><span>업체에 증빙 5년 보관 안내문 전달</span></label>
+  <button type="button" data-reset>이 섹션 초기화</button>
+</section>
+
+<p class="foot">근거: 조세특례제한법 제10조·제132조, 같은 법 시행령 제9조·제1조의2·별표 6, 시행규칙 제7조·별지 제1호·제3호서식, 국세청 사전심사 가이드라인(2025), KOITA 업무편람(2026)<br>원제우세무사사무소 · 직원용 매뉴얼 v1.3</p>
+</div></main>
+<script>
+(function(){
+  document.querySelectorAll('.chk').forEach(function(sec){
+    var K='rnd-staff-'+sec.getAttribute('data-k'), cs=[].slice.call(sec.querySelectorAll('input')), out=sec.querySelector('[data-c]');
+    function load(){try{return JSON.parse(localStorage.getItem(K)||'[]')}catch(e){return[]}}
+    function save(){try{localStorage.setItem(K,JSON.stringify(cs.map(function(c,i){return c.checked?i:-1}).filter(function(i){return i>-1})))}catch(e){}}
+    function up(){out.textContent=cs.filter(function(c){return c.checked}).length+' / '+cs.length}
+    var s=load(); cs.forEach(function(c,i){c.checked=s.indexOf(i)>-1;c.addEventListener('change',function(){save();up()})}); up();
+    sec.querySelector('[data-reset]').addEventListener('click',function(){cs.forEach(function(c){c.checked=false});save();up()});
+  });
+})();
+</script>
+</body>
+</html>

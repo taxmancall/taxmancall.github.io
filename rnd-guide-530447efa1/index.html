@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>연구소 운영 관리 안내</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* layout: green hero band, numbered chapters as soft cards, flows drawn with CSS steps */
+:root{
+  --forest:#1d5a3e; --leaf:#3a8c5c; --sprout:#7fc08f; --mint:#e6f2ea; --paper:#f5faf6;
+  --ink:#1b2a22; --mute:#5d6f64; --line:#cfe3d5; --card:#ffffff; --warn:#a4562a; --warnbg:#fbeee3;
+  --display:'Noto Serif KR','Batang',serif; --body:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --forest:#8fd1a6; --leaf:#6bb98a; --sprout:#3f7d5a; --mint:#1c2c24; --paper:#121b16;
+  --ink:#e3efe7; --mute:#9cb2a5; --line:#2c4237; --card:#18241d; --warn:#e8a77b; --warnbg:#33241a; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --forest:#8fd1a6; --leaf:#6bb98a; --sprout:#3f7d5a; --mint:#1c2c24; --paper:#121b16;
+  --ink:#e3efe7; --mute:#9cb2a5; --line:#2c4237; --card:#18241d; --warn:#e8a77b; --warnbg:#33241a; color-scheme:dark;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.75 var(--body);word-break:keep-all;overflow-wrap:break-word}
+.hero{background:linear-gradient(135deg,#1d5a3e 0%,#2f7a52 60%,#4a9a6b 100%);color:#fff;padding:44px 20px 52px}
+.wrap{max-width:760px;margin:0 auto}
+.hero .tag{display:inline-block;font-size:13px;letter-spacing:.04em;background:#ffffff26;border:1px solid #ffffff55;border-radius:99px;padding:3px 12px;margin-bottom:14px}
+.hero h1{font:700 30px/1.35 var(--display);margin:0 0 12px;text-wrap:balance}
+.hero p{margin:0;font-size:16px;opacity:.93;max-width:34em}
+main{padding:0 16px 48px}
+main .wrap{margin-top:-26px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;margin:0 0 16px;box-shadow:0 2px 10px #1d5a3e12}
+.card h2{font:700 21px/1.4 var(--display);color:var(--forest);margin:0 0 6px;display:flex;gap:10px;align-items:center;text-wrap:balance}
+.no{flex:none;width:30px;height:30px;border-radius:50%;background:var(--forest);color:var(--paper);display:grid;place-items:center;font:700 15px var(--body)}
+.lead{color:var(--mute);margin:0 0 14px;font-size:15px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.three div{background:var(--mint);border-radius:12px;padding:14px;border-top:4px solid var(--leaf)}
+.three b{display:block;color:var(--forest);margin-bottom:2px}
+.three span{font-size:14px;color:var(--mute);line-height:1.55;display:block}
+ul{margin:8px 0 0;padding-left:0;list-style:none}
+li{position:relative;padding:5px 0 5px 22px}
+li::before{content:"";position:absolute;left:3px;top:15px;width:8px;height:8px;border-radius:50%;background:var(--sprout)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:14px 0 4px;counter-reset:s}
+.steps.three-s{grid-template-columns:repeat(3,1fr)}
+.step{position:relative;text-align:center;padding:0 6px}
+.step i{display:grid;place-items:center;width:46px;height:46px;margin:0 auto 8px;border-radius:50%;background:var(--leaf);color:#fff;font:700 17px var(--body);font-style:normal;position:relative;z-index:1}
+.step:not(:last-child)::after{content:"";position:absolute;top:22px;left:calc(50% + 26px);right:calc(-50% + 26px);height:3px;background:repeating-linear-gradient(90deg,var(--sprout) 0 8px,transparent 8px 13px)}
+.step b{display:block;font-size:15px}
+.step span{display:block;font-size:13px;color:var(--mute);line-height:1.5}
+.note{background:var(--mint);border-left:4px solid var(--leaf);border-radius:8px;padding:11px 14px;font-size:14.5px;margin:14px 0 0}
+.warn{background:var(--warnbg);border-left-color:var(--warn)}
+.tw{overflow-x:auto;margin:12px 0 0}
+table{border-collapse:collapse;width:100%;min-width:480px;font-size:14.5px}
+th{background:var(--forest);color:var(--paper);text-align:left;padding:9px 11px;font-weight:500}
+td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:var(--mint)}
+th:first-child{border-radius:8px 0 0 0}th:last-child{border-radius:0 8px 0 0}
+h3{font-size:16px;color:var(--forest);margin:18px 0 2px}
+.chk label{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line);cursor:pointer}
+.chk label:first-of-type{border-top:0}
+.chk input{width:20px;height:20px;margin-top:4px;flex:none;accent-color:var(--leaf)}
+.chk input:checked+span{color:var(--mute);text-decoration:line-through}
+.chk input:focus-visible{outline:3px solid var(--sprout);outline-offset:2px}
+.contact{background:var(--forest);color:var(--paper);border-radius:16px;padding:22px 20px;text-align:center}
+.contact b{font:700 19px var(--display);display:block;margin-bottom:4px}
+.foot{font-size:12.5px;color:var(--mute);text-align:center;margin:18px 0 0}
+@media(max-width:560px){.three{grid-template-columns:1fr}.steps,.steps.three-s{grid-template-columns:1fr;gap:14px}
+ .step{display:grid;grid-template-columns:46px 1fr;text-align:left;gap:0 12px;align-items:center}.step i{margin:0;grid-row:span 2}
+ .step:not(:last-child)::after{display:none}.hero h1{font-size:25px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <span class="tag">기업부설연구소 · R&amp;D 세액공제</span>
+  <h1>연구는 기록으로 완성됩니다</h1>
+  <p>연구 활동을 열심히 하고 계셔도 서류가 비어 있으면 세액공제를 인정받기 어렵습니다. 평소에 갖춰 두실 사항을 정리했습니다.</p>
+</div></header>
+<main><div class="wrap">
+
+<section class="card">
+  <h2>핵심 3가지</h2>
+  <p class="lead">이 세 가지만 지켜도 세무서의 해명자료 요청에 바로 답할 수 있습니다.</p>
+  <div class="three">
+    <div><b>① 연구 공간 유지</b><span>신고한 연구 공간을 연구 활동만 할 수 있게 그대로 유지합니다.</span></div>
+    <div><b>② 연구일지 결재·보관</b><span>작성, 보고, 대표님 결재, 서류철 보관 순서로 남깁니다.</span></div>
+    <div><b>③ 연구 사진 보관</b><span>연구 진행 과정을 주기적으로 촬영해 날짜와 함께 보관합니다.</span></div>
+  </div>
+  <div class="note">국세청은 공제받은 법인에 연구보고서·계획서 등 증빙 제출을 요청하는 사후관리를 하고 있습니다. 소명이 부족하면 수정신고와 납부를 요구받을 수 있습니다.</div>
+</section>
+
+<section class="card">
+  <h2><span class="no">1</span>연구 공간 유지</h2>
+  <p class="lead">한국산업기술진흥협회(KOITA)에 신고한 공간을 그대로 유지해 주세요.</p>
+  <ul>
+    <li><b>독립된 공간</b> — 사방이 벽체로 막히고 별도 출입문이 있어야 합니다. 이동벽체는 가능하지만 쉽게 철거되는 간이 칸막이는 인정되지 않습니다(50㎡ 이하 예외는 확인 필요).</li>
+    <li><b>연구 전용</b> — 회의실, 창고, 사무공간과 겸하는 공간은 인정되지 않습니다.</li>
+    <li><b>적정 면적</b> — 연구인력 수에 맞는 면적이어야 하고, 연구기자재는 신고된 공간 안에 둡니다.</li>
+    <li><b>건물 요건</b> — 무허가 건물, 가건물, 주거 전용 건물은 인정되지 않습니다.</li>
+    <li><b>상시 근무</b> — 연구인력은 신고된 공간에서 근무하며 연구개발 활동만 합니다.</li>
+  </ul>
+  <div class="note warn">사무실 이전, 칸막이·출입문 변경, 면적 변동이 있으면 <b>30일 이내</b> 변경신고가 필요합니다. 공사 전에 먼저 알려 주세요.</div>
+</section>
+
+<section class="card">
+  <h2><span class="no">2</span>연구일지: 작성 → 보고 → 결재 → 보관</h2>
+  <div class="steps">
+    <div class="step"><i>1</i><b>작성</b><span>연구소 담당자</span></div>
+    <div class="step"><i>2</i><b>보고</b><span>연구소장·책임자</span></div>
+    <div class="step"><i>3</i><b>결재</b><span>대표님 서명·날인</span></div>
+    <div class="step"><i>4</i><b>보관</b><span>과제별 서류철</span></div>
+  </div>
+  <h3>일지에 들어갈 내용</h3>
+  <ul>
+    <li>작성일, 작성자, 연구과제명</li>
+    <li>그날 수행한 연구 내용: 목표, 방법, 시도한 것, 결과</li>
+    <li>시행착오와 수정 사항(되지 않은 것도 기록)</li>
+    <li>사용한 재료·장비, 투입 시간, 다음 계획</li>
+  </ul>
+  <div class="note">연구개발계획서와 보고서는 과세연도 종료일부터 <b>5년간</b> 보관해야 합니다. 일반 업무(영업·납품·생산 지원)는 일지에 섞지 말고 연구 활동만 적으세요.</div>
+</section>
+
+<section class="card">
+  <h2><span class="no">3</span>주기적 연구 사진 촬영·보관</h2>
+  <p class="lead">일지가 글로 남긴 증거라면 사진은 현장을 보여 주는 증거입니다.</p>
+  <ul>
+    <li>주 1회 또는 연구 단계가 바뀔 때마다 찍습니다(스케치 → 도면 → 시작품 → 시험·평가 → 수정).</li>
+    <li>시작품의 변화 과정, 시험·측정 장면, 연구 공간과 연구하는 모습을 함께 남깁니다.</li>
+    <li>촬영일이 남도록 원본 파일 그대로 보관하고, 폴더는 ‘과제명/연월’ 순으로 정리합니다.</li>
+    <li>사진 파일명이나 일지에 사진 번호를 적어 연구일지와 연결합니다.</li>
+    <li>양산·납품용 제품 사진과 연구용 시작품 사진은 구분해 저장합니다.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2><span class="no">4</span>재료비: 매입 → 보관 → 사용</h2>
+  <p class="lead">연구에 쓴 재료는 사고, 두고, 쓴 기록이 이어져야 비용으로 인정받을 수 있습니다.</p>
+  <div class="steps three-s">
+    <div class="step"><i>1</i><b>매입</b><span>세금계산서·거래명세서, 연구용 표시</span></div>
+    <div class="step"><i>2</i><b>보관</b><span>연구소 내 지정 장소에 보관</span></div>
+    <div class="step"><i>3</i><b>사용</b><span>재료 사용대장에 매번 기록</span></div>
+  </div>
+  <h3>재료 사용대장 예시</h3>
+  <div class="tw"><table>
+    <tr><th>일자</th><th>재료명·규격</th><th>수량</th><th>사용 과제</th><th>사용자</th><th>용도</th></tr>
+    <tr><td>2026-11-10</td><td>(재료명·규격)</td><td>10</td><td>(과제명)</td><td>(성명)</td><td>시작품 1차 제작</td></tr>
+    <tr><td>2026-11-17</td><td>(재료명·규격)</td><td>4</td><td>(과제명)</td><td>(성명)</td><td>시험·평가</td></tr>
+  </table></div>
+  <div class="note warn">양산·납품용 제품의 재료비는 공제 대상이 아닙니다. 구매할 때부터 연구용인지 납품용인지 표시하고 사용대장에서도 나눠 적어 주세요.</div>
+</section>
+
+<section class="card">
+  <h2><span class="no">5</span>함께 챙기실 사항</h2>
+  <h3>연구인력 관리</h3>
+  <ul>
+    <li>연구전담요원은 연구 업무만 합니다. 영업·생산·행정을 겸하면 인건비 공제와 인력 인정에 문제가 생길 수 있습니다.</li>
+    <li>입사·퇴사·부서 이동이 있으면 사유 발생일로부터 30일 이내 변경신고를 합니다. 신고 처리일 이전으로는 소급되지 않습니다.</li>
+    <li>신고 당시의 최소 연구인력 수를 계속 채워야 합니다. 출퇴근 기록 등 상시 근무 자료를 보관합니다.</li>
+  </ul>
+  <h3>연구과제·비용 서류</h3>
+  <ul>
+    <li>과제별로 과제명, 기간, 참여 인력, 투입 시간을 정리해 두세요.</li>
+    <li>동일성을 유지하는 단순 보완, 위탁받아 하는 연구, 시장조사는 연구 활동에서 제외됩니다.</li>
+    <li>제품·포장 디자인은 범위가 있지만 건축·인테리어 같은 환경디자인은 포함되지 않습니다.</li>
+    <li>정부·지자체 지원금을 받으면 세무사무소에 알려 주세요.</li>
+  </ul>
+  <h3>연간 일정</h3>
+  <div class="tw"><table>
+    <tr><th>시기</th><th>할 일</th></tr>
+    <tr><td>매월</td><td>연구일지 결재·보관, 사진 정리, 재료 사용대장 정리, 근무 기록 확인</td></tr>
+    <tr><td>수시</td><td>인력·공간 변경 시 30일 이내 변경신고</td></tr>
+    <tr><td>매년 4월 말</td><td>연구개발활동조사표 제출(미제출 시 인정 취소 사유)</td></tr>
+    <tr><td>결산 직후</td><td>과제별 인건비·재료비·투입시간 자료를 세무사무소에 전달</td></tr>
+    <tr><td>법인세 신고 전</td><td>연구소 인정서·신고 내역이 현재 상태와 맞는지 점검</td></tr>
+  </table></div>
+</section>
+
+<section class="card">
+  <h2><span class="no">6</span>세무서에서 해명자료를 요청하면</h2>
+  <ul>
+    <li><b>받은 날 바로 알려 주세요.</b> 요청 기한이 짧고, 지나면 추가 요청이나 경정 절차로 이어질 수 있습니다.</li>
+    <li><b>새로 만들지 마시고 당시 기록을 그대로</b> 준비해 주세요. 날짜를 소급해 쓰는 일은 절대 하지 마세요.</li>
+    <li>연구소 인정서, 연구인력 명단, 과제별 계획서·보고서, 연구일지, 연구 사진, 재료비 증빙과 사용대장, 연구 공간 사진이 주로 필요합니다.</li>
+    <li>세무사무소가 검토한 뒤 소명서와 함께 제출합니다.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2><span class="no">7</span>국세청이 지적하는 적용 오류</h2>
+  <div class="tw"><table>
+    <tr><th>유형</th><th>유의할 점</th></tr>
+    <tr><td>인정 취소 후 비용 공제</td><td>폐업·휴업, 자진 취소, 변경신고 미이행으로 인정이 취소되면 취소일 이후 비용은 공제할 수 없습니다.</td></tr>
+    <tr><td>직권취소</td><td>인정기준 미달이나 준수사항 위반으로 직권취소되면 취소일이 속하는 과세연도 비용에 문제가 생길 수 있습니다.</td></tr>
+    <tr><td>지분 10% 초과 주주·지배주주 임원</td><td>연구 업무를 하더라도 해당 임원의 인건비는 공제 대상이 아닙니다.</td></tr>
+    <tr><td>겸직 연구원</td><td>행정 등 다른 업무를 겸하는 직원의 인건비는 공제할 수 없습니다.</td></tr>
+    <tr><td>증가분 방식 오적용</td><td>직전 4년간 발생이 없으면 당기분 방식만 가능합니다.</td></tr>
+    <tr><td>사업운영 시스템 위탁비</td><td>판매시점 정보관리, ERP 등 사업운영용 시스템 개발비는 대상이 아닙니다.</td></tr>
+  </table></div>
+</section>
+
+<section class="card chk">
+  <h2>월말 점검표</h2>
+  <p class="lead">체크한 내용은 이 기기에만 저장됩니다.</p>
+  <label><input type="checkbox"><span>연구 공간이 신고된 그대로 유지되고 있다</span></label>
+  <label><input type="checkbox"><span>이번 달 연구일지를 작성하고 대표님 결재를 받았다</span></label>
+  <label><input type="checkbox"><span>결재 완료본을 과제별 서류철에 철했다</span></label>
+  <label><input type="checkbox"><span>연구 사진을 찍어 날짜와 함께 정리했다</span></label>
+  <label><input type="checkbox"><span>재료 매입분을 보관하고 재료 사용대장에 기록했다</span></label>
+  <label><input type="checkbox"><span>연구인력 근무 기록을 확인했다</span></label>
+  <label><input type="checkbox"><span>입·퇴사·공간 변경이 있었다면 30일 이내 변경신고를 했다</span></label>
+</section>
+
+<section class="contact">
+  <b>원제우세무사사무소</b>
+  문의 032-321-4521<br>
+  개별 사안의 공제 가능 여부는 확인 후 안내드립니다.
+</section>
+<p class="foot">근거: 조세특례제한법 제10조, 같은 법 시행령 제9조, 시행규칙 제7조, 국세청 R&amp;D 세액공제 사전심사 가이드라인(2025), KOITA 업무편람(2026)<br>업체 안내문 v1.2</p>
+
+</div></main>
+<script>
+(function(){
+  var K='rnd-notice-check-v1', cs=[].slice.call(document.querySelectorAll('.chk input'));
+  function load(){try{return JSON.parse(localStorage.getItem(K)||'[]')}catch(e){return[]}}
+  function save(){try{localStorage.setItem(K,JSON.stringify(cs.map(function(c,i){return c.checked?i:-1}).filter(function(i){return i>-1})))}catch(e){}}
+  var s=load(); cs.forEach(function(c,i){c.checked=s.indexOf(i)>-1; c.addEventListener('change',save)});
+})();
+</script>
+</body>
+</html>
