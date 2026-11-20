@@ -1,60 +1,161 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>R&D 세액공제 점검표 v1.2 · 원제우세무사사무소</title>
-<style>:root{--navy:#203864;--blue:#2f5ca8;--lb:#edf1fa;--line:#c7cfdd;--tx:#1d2433;--mu:#6b7280;--ok:#1f7a4d}
-*{box-sizing:border-box}body{margin:0;background:#f3f5f9;color:var(--tx);font:400 16px/1.7 'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;word-break:keep-all}
-header{background:var(--navy);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:5}
-header h1{margin:0;font-size:18px}header p{margin:2px 0 8px;font-size:12px;opacity:.8}
-.pb{height:8px;background:#ffffff33;border-radius:4px;overflow:hidden}.pb i{display:block;height:100%;width:0;background:#7ed6a5;transition:width .2s}
-#pt{font-size:12px;margin-top:4px}
-main{max-width:760px;margin:0 auto;padding:14px 12px 60px}
-section{background:#fff;border:1px solid var(--line);border-radius:10px;margin:14px 0;padding:6px 14px 12px}
-h2{font-size:16px;color:var(--navy);margin:10px 0 4px}
-.sub{font-size:12px;color:var(--mu);margin:0 0 6px}
-label{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid #eef0f5;cursor:pointer}
-label:first-of-type{border-top:0}
-input{width:20px;height:20px;margin-top:3px;flex:none;accent-color:var(--blue)}
-input:checked+span{color:var(--mu);text-decoration:line-through}
-.note{background:var(--lb);border-radius:8px;padding:10px 12px;font-size:13px;margin:10px 0}
-.btns{display:flex;gap:8px;margin-top:14px}button{flex:1;padding:11px;border:1px solid var(--line);background:#fff;border-radius:8px;font:inherit;cursor:pointer}
-@media print{header{position:static}.btns{display:none}}</style></head><body>
-<header><h1>R&D 세액공제 점검표 (직원용)</h1><p>조세특례제한법 제10조 · 법인세 신고 전 점검 · v1.2</p><div class="pb"><i id="bar"></i></div><div id="pt"></div></header>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R&amp;D 세액공제 점검표 v1.3 · 원제우세무사사무소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#17503a;--leaf:#2f8058;--sprout:#86c79b;--mint:#e7f3eb;--paper:#f3f8f4;--ink:#18261f;--mute:#5b6d62;--line:#cfe2d5;--card:#fff;--warn:#a4562a;--warnbg:#fbeee3;
+--display:'Noto Serif KR',serif;--body:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15.5px/1.65 var(--body);word-break:keep-all}
+header{background:linear-gradient(135deg,#123f2d,#17503a 50%,#2f8058);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:5}
+.hw{max-width:780px;margin:0 auto}
+header h1{margin:0;font:700 19px var(--display)}
+header p{margin:2px 0 8px;font-size:12.5px;opacity:.85}
+.pb{height:8px;background:#ffffff33;border-radius:4px;overflow:hidden}.pb i{display:block;height:100%;width:0;background:#9fe0b3;transition:width .2s}
+#pt{font-size:12.5px;margin-top:4px}
+main{max-width:780px;margin:0 auto;padding:14px 12px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:14px 0;padding:14px 16px}
+h2{font:700 16.5px var(--display);color:var(--forest);margin:4px 0 6px}
+.info{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+.info label{display:block;font-size:12.5px;color:var(--mute)}
+.info input{width:100%;margin-top:3px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff;color:var(--ink)}
+.info input:focus,.memo:focus,textarea:focus{outline:2px solid var(--sprout);border-color:var(--leaf)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+button,.filebtn{flex:1 1 130px;padding:10px 12px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;font:500 14px var(--body);cursor:pointer;text-align:center}
+button.pri{background:var(--forest);color:#fff;border-color:var(--forest)}
+button:focus-visible,.filebtn:focus-within{outline:3px solid var(--sprout);outline-offset:1px}
+.filebtn input{position:absolute;width:1px;height:1px;opacity:0}
+#msg{font-size:13px;color:var(--leaf);margin-top:8px;min-height:1em}
+.it{padding:9px 0;border-top:1px solid #eef3ef}
+.it:first-of-type{border-top:0}
+.row{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.row input{width:20px;height:20px;margin-top:3px;flex:none;accent-color:var(--leaf)}
+.row input:checked+span{color:var(--mute);text-decoration:line-through}
+.memo{display:block;width:calc(100% - 30px);margin:5px 0 0 30px;padding:6px 9px;border:1px dashed var(--line);border-radius:7px;font:inherit;font-size:13.5px;background:var(--paper);color:var(--ink)}
+.memo::placeholder{color:#9aaba0}
+textarea{width:100%;min-height:80px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px}
+.note{background:var(--mint);border-left:4px solid var(--leaf);border-radius:8px;padding:10px 12px;font-size:13.5px}
+.cnt{float:right;font-size:12.5px;color:var(--mute);font-family:var(--body)}
+.pr{display:none}
+@media(max-width:600px){.info{grid-template-columns:1fr 1fr}.info div:first-child{grid-column:1/-1}}
+@media print{
+ @page{size:A4;margin:14mm}
+ body{background:#fff;font-size:12px}
+ header{position:static;background:#17503a !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:12px 14px}
+ .pb,#pt,.tools,#msg,.note.scr{display:none}
+ .card{border:1px solid #bbb;border-radius:6px;break-inside:avoid;margin:8px 0;padding:8px 12px}
+ .info input{border:0;border-bottom:1px solid #999;border-radius:0;padding:2px 0}
+ .memo{border:0;background:none;padding:0 0 0 0;font-style:italic;color:#444}
+ .memo.empty{display:none}
+ .row input:checked+span{text-decoration:none;color:#18261f}
+ textarea{border:1px solid #bbb;min-height:0}
+ .pr{display:block;font-size:11px;color:#555;text-align:right;margin-top:6px}
+}
+</style>
+</head>
+<body>
+<header><div class="hw">
+ <h1>R&amp;D 세액공제 점검표 <span id="hco"></span></h1>
+ <p>조세특례제한법 제10조 · 법인세 신고 전 점검 · 직원용 v1.3</p>
+ <div class="pb"><i id="bar"></i></div><div id="pt"></div>
+</div></header>
 <main>
-<div class="note">체크 상태는 이 기기·브라우저에만 저장됩니다. 업체 정보는 입력하지 않으며, 공통 점검 항목만 담았습니다. 새 업체를 시작할 때는 맨 아래 ‘초기화’를 누르세요.</div>
-<section data-k="a"><h2>A. 연구소 기본 자료</h2><p class="sub">수령 시 확인</p>
-<label><input type="checkbox"><span>연구소(전담부서) 인정서 — 인정일·취소일 확인</span></label>
-<label><input type="checkbox"><span>최근 변경신고 이력과 처리일(rnd.or.kr 신고내역)</span></label>
-<label><input type="checkbox"><span>연구개발활동조사표 제출 내역(매년 4월 말)</span></label>
-<label><input type="checkbox"><span>연구 공간 도면·사진(칸막이·출입문·기자재)</span></label></section>
-<section data-k="b"><h2>B. 연구인력·인건비</h2>
-<label><input type="checkbox"><span>연구인력 명단(직위, 전담요원 여부, 입·퇴사일, 신고일)</span></label>
-<label><input type="checkbox"><span>급여대장·원천징수 자료와 인건비 일치</span></label>
-<label><input type="checkbox"><span>과제별 연구 투입시간 기록(소정근로시간이 아닌지)</span></label>
-<label><input type="checkbox"><span>겸직(행정·영업·생산) 여부</span></label>
-<label><input type="checkbox"><span>지분 10% 초과 주주·지배주주 임원이 포함되지 않았는지</span></label></section>
-<section data-k="c"><h2>C. 연구과제·증빙</h2>
-<label><input type="checkbox"><span>과제별 연구개발계획서·보고서(연구노트는 신성장·국가전략 공제 시)</span></label>
-<label><input type="checkbox"><span>연구일지(결재 완료본)·연구 사진</span></label>
-<label><input type="checkbox"><span>과제별 기술구분(01 신성장·원천 / 02 국가전략 / 03 일반)</span></label>
-<label><input type="checkbox"><span>제외 활동 여부(단순 보완, 위탁 수행, 시장조사, 환경디자인)</span></label>
-<label><input type="checkbox"><span>재료비: 세금계산서와 재료 사용대장(일자·과제·수량·용도) 대조, 연구용 시작품과 양산·납품용 구분</span></label>
-<label><input type="checkbox"><span>위탁비용이 사업운영 시스템(ERP 등)이 아닌지</span></label>
-<label><input type="checkbox"><span>정부·지자체 지원금 수령 여부</span></label></section>
-<section data-k="d"><h2>D. 위하고 입력·계산</h2>
-<label><input type="checkbox"><span>연구소 현황 칸 입력(빈칸 출력 금지)</span></label>
-<label><input type="checkbox"><span>인건비명세(부표 4)와 발생명세 합계 일치</span></label>
-<label><input type="checkbox"><span>직전 4년 발생액 입력 후 증가분·당기분 비교</span></label>
-<label><input type="checkbox"><span>공통비용 안분(일반·신성장·국가전략) 확인</span></label>
-<label><input type="checkbox"><span>검토서식 오류 없음</span></label></section>
-<section data-k="e"><h2>E. 서식 연계·신고</h2>
-<label><input type="checkbox"><span>세액공제신청서·법인세 별지 서식 금액 일치</span></label>
-<label><input type="checkbox"><span>최저한세·이월공제는 조문 원문(law.go.kr) 확인 후 판단</span></label>
-<label><input type="checkbox"><span>업체에 증빙 5년 보관 안내(안내문 전달)</span></label></section>
-<div class="btns"><button onclick="window.print()">인쇄</button><button onclick="rs()">초기화</button></div>
+<section class="card">
+ <h2>업체 정보</h2>
+ <div class="info">
+  <div><label for="f-co">업체명</label><input id="f-co" autocomplete="off" placeholder="(주)○○○"></div>
+  <div><label for="f-yr">사업연도</label><input id="f-yr" inputmode="numeric" placeholder="2026"></div>
+  <div><label for="f-st">담당자</label><input id="f-st" autocomplete="off"></div>
+  <div><label for="f-dt">점검일</label><input id="f-dt" type="date"></div>
+ </div>
+ <div class="tools">
+  <button type="button" class="pri" id="b-pdf">PDF 저장</button>
+  <button type="button" id="b-save">JSON 저장</button>
+  <label class="filebtn">JSON 불러오기<input type="file" id="b-load" accept=".json,application/json"></label>
+  <button type="button" id="b-new">새 업체</button>
+ </div>
+ <div id="msg" role="status"></div>
+ <p class="note scr" style="margin:10px 0 0">입력 내용은 이 기기 브라우저와 직원이 저장한 JSON 파일에만 남고, 서버로는 전송되지 않습니다. PDF 저장을 누르고 인쇄 창에서 ‘PDF로 저장’을 고르면 됩니다. 내년에는 JSON을 불러와 연도를 바꿔 다시 쓰세요.</p>
+</section>
+<div id="list"></div>
+<section class="card">
+ <h2>종합 의견</h2>
+ <label for="f-op" class="cnt" style="float:none;display:block;margin-bottom:4px">추가 요청 자료, 판단 보류 사항 등</label>
+ <textarea id="f-op"></textarea>
+ <div class="pr">원제우세무사사무소 · R&amp;D 세액공제 점검표 v1.3 · 출력일 <span id="pd"></span></div>
+</section>
 </main>
 <script>
-var K='rnd-check-v1',cs=[].slice.call(document.querySelectorAll('input'));
-function ld(){try{return JSON.parse(localStorage.getItem(K)||'[]')}catch(e){return[]}}
-function sv(a){try{localStorage.setItem(K,JSON.stringify(a))}catch(e){}}
-function up(){var n=cs.filter(function(c){return c.checked}).length;document.getElementById('bar').style.width=(n/cs.length*100)+'%';document.getElementById('pt').textContent=n+' / '+cs.length+' 완료'}
-var s=ld();cs.forEach(function(c,i){c.checked=s.indexOf(i)>-1;c.onchange=function(){sv(cs.map(function(x,j){return x.checked?j:-1}).filter(function(j){return j>-1}));up()}});up();
-function rs(){if(confirm('모든 체크를 해제할까요?')){cs.forEach(function(c){c.checked=false});sv([]);up()}}
-</script></body></html>
+var VER='1.3', KEY='rnd-check-draft-v13';
+var SECS=[
+ ['A. 연구소 기본 자료',[['a1','연구소(전담부서) 인정서 — 인정일·취소일 확인'],['a2','최근 변경신고 이력과 처리일(rnd.or.kr 신고내역)'],['a3','연구개발활동조사표 제출 내역(매년 4월 말)'],['a4','연구 공간 도면·사진(칸막이·출입문·기자재)']]],
+ ['B. 연구인력·인건비',[['b1','연구인력 명단(직위, 전담요원 여부, 입·퇴사일, 신고일)'],['b2','급여대장·원천징수 자료와 인건비 일치'],['b3','과제별 연구 투입시간 기록(소정근로시간이 아닌지)'],['b4','겸직(행정·영업·생산) 여부'],['b5','지분 10% 초과 주주·지배주주 임원이 포함되지 않았는지']]],
+ ['C. 연구과제·증빙',[['c1','과제별 연구개발계획서·보고서(연구노트는 신성장·국가전략 공제 시)'],['c2','연구일지(결재 완료본)·연구 사진'],['c3','과제별 기술구분(01 신성장·원천 / 02 국가전략 / 03 일반)'],['c4','제외 활동 여부(단순 보완, 위탁 수행, 시장조사, 환경디자인)'],['c5','재료비: 매입(세금계산서) → 보관 → 사용(재료 사용대장: 일자·과제·수량·용도) 대조, 연구용 시작품과 양산·납품용 구분'],['c6','위탁비용이 사업운영 시스템(ERP 등)이 아닌지'],['c7','정부·지자체 지원금 수령 여부']]],
+ ['D. 위하고 입력·계산',[['d1','연구소 현황 칸 입력(빈칸 출력 금지)'],['d2','인건비명세(부표 4)와 발생명세 합계 일치'],['d3','직전 4년 발생액 입력 후 증가분·당기분 비교'],['d4','공통비용 안분(일반·신성장·국가전략) 확인'],['d5','검토서식 오류 없음']]],
+ ['E. 서식 연계·신고',[['e1','세액공제신청서·법인세 별지 서식 금액 일치'],['e2','최저한세·이월공제는 조문 원문(law.go.kr) 확인 후 판단'],['e3','업체에 증빙 5년 보관 안내(안내문 전달)']]]
+];
+var $=function(id){return document.getElementById(id)}, list=$('list'), html='';
+SECS.forEach(function(s,si){
+ html+='<section class="card"><h2>'+s[0]+'<span class="cnt" data-s="'+si+'"></span></h2>';
+ s[1].forEach(function(it){
+  html+='<div class="it"><label class="row"><input type="checkbox" data-id="'+it[0]+'"><span>'+it[1]+'</span></label>'+
+   '<input class="memo empty" data-m="'+it[0]+'" placeholder="메모 (자료 미비, 확인 내용 등)" aria-label="메모"></div>';
+ });
+ html+='</section>';
+});
+list.innerHTML=html;
+var cbs=[].slice.call(document.querySelectorAll('[data-id]')), mms=[].slice.call(document.querySelectorAll('[data-m]'));
+function collect(){
+ var items={};
+ cbs.forEach(function(c){items[c.dataset.id]={checked:c.checked,memo:''}});
+ mms.forEach(function(m){items[m.dataset.m].memo=m.value});
+ return {app:'rnd-check',version:VER,savedAt:new Date().toISOString(),company:$('f-co').value,year:$('f-yr').value,staff:$('f-st').value,date:$('f-dt').value,opinion:$('f-op').value,items:items};
+}
+function apply(d){
+ $('f-co').value=d.company||'';$('f-yr').value=d.year||'';$('f-st').value=d.staff||'';$('f-dt').value=d.date||'';$('f-op').value=d.opinion||'';
+ var it=d.items||{};
+ cbs.forEach(function(c){c.checked=!!(it[c.dataset.id]&&it[c.dataset.id].checked)});
+ mms.forEach(function(m){m.value=(it[m.dataset.m]&&it[m.dataset.m].memo)||''});
+ up();
+}
+function up(){
+ var n=cbs.filter(function(c){return c.checked}).length;
+ $('bar').style.width=(n/cbs.length*100)+'%';$('pt').textContent=n+' / '+cbs.length+' 완료';
+ SECS.forEach(function(s,si){var ids=s[1].map(function(x){return x[0]});var k=cbs.filter(function(c){return ids.indexOf(c.dataset.id)>-1&&c.checked}).length;document.querySelector('[data-s="'+si+'"]').textContent=k+' / '+ids.length});
+ mms.forEach(function(m){m.classList.toggle('empty',!m.value.trim())});
+ $('hco').textContent=$('f-co').value?'— '+$('f-co').value:'';
+ try{localStorage.setItem(KEY,JSON.stringify(collect()))}catch(e){}
+}
+function say(t){$('msg').textContent=t}
+function fname(ext){
+ var c=($('f-co').value||'업체').replace(/[\\/:*?"<>|\s]+/g,'_'), y=$('f-yr').value||'';
+ return c+'_R&D점검표'+(y?'_'+y:'')+'_v'+VER+(ext?'.'+ext:'');
+}
+document.addEventListener('input',up);document.addEventListener('change',function(e){if(e.target.id!=='b-load')up()});
+$('b-save').onclick=function(){
+ var blob=new Blob([JSON.stringify(collect(),null,2)],{type:'application/json'});
+ var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname('json');document.body.appendChild(a);a.click();
+ setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);say(fname('json')+' 저장했습니다.');
+};
+$('b-load').onchange=function(e){
+ var f=e.target.files[0];if(!f)return;var r=new FileReader();
+ r.onload=function(){try{var d=JSON.parse(r.result);if(d.app!=='rnd-check')throw 0;apply(d);say(f.name+' 불러왔습니다'+(d.version!==VER?' (v'+d.version+' 파일)':'')+'.')}catch(x){say('이 점검표에서 저장한 JSON 파일이 아닙니다.')}e.target.value=''};
+ r.readAsText(f);
+};
+$('b-pdf').onclick=function(){
+ if(!$('f-co').value.trim()){say('업체명을 먼저 입력해 주세요.');$('f-co').focus();return}
+ var t=document.title;document.title=fname('');$('pd').textContent=new Date().toLocaleDateString('ko-KR');
+ window.print();setTimeout(function(){document.title=t},800);
+};
+$('b-new').onclick=function(){
+ if(!window.confirm('현재 내용을 지우고 새 업체로 시작할까요? 필요하면 먼저 JSON으로 저장하세요.'))return;
+ apply({date:new Date().toISOString().slice(0,10)});say('새 점검표를 시작했습니다.');
+};
+try{var d=JSON.parse(localStorage.getItem(KEY)||'null');if(d)apply(d);else{$('f-dt').value=new Date().toISOString().slice(0,10);up()}}catch(e){up()}
+</script>
+</body>
+</html>
